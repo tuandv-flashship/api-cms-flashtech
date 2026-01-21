@@ -13,5 +13,6 @@ final class InitialDeploymentDataSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(PermissionsSeeder::class);
     }
 }

@@ -22,5 +22,8 @@
 use App\Containers\AppSection\Authorization\UI\API\Controllers\FindPermissionByIdController;
 use Illuminate\Support\Facades\Route;
 
+$minLength = (int) config('hashids.connections.main.length', 16);
+
 Route::get('permissions/{permission_id}', FindPermissionByIdController::class)
+    ->where('permission_id', '[A-Za-z0-9]{' . $minLength . ',}')
     ->middleware(['auth:api']);

@@ -4,15 +4,15 @@ namespace App\Containers\AppSection\Authorization\UI\API\Requests;
 
 use App\Ship\Parents\Requests\Request as ParentRequest;
 
-final class FindPermissionByIdRequest extends ParentRequest
+final class ListPermissionsTreeRequest extends ParentRequest
 {
-    protected array $decode = [
-        'permission_id',
-    ];
+    protected array $decode = [];
 
     public function rules(): array
     {
-        return [];
+        return [
+            'guard' => 'string|nullable',
+        ];
     }
 
     public function authorize(): bool

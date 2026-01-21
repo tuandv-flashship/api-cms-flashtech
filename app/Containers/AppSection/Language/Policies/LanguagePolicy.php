@@ -9,21 +9,21 @@ final class LanguagePolicy extends ParentPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isSuperAdmin();
+        return $user->can('languages.index');
     }
 
     public function create(User $user): bool
     {
-        return $user->isSuperAdmin();
+        return $user->can('languages.create');
     }
 
     public function update(User $user): bool
     {
-        return $user->isSuperAdmin();
+        return $user->can('languages.edit');
     }
 
     public function delete(User $user): bool
     {
-        return $user->isSuperAdmin();
+        return $user->can('languages.destroy');
     }
 }

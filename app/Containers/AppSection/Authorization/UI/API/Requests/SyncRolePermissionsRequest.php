@@ -2,7 +2,6 @@
 
 namespace App\Containers\AppSection\Authorization\UI\API\Requests;
 
-use App\Containers\AppSection\Authorization\Models\Permission;
 use App\Ship\Parents\Requests\Request as ParentRequest;
 
 final class SyncRolePermissionsRequest extends ParentRequest
@@ -23,6 +22,6 @@ final class SyncRolePermissionsRequest extends ParentRequest
 
     public function authorize(): bool
     {
-        return $this->user()->can('sync', Permission::class);
+        return $this->user()->can('roles.edit');
     }
 }

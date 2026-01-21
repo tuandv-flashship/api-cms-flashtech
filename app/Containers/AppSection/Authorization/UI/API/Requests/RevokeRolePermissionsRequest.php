@@ -2,7 +2,6 @@
 
 namespace App\Containers\AppSection\Authorization\UI\API\Requests;
 
-use App\Containers\AppSection\Authorization\Models\Permission;
 use App\Ship\Parents\Requests\Request as ParentRequest;
 
 final class RevokeRolePermissionsRequest extends ParentRequest
@@ -23,6 +22,6 @@ final class RevokeRolePermissionsRequest extends ParentRequest
 
     public function authorize(): bool
     {
-        return $this->user()->can('revoke', Permission::class);
+        return $this->user()->can('roles.edit');
     }
 }
