@@ -45,7 +45,7 @@ final class User extends ParentUserModel
 
     public function isSuperAdmin(): bool
     {
-        if ($this->email && in_array($this->email, config('appSection-authentication.super_admins', []))) {
+        if ($this->email && in_array($this->email, config('appSection-authorization.super_admins', []))) {
             return true;
         }
 
