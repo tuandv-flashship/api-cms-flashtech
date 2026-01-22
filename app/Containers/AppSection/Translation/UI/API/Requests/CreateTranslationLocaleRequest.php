@@ -2,7 +2,6 @@
 
 namespace App\Containers\AppSection\Translation\UI\API\Requests;
 
-use App\Containers\AppSection\Translation\Models\Translation;
 use App\Ship\Parents\Requests\Request as ParentRequest;
 use App\Ship\Supports\Language;
 use Illuminate\Validation\Rule;
@@ -25,6 +24,6 @@ final class CreateTranslationLocaleRequest extends ParentRequest
 
     public function authorize(): bool
     {
-        return $this->user()->can('create', Translation::class);
+        return $this->user()->can('translations.create');
     }
 }

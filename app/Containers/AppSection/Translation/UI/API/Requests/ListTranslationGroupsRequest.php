@@ -2,7 +2,6 @@
 
 namespace App\Containers\AppSection\Translation\UI\API\Requests;
 
-use App\Containers\AppSection\Translation\Models\Translation;
 use App\Ship\Parents\Requests\Request as ParentRequest;
 
 final class ListTranslationGroupsRequest extends ParentRequest
@@ -18,6 +17,6 @@ final class ListTranslationGroupsRequest extends ParentRequest
 
     public function authorize(): bool
     {
-        return $this->user()->can('viewAny', Translation::class);
+        return $this->user()->can('translations.index');
     }
 }

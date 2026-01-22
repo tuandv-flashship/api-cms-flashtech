@@ -2,7 +2,6 @@
 
 namespace App\Containers\AppSection\Translation\UI\API\Requests;
 
-use App\Containers\AppSection\Translation\Models\Translation;
 use App\Ship\Parents\Requests\Request as ParentRequest;
 
 final class UpdateTranslationGroupRequest extends ParentRequest
@@ -21,6 +20,6 @@ final class UpdateTranslationGroupRequest extends ParentRequest
 
     public function authorize(): bool
     {
-        return $this->user()->can('update', Translation::class);
+        return $this->user()->can('translations.edit');
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Containers\AppSection\Translation\UI\API\Requests;
 
-use App\Containers\AppSection\Translation\Models\Translation;
 use App\Ship\Parents\Requests\Request as ParentRequest;
 
 final class DeleteTranslationLocaleRequest extends ParentRequest
@@ -18,6 +17,6 @@ final class DeleteTranslationLocaleRequest extends ParentRequest
 
     public function authorize(): bool
     {
-        return $this->user()->can('delete', Translation::class);
+        return $this->user()->can('translations.destroy');
     }
 }
