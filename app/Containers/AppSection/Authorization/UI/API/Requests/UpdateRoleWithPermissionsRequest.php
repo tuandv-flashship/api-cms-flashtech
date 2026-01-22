@@ -4,18 +4,19 @@ namespace App\Containers\AppSection\Authorization\UI\API\Requests;
 
 use App\Ship\Parents\Requests\Request as ParentRequest;
 
-final class CreateRoleRequest extends ParentRequest
+final class UpdateRoleWithPermissionsRequest extends ParentRequest
 {
     protected array $decode = [
+        'role_id',
         'permission_ids.*',
     ];
 
     public function rules(): array
     {
         return [
-            'name' => 'required|unique:' . config('permission.table_names.roles') . ',name|min:2|max:20|alpha',
-            'description' => 'max:255',
-            'display_name' => 'max:100',
+            'role_id' => 'exists:roles,id',
+            'display_name' => 'nullable|max:100',
+            'description' => 'nullable|max:255',
             'permission_ids' => 'sometimes|array',
             'permission_ids.*' => 'required|exists:permissions,id',
         ];
@@ -23,6 +24,6 @@ final class CreateRoleRequest extends ParentRequest
 
     public function authorize(): bool
     {
-        return $this->user()->can('roles.create');
+        return $this->user()->can('roles.edit');
     }
 }

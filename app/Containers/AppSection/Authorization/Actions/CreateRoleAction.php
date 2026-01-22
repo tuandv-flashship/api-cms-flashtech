@@ -13,8 +13,23 @@ final class CreateRoleAction extends ParentAction
     ) {
     }
 
-    public function run(string $name, string|null $description = null, string|null $displayName = null): Role
+    /**
+     * @param int[]|null $permissionIds
+     */
+    public function run(
+        string $name,
+        string|null $description = null,
+        string|null $displayName = null,
+        ?array $permissionIds = null
+    ): Role
     {
-        return $this->createRoleTask->run($name, $description, $displayName);
+        $role = $this->createRoleTask->run($name, $description, $displayName);
+
+        if ($permissionIds !== null) {
+            $role->syncPermissions($permissionIds);
+            $role = $role->refresh();
+        }
+
+        return $role;
     }
 }

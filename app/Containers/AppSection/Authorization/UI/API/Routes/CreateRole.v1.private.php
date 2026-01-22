@@ -17,6 +17,7 @@
  * @apiBody            {String} name Unique role name
  * @apiBody            {String} [description]
  * @apiBody            {String} [display_name]
+ * @apiBody            {Array} [permission_ids] Array of permission id's
  * @apiBody            {String="api","web"} [guard_name] Default: api
  *
  * @apiUse             RoleSuccessSingleResponse
