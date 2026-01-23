@@ -65,11 +65,34 @@ final class DownloadRemoteLocaleTask extends ParentTask
             return false;
         }
 
-        File::copyDirectory($localePath, $this->filesystem->langPath($normalized));
+        $localeSource = $localePath;
+        $nestedLocalePath = $localePath . DIRECTORY_SEPARATOR . $normalized;
+        if (File::isDirectory($nestedLocalePath)) {
+            $localeSource = $nestedLocalePath;
+        }
 
-        $localeJson = $extractPath . DIRECTORY_SEPARATOR . $normalized . '.json';
-        if (File::exists($localeJson)) {
-            File::copy($localeJson, $this->filesystem->langPath($normalized . '.json'));
+        File::copyDirectory($localeSource, $this->filesystem->langPath($normalized));
+
+        $jsonCandidates = [
+            $localePath . DIRECTORY_SEPARATOR . $normalized . '.json',
+            $localePath . '.json',
+            $extractPath . DIRECTORY_SEPARATOR . $normalized . '.json',
+        ];
+
+        $copiedJson = false;
+        foreach ($jsonCandidates as $candidate) {
+            if (File::exists($candidate)) {
+                File::copy($candidate, $this->filesystem->langPath($normalized . '.json'));
+                $copiedJson = true;
+                break;
+            }
+        }
+
+        $nestedJsonTarget = $this->filesystem->langPath(
+            $normalized . DIRECTORY_SEPARATOR . $normalized . '.json'
+        );
+        if ($copiedJson && File::exists($nestedJsonTarget)) {
+            File::delete($nestedJsonTarget);
         }
 
         if ($includeVendor) {

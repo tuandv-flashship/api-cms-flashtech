@@ -8,6 +8,17 @@ final class UpdateTranslationJsonRequest extends ParentRequest
 {
     protected array $decode = [];
 
+    protected function prepareForValidation(): void
+    {
+        $locale = $this->route('locale');
+
+        if ($locale !== null) {
+            $this->merge([
+                'locale' => $locale,
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [

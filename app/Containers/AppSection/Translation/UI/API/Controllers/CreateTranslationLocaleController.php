@@ -15,7 +15,7 @@ final class CreateTranslationLocaleController extends ApiController
     {
         $locale = str_replace('-', '_', (string) $request->input('locale'));
         $source = (string) $request->input('source', 'github');
-        $includeVendor = (bool) $request->input('include_vendor', config('appSection-translation.include_vendor', true));
+        $includeVendor = (bool) $request->input('include_vendor', config('appSection-translation.include_vendor', false));
 
         $payload = (object) $action->run($locale, $source, $includeVendor);
 

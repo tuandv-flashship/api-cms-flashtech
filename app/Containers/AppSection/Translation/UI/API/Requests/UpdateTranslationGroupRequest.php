@@ -8,6 +8,25 @@ final class UpdateTranslationGroupRequest extends ParentRequest
 {
     protected array $decode = [];
 
+    protected function prepareForValidation(): void
+    {
+        $payload = [];
+        $locale = $this->route('locale');
+
+        if ($locale !== null) {
+            $payload['locale'] = $locale;
+        }
+
+        $group = $this->route('group');
+        if ($group !== null && $this->input('group') === null) {
+            $payload['group'] = $group;
+        }
+
+        if ($payload !== []) {
+            $this->merge($payload);
+        }
+    }
+
     public function rules(): array
     {
         return [

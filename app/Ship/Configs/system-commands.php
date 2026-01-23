@@ -24,6 +24,10 @@ return [
             'command' => 'queue:restart',
             'options' => [],
         ],
+        'lang_publish' => [
+            'command' => 'lang:publish',
+            'options' => [],
+        ],
         'permissions_sync' => [
             'command' => 'apiato:permissions-sync',
             'options' => [

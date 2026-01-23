@@ -2,7 +2,7 @@
 ### Get Started
 ``` 
 php artisan migrate
-php artisan passport:install
+php artisan passport:keys
 php artisan passport:client --password --name="Web Client"
 ```
 
