@@ -6,6 +6,7 @@ use Apiato\Http\Middleware\ValidateJsonContent;
 use App\Containers\AppSection\Authentication\UI\WEB\Controllers\HomePageController;
 use App\Containers\AppSection\Authentication\UI\WEB\Controllers\LoginController;
 use App\Ship\Middleware\ValidateAppId;
+use App\Containers\AppSection\RequestLog\Middleware\LogRequestErrors;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -30,6 +31,7 @@ return Application::configure(basePath: $basePath)
         $middleware->api(append: [
             ValidateJsonContent::class,
             ProcessETag::class,
+            LogRequestErrors::class,
         ]);
         $middleware->redirectUsersTo(static function (Request $request): string {
             return action(HomePageController::class);
