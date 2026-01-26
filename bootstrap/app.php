@@ -5,11 +5,12 @@ use Apiato\Http\Middleware\ProcessETag;
 use Apiato\Http\Middleware\ValidateJsonContent;
 use App\Containers\AppSection\Authentication\UI\WEB\Controllers\HomePageController;
 use App\Containers\AppSection\Authentication\UI\WEB\Controllers\LoginController;
-use App\Ship\Middleware\ValidateAppId;
 use App\Containers\AppSection\RequestLog\Middleware\LogRequestErrors;
+use App\Ship\Middleware\ValidateAppId;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\HandleCors;
 use Illuminate\Http\Request;
 
 $basePath = dirname(__DIR__);
@@ -25,7 +26,8 @@ return Application::configure(basePath: $basePath)
         then: static fn () => $apiato->registerApiRoutes(),
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->use([
+        $middleware->append([
+            HandleCors::class,
             ValidateAppId::class,
         ]);
         $middleware->api(append: [
