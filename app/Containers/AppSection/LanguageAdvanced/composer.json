@@ -1,0 +1,6 @@
+{
+    "name": "apiato/language-advanced",
+    "description": "LanguageAdvanced Container",
+    "type": "apiato-container",
+    "require": {}
+}
