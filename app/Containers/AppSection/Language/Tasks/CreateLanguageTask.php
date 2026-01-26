@@ -24,7 +24,7 @@ final class CreateLanguageTask extends ParentTask
         }
 
         if ($setDefault) {
-            Language::query()->update(['lang_is_default' => 0]);
+            Language::query()->where('lang_is_default', 1)->update(['lang_is_default' => 0]);
         }
 
         return $this->repository->create($data);

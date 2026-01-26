@@ -17,12 +17,15 @@ final class SetDefaultLanguageTask extends ParentTask
     {
         $language = $this->repository->findOrFail($id);
 
-        Language::query()->update(['lang_is_default' => 0]);
         Language::query()
-            ->where('lang_id', $language->lang_id)
-            ->update(['lang_is_default' => 1]);
+            ->where('lang_is_default', 1)
+            ->where('lang_id', '!=', $language->lang_id)
+            ->update(['lang_is_default' => 0]);
 
         $language->lang_is_default = true;
+        if ($language->isDirty()) {
+            $language->save();
+        }
 
         return $language;
     }

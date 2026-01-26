@@ -43,8 +43,10 @@ final class LogRequestErrors
                 $requestLog->referrer = $this->mergeUnique((array) $requestLog->referrer, [$referrer]);
             }
 
-            if (Auth::guard('api')->check()) {
-                $requestLog->user_id = $this->mergeUnique((array) $requestLog->user_id, [Auth::guard('api')->id()]);
+            $userId = Auth::guard()->id()
+                ?: Auth::guard('api')->id();
+            if ($userId) {
+                $requestLog->user_id = $this->mergeUnique((array) $requestLog->user_id, [$userId]);
             }
 
             $requestLog->count = $requestLog->exists ? $requestLog->count + 1 : 1;

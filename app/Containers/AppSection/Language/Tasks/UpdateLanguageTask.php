@@ -21,15 +21,16 @@ final class UpdateLanguageTask extends ParentTask
 
         if ($setDefault) {
             Language::query()
+                ->where('lang_is_default', 1)
                 ->where('lang_id', '!=', $language->lang_id)
                 ->update(['lang_is_default' => 0]);
         }
 
         if (! Language::query()->where('lang_is_default', 1)->exists()) {
-            Language::query()
-                ->where('lang_id', $language->lang_id)
-                ->update(['lang_is_default' => 1]);
             $language->lang_is_default = true;
+            if ($language->isDirty()) {
+                $language->save();
+            }
         }
 
         return $language;

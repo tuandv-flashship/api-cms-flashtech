@@ -2,6 +2,8 @@
 
 namespace App\Containers\AppSection\Setting\Actions;
 
+use App\Containers\AppSection\AuditLog\Events\AuditHandlerEvent;
+use App\Containers\AppSection\Setting\Models\Setting;
 use App\Containers\AppSection\Setting\Tasks\UpsertSettingsTask;
 use App\Ship\Parents\Actions\Action as ParentAction;
 
@@ -18,5 +20,13 @@ final class UpdateAdminAppearanceSettingsAction extends ParentAction
     public function run(array $data): void
     {
         $this->upsertSettingsTask->run($data);
+
+        event(new AuditHandlerEvent(
+            Setting::class,
+            'updated',
+            0,
+            'Admin appearance settings',
+            'primary',
+        ));
     }
 }

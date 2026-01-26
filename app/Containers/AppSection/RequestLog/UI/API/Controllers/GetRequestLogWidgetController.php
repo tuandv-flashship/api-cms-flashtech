@@ -17,7 +17,7 @@ final class GetRequestLogWidgetController extends ApiController
         $limit = $request->input('limit');
         $perPage = is_numeric($limit)
             ? (int) $limit
-            : (int) $request->input('paginate', 10);
+            : (int) $request->input('per_page', $request->input('paginate', 10));
 
         $logs = $action->run($page, $perPage);
 
