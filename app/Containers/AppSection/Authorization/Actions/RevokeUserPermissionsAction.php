@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Authorization\Actions;
 
+use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\User\Models\User;
 use App\Containers\AppSection\User\Tasks\FindUserByIdTask;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -20,6 +21,8 @@ final class RevokeUserPermissionsAction extends ParentAction
         foreach ($permissionIds as $permissionId) {
             $user->revokePermissionTo($permissionId);
         }
+
+        AuditLogRecorder::recordModel('updated', $user);
 
         return $user;
     }

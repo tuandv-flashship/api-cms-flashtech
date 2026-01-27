@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Language\Actions;
 
+use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\Language\Models\Language;
 use App\Containers\AppSection\Language\Tasks\UpdateLanguageTask;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -15,6 +16,10 @@ final class UpdateLanguageAction extends ParentAction
 
     public function run(int $id, array $data): Language
     {
-        return $this->updateLanguageTask->run($id, $data);
+        $language = $this->updateLanguageTask->run($id, $data);
+
+        AuditLogRecorder::recordModel('updated', $language);
+
+        return $language;
     }
 }

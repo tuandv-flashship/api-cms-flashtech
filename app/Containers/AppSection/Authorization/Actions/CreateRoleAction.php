@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Authorization\Actions;
 
+use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\Authorization\Models\Role;
 use App\Containers\AppSection\Authorization\Tasks\CreateRoleTask;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -29,6 +30,8 @@ final class CreateRoleAction extends ParentAction
             $role->syncPermissions($permissionIds);
             $role = $role->refresh();
         }
+
+        AuditLogRecorder::recordModel('created', $role);
 
         return $role;
     }

@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\User\Actions;
 
+use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\User\Models\User;
 use App\Containers\AppSection\User\Notifications\PasswordUpdatedNotification;
 use App\Containers\AppSection\User\Tasks\UpdateUserTask;
@@ -19,6 +20,8 @@ final class UpdatePasswordAction extends ParentAction
         $user = $this->updateUserTask->run($userId, ['password' => $password]);
 
         $user->notify(new PasswordUpdatedNotification());
+
+        AuditLogRecorder::recordModel('changed password', $user, null, 'danger');
 
         return $user;
     }

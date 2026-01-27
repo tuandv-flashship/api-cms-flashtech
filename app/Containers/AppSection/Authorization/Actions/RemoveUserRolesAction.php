@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Authorization\Actions;
 
+use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\User\Models\User;
 use App\Containers\AppSection\User\Tasks\FindUserByIdTask;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -20,6 +21,8 @@ final class RemoveUserRolesAction extends ParentAction
         foreach ($roleIds as $roleId) {
             $user->removeRole($roleId);
         }
+
+        AuditLogRecorder::recordModel('updated', $user);
 
         return $user;
     }

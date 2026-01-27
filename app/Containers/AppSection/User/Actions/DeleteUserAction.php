@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\User\Actions;
 
+use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\User\Data\Repositories\UserRepository;
 use App\Containers\AppSection\User\Exceptions\FailedToDeleteUser;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -21,6 +22,12 @@ final class DeleteUserAction extends ParentAction
             throw FailedToDeleteUser::becauseCannotDeleteItself();
         }
 
-        return $this->repository->delete($id);
+        $deleted = $this->repository->delete($id);
+
+        if ($deleted) {
+            AuditLogRecorder::recordModel('deleted', $user);
+        }
+
+        return $deleted;
     }
 }

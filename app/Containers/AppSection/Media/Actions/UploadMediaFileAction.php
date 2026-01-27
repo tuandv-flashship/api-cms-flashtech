@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Media\Actions;
 
+use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\Media\Models\MediaFile;
 use App\Containers\AppSection\Media\Services\MediaService;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -21,6 +22,10 @@ final class UploadMediaFileAction extends ParentAction
         ?string $accessMode = null
     ): MediaFile
     {
-        return $this->mediaService->storeUploadedFile($file, $folderId, $userId, $visibility, $accessMode);
+        $mediaFile = $this->mediaService->storeUploadedFile($file, $folderId, $userId, $visibility, $accessMode);
+
+        AuditLogRecorder::recordModel('created', $mediaFile);
+
+        return $mediaFile;
     }
 }
