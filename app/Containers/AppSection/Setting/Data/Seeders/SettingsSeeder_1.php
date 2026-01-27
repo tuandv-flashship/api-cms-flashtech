@@ -4,13 +4,17 @@ namespace App\Containers\AppSection\Setting\Data\Seeders;
 
 use App\Containers\AppSection\Setting\Tasks\UpsertSettingsTask;
 use App\Containers\AppSection\Setting\Models\Setting;
+use App\Containers\AppSection\Media\Supports\MediaSettingsStore;
 use App\Ship\Parents\Seeders\Seeder as ParentSeeder;
 
 final class SettingsSeeder_1 extends ParentSeeder
 {
-    public function run(UpsertSettingsTask $task): void
+    public function run(UpsertSettingsTask $task, MediaSettingsStore $settingsStore): void
     {
         $force = filter_var(env('FORCE_SETTINGS_SEED', false), FILTER_VALIDATE_BOOLEAN);
+        $mediaDefaults = $this->normalizeMediaDefaults((array) config('media.settings_defaults', []));
+        $mediaSizeDefaults = $this->resolveMediaSizeDefaults();
+        $mediaSeed = array_merge($mediaDefaults, $mediaSizeDefaults);
         $keys = [
             'admin_email',
             'time_zone',
@@ -51,12 +55,13 @@ final class SettingsSeeder_1 extends ParentSeeder
             'admin_appearance_custom_body_js',
             'admin_appearance_custom_footer_js',
         ];
+        $keys = array_merge($keys, array_keys($mediaSeed));
 
         if (!$force && Setting::query()->whereIn('key', $keys)->exists()) {
             return;
         }
 
-        $task->run([
+        $task->run(array_merge([
             'admin_email' => json_encode([
                 'dvt.soict@gmail.com',
                 'dvt.hust@gmail.com',
@@ -101,6 +106,71 @@ final class SettingsSeeder_1 extends ParentSeeder
             'admin_appearance_custom_header_js' => '',
             'admin_appearance_custom_body_js' => '',
             'admin_appearance_custom_footer_js' => '',
-        ]);
+        ], $mediaSeed));
+
+        $settingsStore->clear();
+    }
+
+    /**
+     * @param array<string, mixed> $defaults
+     * @return array<string, mixed>
+     */
+    private function normalizeMediaDefaults(array $defaults): array
+    {
+        foreach ($this->sensitiveMediaKeys() as $key) {
+            unset($defaults[$key]);
+        }
+
+        foreach ($defaults as $key => $value) {
+            if (is_array($value)) {
+                $defaults[$key] = json_encode($value, JSON_THROW_ON_ERROR);
+                continue;
+            }
+
+            if (is_bool($value)) {
+                $defaults[$key] = $value ? 1 : 0;
+            }
+        }
+
+        return $defaults;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function sensitiveMediaKeys(): array
+    {
+        return [
+            'media_aws_secret_key',
+            'media_r2_secret_key',
+            'media_do_spaces_secret_key',
+            'media_wasabi_secret_key',
+            'media_bunnycdn_key',
+            'media_backblaze_secret_key',
+        ];
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function resolveMediaSizeDefaults(): array
+    {
+        $defaults = [];
+        $sizes = (array) config('media.sizes', []);
+
+        foreach ($sizes as $name => $size) {
+            $parts = explode('x', strtolower((string) $size));
+            if (count($parts) !== 2) {
+                continue;
+            }
+
+            $width = $parts[0] === 'auto' ? 0 : (int) $parts[0];
+            $height = $parts[1] === 'auto' ? 0 : (int) $parts[1];
+
+            $defaults[sprintf('media_sizes_%s_width', $name)] = $width;
+            $defaults[sprintf('media_sizes_%s_height', $name)] = $height;
+        }
+
+        return $defaults;
     }
 }

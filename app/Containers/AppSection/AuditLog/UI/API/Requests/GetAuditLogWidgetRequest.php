@@ -13,6 +13,7 @@ final class GetAuditLogWidgetRequest extends ParentRequest
         return [
             'page' => ['sometimes', 'integer', 'min:1'],
             'limit' => ['sometimes', 'integer', 'min:1', 'max:200'],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:200'],
             'paginate' => ['sometimes', 'integer', 'min:1', 'max:200'],
         ];
     }

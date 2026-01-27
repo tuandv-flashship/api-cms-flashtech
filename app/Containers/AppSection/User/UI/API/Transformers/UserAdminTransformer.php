@@ -10,7 +10,7 @@ final class UserAdminTransformer extends UserTransformer
     {
         return parent::transform($user) +
        [
-           'real_id' => $user->id,
+           'real_id' => $user->getHashedKey(),
            'created_at' => $user->created_at,
            'updated_at' => $user->updated_at,
            'readable_created_at' => $user->created_at->diffForHumans(),

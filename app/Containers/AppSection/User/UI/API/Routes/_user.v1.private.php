@@ -11,7 +11,7 @@
  * @apiSuccess {String}     data.email_verified_at
  * @apiSuccess {String}     data.gender
  * @apiSuccess {String}     data.birth
- * @apiSuccess {Integer}    data.real_id (only for admin)
+ * @apiSuccess {String}     data.real_id (only for admin)
  * @apiSuccess {String}     data.created_at (only for admin)
  * @apiSuccess {String}     data.updated_at (only for admin)
  * @apiSuccess {String}     data.readable_created_at (only for admin)
@@ -30,7 +30,7 @@
  * "email_verified_at": "2023-04-07T11:51:26.000000Z",
  * "gender": "male",
  * "birth": "2023-04-07T11:51:26.000000Z",
- * "real_id": 2,
+ * "real_id": "qmv7dk48x5b690wx",
  * "created_at": "2023-04-07T11:51:26.000000Z",
  * "updated_at": "2023-04-07T11:51:26.000000Z",
  * "readable_created_at": "1 second ago",
@@ -63,7 +63,7 @@
  * "email_verified_at": "2023-04-07T11:51:26.000000Z",
  * "gender": "male",
  * "birth": "2023-04-07T11:51:26.000000Z",
- * "real_id": 1,
+ * "real_id": "qmv7dk48x5b690wx",
  * "created_at": "2023-04-07T11:51:26.000000Z",
  * "updated_at": "2023-04-07T11:51:26.000000Z",
  * "readable_created_at": "1 second ago",
@@ -77,7 +77,7 @@
  * "email_verified_at": "2023-04-07T11:51:26.000000Z",
  * "gender": "male",
  * "birth": "2023-04-07T11:51:26.000000Z",
- * "real_id": 2,
+ * "real_id": "qmv7dk48x5b690wx",
  * "created_at": "2023-04-07T11:51:26.000000Z",
  * "updated_at": "2023-04-07T11:51:26.000000Z",
  * "readable_created_at": "1 second ago",
@@ -91,7 +91,7 @@
  * "email_verified_at": "2023-04-07T11:51:26.000000Z",
  * "gender": "male",
  * "birth": "2023-04-07T11:51:26.000000Z",
- * "real_id": 3,
+ * "real_id": "bml0wd39b5pkznag",
  * "created_at": "2023-04-07T11:51:26.000000Z",
  * "updated_at": "2023-04-07T11:51:26.000000Z",
  * "readable_created_at": "1 second ago",
@@ -105,7 +105,7 @@
  * "email_verified_at": "2023-04-07T11:51:26.000000Z",
  * "gender": "male",
  * "birth": "2023-04-07T11:51:26.000000Z",
- * "real_id": 4,
+ * "real_id": "eq6am74064z0vpbn",
  * "created_at": "2023-04-07T11:51:26.000000Z",
  * "updated_at": "2023-04-07T11:51:26.000000Z",
  * "readable_created_at": "1 second ago",

@@ -20,6 +20,10 @@ return [
                 '--no-interaction' => true,
             ],
         ],
+        'storage_link' => [
+            'command' => 'storage:link',
+            'options' => [],
+        ],
         'queue_restart' => [
             'command' => 'queue:restart',
             'options' => [],

@@ -9,7 +9,9 @@
  * @apiHeader          {String} accept=application/json
  * @apiHeader          {String} authorization=Bearer
  * @apiParam           {Number} [page]
+ * @apiParam           {Number} [limit]
  * @apiParam           {Number} [per_page]
+ * @apiParam           {Number} [paginate]
  * @apiUse             SystemPackagesResponse
  */
 
