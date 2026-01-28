@@ -20,9 +20,9 @@ final class UpdateTagAction extends ParentAction
 
     /**
      * @param array<string, mixed> $data
-     * @param array<string, mixed>|null $meta
+     * @param array<string, mixed>|null $seoMeta
      */
-    public function run(int $id, array $data, ?string $slug = null, ?array $meta = null): Tag
+    public function run(int $id, array $data, ?string $slug = null, ?array $seoMeta = null): Tag
     {
         $tag = $data === []
             ? $this->findTagTask->run($id)
@@ -33,10 +33,8 @@ final class UpdateTagAction extends ParentAction
             $this->slugHelper->createSlug($tag, $slug === '' ? null : $slug);
         }
 
-        if ($meta) {
-            foreach ($meta as $key => $value) {
-                $tag->setMeta((string) $key, $value);
-            }
+        if ($seoMeta !== null) {
+            $tag->setMeta('seo_meta', $seoMeta);
         }
 
         AuditLogRecorder::recordModel('updated', $tag);

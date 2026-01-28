@@ -18,9 +18,9 @@ final class CreateTagAction extends ParentAction
 
     /**
      * @param array<string, mixed> $data
-     * @param array<string, mixed>|null $meta
+     * @param array<string, mixed>|null $seoMeta
      */
-    public function run(array $data, ?string $slug = null, ?array $meta = null): Tag
+    public function run(array $data, ?string $slug = null, ?array $seoMeta = null): Tag
     {
         $tag = $this->createTagTask->run($data);
 
@@ -31,10 +31,8 @@ final class CreateTagAction extends ParentAction
             $this->slugHelper->createSlug($tag);
         }
 
-        if ($meta) {
-            foreach ($meta as $key => $value) {
-                $tag->setMeta((string) $key, $value);
-            }
+        if ($seoMeta !== null) {
+            $tag->setMeta('seo_meta', $seoMeta);
         }
 
         AuditLogRecorder::recordModel('created', $tag);

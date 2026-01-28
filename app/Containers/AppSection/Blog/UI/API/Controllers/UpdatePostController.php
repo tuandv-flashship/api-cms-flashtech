@@ -32,7 +32,7 @@ final class UpdatePostController extends ApiController
             $payload['tag_ids'] ?? null,
             $payload['tag_names'] ?? null,
             $payload['slug'] ?? null,
-            $payload['meta'] ?? null,
+            $payload['seo_meta'] ?? null,
         );
 
         return Response::create($post, PostTransformer::class)->ok();

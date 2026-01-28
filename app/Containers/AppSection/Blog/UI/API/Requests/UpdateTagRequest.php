@@ -19,7 +19,7 @@ final class UpdateTagRequest extends ParentRequest
             'description' => ['sometimes', 'nullable', 'string', 'max:400'],
             'status' => ['sometimes', Rule::enum(ContentStatus::class)],
             'slug' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'meta' => ['sometimes', 'array'],
+            'seo_meta' => ['sometimes', 'array'],
         ];
     }
 

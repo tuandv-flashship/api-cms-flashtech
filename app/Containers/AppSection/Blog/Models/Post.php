@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Blog\Models;
 
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
+use App\Containers\AppSection\LanguageAdvanced\Traits\HasLanguageTranslations;
 use App\Containers\AppSection\MetaBox\Traits\HasMetaBoxes;
 use App\Containers\AppSection\Revision\Traits\RevisionableTrait;
 use App\Containers\AppSection\Slug\Traits\HasSlug;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 final class Post extends ParentModel
 {
     use HasSlug;
+    use HasLanguageTranslations;
     use HasMetaBoxes;
     use RevisionableTrait;
 
@@ -84,5 +86,20 @@ final class Post extends ParentModel
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', ContentStatus::PUBLISHED);
+    }
+
+    public function getNameAttribute(mixed $value): mixed
+    {
+        return $this->getTranslatedAttribute('name', $value);
+    }
+
+    public function getDescriptionAttribute(mixed $value): mixed
+    {
+        return $this->getTranslatedAttribute('description', $value);
+    }
+
+    public function getContentAttribute(mixed $value): mixed
+    {
+        return $this->getTranslatedAttribute('content', $value);
     }
 }

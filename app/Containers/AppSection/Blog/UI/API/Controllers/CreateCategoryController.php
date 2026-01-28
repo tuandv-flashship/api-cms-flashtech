@@ -29,7 +29,7 @@ final class CreateCategoryController extends ApiController
         $category = $action->run(
             $data,
             $payload['slug'] ?? null,
-            $payload['meta'] ?? null,
+            $payload['seo_meta'] ?? null,
         );
 
         return Response::create($category, CategoryTransformer::class)->created();

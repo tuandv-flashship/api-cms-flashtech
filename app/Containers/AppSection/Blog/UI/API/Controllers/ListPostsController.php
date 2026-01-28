@@ -4,6 +4,7 @@ namespace App\Containers\AppSection\Blog\UI\API\Controllers;
 
 use Apiato\Support\Facades\Response;
 use App\Containers\AppSection\Blog\Actions\ListPostsAction;
+use App\Containers\AppSection\Blog\Supports\BlogOptions;
 use App\Containers\AppSection\Blog\UI\API\Requests\ListPostsRequest;
 use App\Containers\AppSection\Blog\UI\API\Transformers\PostTransformer;
 use App\Ship\Parents\Controllers\ApiController;
@@ -19,6 +20,14 @@ final class ListPostsController extends ApiController
 
         $posts = $action->run($payload, $perPage, $page);
 
-        return Response::create($posts, PostTransformer::class)->ok();
+        $response = Response::create($posts, PostTransformer::class);
+
+        if (BlogOptions::shouldIncludeOptions($request->query('include'))) {
+            $response->addMeta([
+                'options' => BlogOptions::postOptions(),
+            ]);
+        }
+
+        return $response->ok();
     }
 }

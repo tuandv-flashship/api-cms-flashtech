@@ -30,7 +30,7 @@ final class CreateCategoryRequest extends ParentRequest
             'is_featured' => ['nullable', 'boolean'],
             'is_default' => ['nullable', 'boolean'],
             'slug' => ['nullable', 'string', 'max:255'],
-            'meta' => ['nullable', 'array'],
+            'seo_meta' => ['nullable', 'array'],
         ];
     }
 

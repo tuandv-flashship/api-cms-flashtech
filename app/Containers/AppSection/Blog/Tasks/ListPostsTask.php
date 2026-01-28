@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Blog\Tasks;
 
 use App\Containers\AppSection\Blog\Models\Post;
+use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
 use App\Ship\Parents\Tasks\Task as ParentTask;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,8 +15,13 @@ final class ListPostsTask extends ParentTask
      */
     public function run(array $filters, int $perPage, int $page): LengthAwarePaginator
     {
+        $with = LanguageAdvancedManager::withTranslations(
+            ['categories', 'tags', 'slugable', 'author'],
+            Post::class
+        );
+
         $query = Post::query()
-            ->with(['categories', 'tags', 'slugable', 'author'])
+            ->with($with)
             ->when(isset($filters['status']), function (Builder $query) use ($filters): void {
                 $query->where('status', $filters['status']);
             })

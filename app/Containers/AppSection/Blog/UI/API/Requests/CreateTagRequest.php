@@ -17,7 +17,7 @@ final class CreateTagRequest extends ParentRequest
             'description' => ['nullable', 'string', 'max:400'],
             'status' => ['nullable', Rule::enum(ContentStatus::class)],
             'slug' => ['nullable', 'string', 'max:255'],
-            'meta' => ['nullable', 'array'],
+            'seo_meta' => ['nullable', 'array'],
         ];
     }
 

@@ -24,7 +24,7 @@ final class CreateTagController extends ApiController
         $tag = $action->run(
             $data,
             $payload['slug'] ?? null,
-            $payload['meta'] ?? null,
+            $payload['seo_meta'] ?? null,
         );
 
         return Response::create($tag, TagTransformer::class)->created();

@@ -25,7 +25,7 @@ final class UpdatePostAction extends ParentAction
      * @param int[]|null $categoryIds
      * @param int[]|null $tagIds
      * @param string[]|null $tagNames
-     * @param array<string, mixed>|null $meta
+     * @param array<string, mixed>|null $seoMeta
      */
     public function run(
         int $id,
@@ -34,7 +34,7 @@ final class UpdatePostAction extends ParentAction
         ?array $tagIds = null,
         ?array $tagNames = null,
         ?string $slug = null,
-        ?array $meta = null
+        ?array $seoMeta = null
     ): Post {
         $post = $data === []
             ? $this->findPostTask->run($id)
@@ -54,10 +54,8 @@ final class UpdatePostAction extends ParentAction
             $this->slugHelper->createSlug($post, $slug === '' ? null : $slug);
         }
 
-        if ($meta) {
-            foreach ($meta as $key => $value) {
-                $post->setMeta((string) $key, $value);
-            }
+        if ($seoMeta !== null) {
+            $post->setMeta('seo_meta', $seoMeta);
         }
 
         AuditLogRecorder::recordModel('updated', $post);

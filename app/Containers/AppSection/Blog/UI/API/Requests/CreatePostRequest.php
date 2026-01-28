@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Blog\UI\API\Requests;
 
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
+use App\Containers\AppSection\Blog\Supports\PostFormat;
 use App\Ship\Parents\Requests\Request as ParentRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,7 +23,7 @@ final class CreatePostRequest extends ParentRequest
             'status' => ['nullable', Rule::enum(ContentStatus::class)],
             'is_featured' => ['nullable', 'boolean'],
             'image' => ['nullable', 'string', 'max:255'],
-            'format_type' => ['nullable', 'string', 'max:30'],
+            'format_type' => ['nullable', 'string', 'max:30', Rule::in(array_keys(PostFormat::all()))],
             'category_ids' => ['nullable', 'array'],
             'category_ids.*' => ['integer', 'exists:categories,id'],
             'tag_ids' => ['nullable', 'array'],
@@ -30,7 +31,7 @@ final class CreatePostRequest extends ParentRequest
             'tag_names' => ['nullable', 'array'],
             'tag_names.*' => ['string', 'max:120'],
             'slug' => ['nullable', 'string', 'max:255'],
-            'meta' => ['nullable', 'array'],
+            'seo_meta' => ['nullable', 'array'],
         ];
     }
 

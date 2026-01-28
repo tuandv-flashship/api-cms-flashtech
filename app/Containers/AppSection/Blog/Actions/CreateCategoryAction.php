@@ -18,12 +18,16 @@ final class CreateCategoryAction extends ParentAction
 
     /**
      * @param array<string, mixed> $data
-     * @param array<string, mixed>|null $meta
+     * @param array<string, mixed>|null $seoMeta
      */
-    public function run(array $data, ?string $slug = null, ?array $meta = null): Category
+    public function run(array $data, ?string $slug = null, ?array $seoMeta = null): Category
     {
         if (! empty($data['is_default'])) {
             Category::query()->where('is_default', true)->update(['is_default' => false]);
+        }
+
+        if (! array_key_exists('parent_id', $data) || $data['parent_id'] === null) {
+            $data['parent_id'] = 0;
         }
 
         $category = $this->createCategoryTask->run($data);
@@ -35,10 +39,8 @@ final class CreateCategoryAction extends ParentAction
             $this->slugHelper->createSlug($category);
         }
 
-        if ($meta) {
-            foreach ($meta as $key => $value) {
-                $category->setMeta((string) $key, $value);
-            }
+        if ($seoMeta !== null) {
+            $category->setMeta('seo_meta', $seoMeta);
         }
 
         AuditLogRecorder::recordModel('created', $category);

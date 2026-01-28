@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Blog\Tasks;
 
 use App\Containers\AppSection\Blog\Models\Category;
+use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
 use App\Ship\Parents\Tasks\Task as ParentTask;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -13,8 +14,13 @@ final class ListCategoriesTreeTask extends ParentTask
      */
     public function run(?string $status = null): array
     {
+        $with = LanguageAdvancedManager::withTranslations(
+            ['slugable'],
+            Category::class
+        );
+
         $categories = Category::query()
-            ->with('slugable')
+            ->with($with)
             ->when($status, fn ($query) => $query->where('status', $status))
             ->orderBy('order')
             ->orderBy('id')

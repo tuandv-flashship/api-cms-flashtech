@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Blog\Tasks;
 
 use App\Containers\AppSection\Blog\Models\Tag;
+use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
 use App\Ship\Parents\Tasks\Task as ParentTask;
 
 final class FindTagTask extends ParentTask
@@ -12,6 +13,8 @@ final class FindTagTask extends ParentTask
      */
     public function run(int $id, array $with = []): Tag
     {
+        $with = LanguageAdvancedManager::withTranslations($with, Tag::class);
+
         return Tag::query()->with($with)->findOrFail($id);
     }
 }

@@ -23,7 +23,7 @@ final class CreatePostAction extends ParentAction
      * @param int[]|null $categoryIds
      * @param int[]|null $tagIds
      * @param string[]|null $tagNames
-     * @param array<string, mixed>|null $meta
+     * @param array<string, mixed>|null $seoMeta
      */
     public function run(
         array $data,
@@ -31,7 +31,7 @@ final class CreatePostAction extends ParentAction
         ?array $tagIds = null,
         ?array $tagNames = null,
         ?string $slug = null,
-        ?array $meta = null
+        ?array $seoMeta = null
     ): Post {
         $post = $this->createPostTask->run($data);
 
@@ -51,10 +51,8 @@ final class CreatePostAction extends ParentAction
             $this->slugHelper->createSlug($post);
         }
 
-        if ($meta) {
-            foreach ($meta as $key => $value) {
-                $post->setMeta((string) $key, $value);
-            }
+        if ($seoMeta !== null) {
+            $post->setMeta('seo_meta', $seoMeta);
         }
 
         AuditLogRecorder::recordModel('created', $post);

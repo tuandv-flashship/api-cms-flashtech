@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Blog\UI\API\Transformers;
 
 use App\Containers\AppSection\Blog\Models\Post;
+use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
 use App\Containers\AppSection\User\UI\API\Transformers\UserTransformer;
 use App\Ship\Parents\Transformers\Transformer as ParentTransformer;
 use League\Fractal\Resource\Collection;
@@ -14,6 +15,7 @@ final class PostTransformer extends ParentTransformer
         'categories',
         'tags',
         'author',
+        'translations',
     ];
 
     public function transform(Post $post): array
@@ -31,6 +33,7 @@ final class PostTransformer extends ParentTransformer
             'format_type' => $post->format_type,
             'slug' => $post->slug,
             'url' => $post->url,
+            'seo_meta' => $post->getMeta('seo_meta'),
             'author_id' => $this->hashId($post->author_id),
             'author_type' => $post->author_type,
             'category_ids' => $post->categories->map(fn ($category) => $category->getHashedKey())->values()->all(),
@@ -53,6 +56,35 @@ final class PostTransformer extends ParentTransformer
     public function includeAuthor(Post $post): Item
     {
         return $this->item($post->author, new UserTransformer());
+    }
+
+    public function includeTranslations(Post $post): Collection
+    {
+        $langCode = $this->resolveLangCode();
+        if ($langCode === null) {
+            return $this->collection(collect(), new PostTranslationTransformer($post));
+        }
+
+        $post->loadMissing([
+            'translations' => static fn ($query) => $query->where('lang_code', $langCode),
+            'slugable.translations' => static fn ($query) => $query->where('lang_code', $langCode),
+        ]);
+
+        $translations = $post->translations->where('lang_code', $langCode)->values();
+
+        return $this->collection($translations, new PostTranslationTransformer($post));
+    }
+
+    private function resolveLangCode(): ?string
+    {
+        $langCode = request()->query('lang_code') ?? request()->query('language');
+        if (! $langCode) {
+            return null;
+        }
+
+        $normalized = LanguageAdvancedManager::normalizeLanguageCode((string) $langCode);
+
+        return $normalized ?? (string) $langCode;
     }
 
     private function hashId(int|string|null $id): int|string|null

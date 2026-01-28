@@ -4,6 +4,7 @@ namespace App\Containers\AppSection\Blog\UI\API\Controllers;
 
 use Apiato\Support\Facades\Response;
 use App\Containers\AppSection\Blog\Actions\FindCategoryByIdAction;
+use App\Containers\AppSection\Blog\Supports\BlogOptions;
 use App\Containers\AppSection\Blog\UI\API\Requests\FindCategoryByIdRequest;
 use App\Containers\AppSection\Blog\UI\API\Transformers\CategoryTransformer;
 use App\Ship\Parents\Controllers\ApiController;
@@ -15,6 +16,14 @@ final class FindCategoryByIdController extends ApiController
     {
         $category = $action->run($request->category_id);
 
-        return Response::create($category, CategoryTransformer::class)->ok();
+        $response = Response::create($category, CategoryTransformer::class);
+
+        if (BlogOptions::shouldIncludeOptions($request->query('include'))) {
+            $response->addMeta([
+                'options' => BlogOptions::categoryOptions(),
+            ]);
+        }
+
+        return $response->ok();
     }
 }

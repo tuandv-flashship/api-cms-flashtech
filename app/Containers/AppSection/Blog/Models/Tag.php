@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Blog\Models;
 
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
+use App\Containers\AppSection\LanguageAdvanced\Traits\HasLanguageTranslations;
 use App\Containers\AppSection\MetaBox\Traits\HasMetaBoxes;
 use App\Containers\AppSection\Slug\Traits\HasSlug;
 use App\Containers\AppSection\User\Models\User;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 final class Tag extends ParentModel
 {
     use HasSlug;
+    use HasLanguageTranslations;
     use HasMetaBoxes;
 
     protected $table = 'tags';
@@ -55,5 +57,15 @@ final class Tag extends ParentModel
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', ContentStatus::PUBLISHED);
+    }
+
+    public function getNameAttribute(mixed $value): mixed
+    {
+        return $this->getTranslatedAttribute('name', $value);
+    }
+
+    public function getDescriptionAttribute(mixed $value): mixed
+    {
+        return $this->getTranslatedAttribute('description', $value);
     }
 }
