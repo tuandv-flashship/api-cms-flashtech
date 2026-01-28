@@ -211,6 +211,7 @@ final class LanguageAdvancedManager
         $foreignKey = self::getTranslationForeignKey($model);
 
         $payload = Arr::only($data, $columns);
+        $payload = self::normalizeTranslationPayload($payload);
         $payload = array_merge($payload, [
             'lang_code' => $langCode,
             $foreignKey => $model->getKey(),
@@ -222,6 +223,22 @@ final class LanguageAdvancedManager
         ];
 
         return (bool) \DB::table($table)->updateOrInsert($condition, $payload);
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    private static function normalizeTranslationPayload(array $payload): array
+    {
+        foreach ($payload as $key => $value) {
+            if (is_array($value) || is_object($value)) {
+                $encoded = json_encode($value);
+                $payload[$key] = $encoded === false ? null : $encoded;
+            }
+        }
+
+        return $payload;
     }
 
     public static function applyTranslationsToQuery(Builder $query, Model|string $model, ?string $langCode = null): Builder

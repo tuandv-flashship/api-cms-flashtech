@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Containers\AppSection\Gallery\UI\API\Transformers;
+
+use App\Containers\AppSection\Gallery\Models\Gallery;
+use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
+use App\Ship\Parents\Transformers\Transformer as ParentTransformer;
+use League\Fractal\Resource\Collection;
+
+final class GalleryTransformer extends ParentTransformer
+{
+    protected array $availableIncludes = [
+        'translations',
+    ];
+
+    public function transform(Gallery $gallery): array
+    {
+        $meta = $gallery->relationLoaded('meta') ? $gallery->meta : null;
+
+        return [
+            'type' => $gallery->getResourceKey(),
+            'id' => $gallery->getHashedKey(),
+            'name' => $gallery->name,
+            'description' => $gallery->description,
+            'status' => $gallery->status?->value ?? (string) $gallery->status,
+            'is_featured' => (bool) $gallery->is_featured,
+            'order' => $gallery->order,
+            'image' => $gallery->image,
+            'slug' => $gallery->slug,
+            'url' => $gallery->url,
+            'seo_meta' => $gallery->getMeta('seo_meta'),
+            'author_id' => $this->hashId($gallery->author_id),
+            'author_type' => $gallery->author_type,
+            'gallery' => $meta ? ($meta->images ?? []) : [],
+            'created_at' => $gallery->created_at?->toISOString(),
+            'updated_at' => $gallery->updated_at?->toISOString(),
+        ];
+    }
+
+    public function includeTranslations(Gallery $gallery): Collection
+    {
+        $langCode = $this->resolveLangCode();
+        if ($langCode === null) {
+            return $this->collection(collect(), new GalleryTranslationTransformer($gallery));
+        }
+
+        $gallery->loadMissing([
+            'translations' => static fn ($query) => $query->where('lang_code', $langCode),
+            'slugable.translations' => static fn ($query) => $query->where('lang_code', $langCode),
+            'meta.translations' => static fn ($query) => $query->where('lang_code', $langCode),
+        ]);
+
+        $translations = $gallery->translations->where('lang_code', $langCode)->values();
+
+        return $this->collection($translations, new GalleryTranslationTransformer($gallery));
+    }
+
+    private function resolveLangCode(): ?string
+    {
+        $langCode = request()->query('lang_code') ?? request()->query('language');
+        if (! $langCode) {
+            return null;
+        }
+
+        $normalized = LanguageAdvancedManager::normalizeLanguageCode((string) $langCode);
+
+        return $normalized ?? (string) $langCode;
+    }
+
+    private function hashId(int|string|null $id): int|string|null
+    {
+        if ($id === null) {
+            return null;
+        }
+
+        $intId = (int) $id;
+        if ($intId <= 0) {
+            return $intId;
+        }
+
+        return config('apiato.hash-id') ? hashids()->encodeOrFail($intId) : $intId;
+    }
+}

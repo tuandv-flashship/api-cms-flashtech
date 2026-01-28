@@ -5,6 +5,7 @@ use Apiato\Http\Middleware\ProcessETag;
 use Apiato\Http\Middleware\ValidateJsonContent;
 use App\Containers\AppSection\Authentication\UI\WEB\Controllers\HomePageController;
 use App\Containers\AppSection\Authentication\UI\WEB\Controllers\LoginController;
+use App\Containers\AppSection\Language\Middleware\SetLocaleFromHeader;
 use App\Containers\AppSection\RequestLog\Middleware\LogRequestErrors;
 use App\Ship\Middleware\ValidateAppId;
 use Illuminate\Foundation\Application;
@@ -31,6 +32,7 @@ return Application::configure(basePath: $basePath)
             ValidateAppId::class,
         ]);
         $middleware->api(append: [
+            SetLocaleFromHeader::class,
             ValidateJsonContent::class,
             ProcessETag::class,
             LogRequestErrors::class,
