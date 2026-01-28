@@ -1,0 +1,71 @@
+<?php
+
+namespace App\Containers\AppSection\Blog\UI\API\Transformers;
+
+use App\Containers\AppSection\Blog\Models\Post;
+use App\Containers\AppSection\User\UI\API\Transformers\UserTransformer;
+use App\Ship\Parents\Transformers\Transformer as ParentTransformer;
+use League\Fractal\Resource\Collection;
+use League\Fractal\Resource\Item;
+
+final class PostTransformer extends ParentTransformer
+{
+    protected array $availableIncludes = [
+        'categories',
+        'tags',
+        'author',
+    ];
+
+    public function transform(Post $post): array
+    {
+        return [
+            'type' => $post->getResourceKey(),
+            'id' => $post->getHashedKey(),
+            'name' => $post->name,
+            'description' => $post->description,
+            'content' => $post->content,
+            'status' => $post->status?->value ?? (string) $post->status,
+            'is_featured' => (bool) $post->is_featured,
+            'image' => $post->image,
+            'views' => $post->views,
+            'format_type' => $post->format_type,
+            'slug' => $post->slug,
+            'url' => $post->url,
+            'author_id' => $this->hashId($post->author_id),
+            'author_type' => $post->author_type,
+            'category_ids' => $post->categories->map(fn ($category) => $category->getHashedKey())->values()->all(),
+            'tag_ids' => $post->tags->map(fn ($tag) => $tag->getHashedKey())->values()->all(),
+            'created_at' => $post->created_at?->toISOString(),
+            'updated_at' => $post->updated_at?->toISOString(),
+        ];
+    }
+
+    public function includeCategories(Post $post): Collection
+    {
+        return $this->collection($post->categories, new CategoryTransformer());
+    }
+
+    public function includeTags(Post $post): Collection
+    {
+        return $this->collection($post->tags, new TagTransformer());
+    }
+
+    public function includeAuthor(Post $post): Item
+    {
+        return $this->item($post->author, new UserTransformer());
+    }
+
+    private function hashId(int|string|null $id): int|string|null
+    {
+        if ($id === null) {
+            return null;
+        }
+
+        $intId = (int) $id;
+        if ($intId <= 0) {
+            return $intId;
+        }
+
+        return config('apiato.hash-id') ? hashids()->encodeOrFail($intId) : $intId;
+    }
+}

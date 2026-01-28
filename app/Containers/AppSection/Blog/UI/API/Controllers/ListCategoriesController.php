@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Containers\AppSection\Blog\UI\API\Controllers;
+
+use Apiato\Support\Facades\Response;
+use App\Containers\AppSection\Blog\Actions\ListCategoriesAction;
+use App\Containers\AppSection\Blog\UI\API\Requests\ListCategoriesRequest;
+use App\Containers\AppSection\Blog\UI\API\Transformers\CategoryTransformer;
+use App\Ship\Parents\Controllers\ApiController;
+use Illuminate\Http\JsonResponse;
+
+final class ListCategoriesController extends ApiController
+{
+    public function __invoke(ListCategoriesRequest $request, ListCategoriesAction $action): JsonResponse
+    {
+        $payload = $request->validated();
+        $perPage = (int) ($payload['limit'] ?? $payload['per_page'] ?? 15);
+        $page = (int) ($payload['page'] ?? 1);
+
+        $categories = $action->run($payload, $perPage, $page);
+
+        return Response::create($categories, CategoryTransformer::class)->ok();
+    }
+}

@@ -10,7 +10,7 @@ final class AuditLog
     {
         return match ($screen) {
             'user', 'auth' => (string) ($data->name ?? ''),
-            default => (string) ($data->name ?? $data->title ?? ($data->id ? 'ID: ' . $data->id : '')),
+            default => (string) ($data->name ?? $data->title ?? ($data?->getKey() ? 'ID: ' . $data->id : '')),
         };
     }
 }
