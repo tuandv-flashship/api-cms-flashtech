@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Blog\Models;
 
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
+use App\Containers\AppSection\Gallery\Models\GalleryMeta;
 use App\Containers\AppSection\LanguageAdvanced\Traits\HasLanguageTranslations;
 use App\Containers\AppSection\MetaBox\Traits\HasMetaBoxes;
 use App\Containers\AppSection\Revision\Traits\RevisionableTrait;
@@ -12,6 +13,7 @@ use App\Ship\Parents\Models\Model as ParentModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 final class Post extends ParentModel
@@ -55,6 +57,10 @@ final class Post extends ParentModel
         static::deleted(function (self $post): void {
             $post->categories()->detach();
             $post->tags()->detach();
+            GalleryMeta::query()
+                ->where('reference_id', $post->getKey())
+                ->where('reference_type', self::class)
+                ->delete();
         });
 
         static::creating(function (self $post): void {
@@ -81,6 +87,12 @@ final class Post extends ParentModel
     public function translations(): HasMany
     {
         return $this->hasMany(PostTranslation::class, 'posts_id');
+    }
+
+    public function galleryMeta(): HasOne
+    {
+        return $this->hasOne(GalleryMeta::class, 'reference_id')
+            ->where('reference_type', self::class);
     }
 
     public function scopePublished(Builder $query): Builder

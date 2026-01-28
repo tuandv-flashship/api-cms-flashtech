@@ -15,6 +15,17 @@ final class UpdatePostRequest extends ParentRequest
         'tag_ids.*',
     ];
 
+    protected function prepareForValidation(): void
+    {
+        $gallery = $this->input('gallery');
+        if (is_string($gallery)) {
+            $decoded = json_decode($gallery, true);
+            if (is_array($decoded)) {
+                $this->merge(['gallery' => $decoded]);
+            }
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -33,6 +44,9 @@ final class UpdatePostRequest extends ParentRequest
             'tag_names.*' => ['string', 'max:120'],
             'slug' => ['sometimes', 'nullable', 'string', 'max:255'],
             'seo_meta' => ['sometimes', 'array'],
+            'gallery' => ['sometimes', 'array'],
+            'gallery.*.img' => ['required', 'string'],
+            'gallery.*.description' => ['nullable', 'string'],
         ];
     }
 

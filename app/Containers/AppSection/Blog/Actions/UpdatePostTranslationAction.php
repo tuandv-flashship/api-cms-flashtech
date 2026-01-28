@@ -4,6 +4,7 @@ namespace App\Containers\AppSection\Blog\Actions;
 
 use App\Containers\AppSection\Blog\Models\Post;
 use App\Containers\AppSection\Blog\Tasks\FindPostTask;
+use App\Containers\AppSection\Gallery\Models\GalleryMeta;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
 use App\Containers\AppSection\LanguageAdvanced\Actions\UpdateSlugTranslationAction;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -24,15 +25,30 @@ final class UpdatePostTranslationAction extends ParentAction
         array $data,
         string $langCode,
         ?string $slug = null,
-        ?array $seoMeta = null
+        ?array $seoMeta = null,
+        array|string|null $gallery = null
     ): Post
     {
-        $post = $this->findPostTask->run($id);
+        $post = $this->findPostTask->run($id, ['galleryMeta', 'slugable']);
 
         LanguageAdvancedManager::saveTranslation($post, $data, $langCode);
 
         if ($seoMeta !== null) {
             $post->setMeta($this->buildSeoMetaKey($langCode), $seoMeta);
+        }
+
+        $normalizedGallery = $this->normalizeGallery($gallery);
+        if ($normalizedGallery !== null) {
+            $meta = $post->galleryMeta;
+            if (! $meta) {
+                $meta = new GalleryMeta();
+                $meta->reference_id = $post->getKey();
+                $meta->reference_type = Post::class;
+                $meta->images = [];
+                $meta->save();
+            }
+
+            LanguageAdvancedManager::saveTranslation($meta, ['images' => $normalizedGallery], $langCode);
         }
 
         $slugKey = $this->resolveSlugKey($slug, $data['name'] ?? null);
@@ -43,7 +59,11 @@ final class UpdatePostTranslationAction extends ParentAction
 
         LanguageAdvancedManager::setTranslationLocale($langCode);
 
-        $post->load(LanguageAdvancedManager::withTranslations(['slugable'], Post::class, $langCode));
+        $post->load(LanguageAdvancedManager::withTranslations(['slugable', 'galleryMeta'], Post::class, $langCode));
+        $post->loadMissing([
+            'galleryMeta.translations' => static fn ($query) => $query->where('lang_code', $langCode),
+            'slugable.translations' => static fn ($query) => $query->where('lang_code', $langCode),
+        ]);
 
         return $post;
     }
@@ -58,5 +78,43 @@ final class UpdatePostTranslationAction extends ParentAction
         $slug = trim((string) ($slug ?? $fallbackName ?? ''));
 
         return $slug !== '' ? $slug : null;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>>|string|null $gallery
+     * @return array<int, array<string, mixed>>|null
+     */
+    private function normalizeGallery(array|string|null $gallery): ?array
+    {
+        if ($gallery === null) {
+            return null;
+        }
+
+        if (is_string($gallery)) {
+            $decoded = json_decode($gallery, true);
+            if (! is_array($decoded)) {
+                return null;
+            }
+            $gallery = $decoded;
+        }
+
+        $items = [];
+        foreach ($gallery as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            $image = $item['img'] ?? $item['image'] ?? null;
+            if (! is_string($image) || trim($image) === '') {
+                continue;
+            }
+
+            $items[] = [
+                'img' => $image,
+                'description' => isset($item['description']) ? (string) $item['description'] : null,
+            ];
+        }
+
+        return $items;
     }
 }

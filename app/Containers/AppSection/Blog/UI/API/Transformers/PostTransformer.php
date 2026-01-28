@@ -29,6 +29,7 @@ final class PostTransformer extends ParentTransformer
             'status' => $post->status?->value ?? (string) $post->status,
             'is_featured' => (bool) $post->is_featured,
             'image' => $post->image,
+            'gallery' => $this->resolveGallery($post),
             'views' => $post->views,
             'format_type' => $post->format_type,
             'slug' => $post->slug,
@@ -68,6 +69,7 @@ final class PostTransformer extends ParentTransformer
         $post->loadMissing([
             'translations' => static fn ($query) => $query->where('lang_code', $langCode),
             'slugable.translations' => static fn ($query) => $query->where('lang_code', $langCode),
+            'galleryMeta.translations' => static fn ($query) => $query->where('lang_code', $langCode),
         ]);
 
         $translations = $post->translations->where('lang_code', $langCode)->values();
@@ -99,5 +101,12 @@ final class PostTransformer extends ParentTransformer
         }
 
         return config('apiato.hash-id') ? hashids()->encodeOrFail($intId) : $intId;
+    }
+
+    private function resolveGallery(Post $post): array
+    {
+        $meta = $post->relationLoaded('galleryMeta') ? $post->galleryMeta : null;
+
+        return $meta ? ($meta->images ?? []) : [];
     }
 }

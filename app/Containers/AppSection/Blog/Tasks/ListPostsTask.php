@@ -16,9 +16,14 @@ final class ListPostsTask extends ParentTask
     public function run(array $filters, int $perPage, int $page): LengthAwarePaginator
     {
         $with = LanguageAdvancedManager::withTranslations(
-            ['categories', 'tags', 'slugable', 'author'],
+            ['categories', 'tags', 'slugable', 'author', 'galleryMeta'],
             Post::class
         );
+
+        $langCode = LanguageAdvancedManager::getTranslationLocale();
+        if ($langCode && ! LanguageAdvancedManager::isDefaultLocale($langCode)) {
+            $with['galleryMeta.translations'] = static fn ($query) => $query->where('lang_code', $langCode);
+        }
 
         $query = Post::query()
             ->with($with)

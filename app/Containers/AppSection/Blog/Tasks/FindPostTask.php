@@ -15,6 +15,11 @@ final class FindPostTask extends ParentTask
     {
         $with = LanguageAdvancedManager::withTranslations($with, Post::class);
 
+        $langCode = LanguageAdvancedManager::getTranslationLocale();
+        if ($langCode && ! LanguageAdvancedManager::isDefaultLocale($langCode)) {
+            $with['galleryMeta.translations'] = static fn ($query) => $query->where('lang_code', $langCode);
+        }
+
         return Post::query()->with($with)->findOrFail($id);
     }
 }

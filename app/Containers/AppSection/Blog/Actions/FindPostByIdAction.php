@@ -15,6 +15,6 @@ final class FindPostByIdAction extends ParentAction
 
     public function run(int $id): Post
     {
-        return $this->findPostTask->run($id, ['categories', 'tags', 'slugable', 'author']);
+        return $this->findPostTask->run($id, ['categories', 'tags', 'slugable', 'author', 'galleryMeta']);
     }
 }

@@ -23,6 +23,7 @@ final class UpdatePostTranslationController extends ApiController
             (string) $payload['lang_code'],
             $payload['slug'] ?? null,
             $payload['seo_meta'] ?? null,
+            $payload['gallery'] ?? null,
         );
 
         return Response::create($post, PostTransformer::class)->ok();

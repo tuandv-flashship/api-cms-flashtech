@@ -24,6 +24,7 @@ final class PostTranslationTransformer extends ParentTransformer
             'content' => $translation->content,
             'slug' => $this->resolveSlug($langCode),
             'seo_meta' => $this->post->getMeta($langCode . '_seo_meta'),
+            'gallery' => $this->resolveGalleryImages($langCode),
         ];
     }
 
@@ -37,5 +38,17 @@ final class PostTranslationTransformer extends ParentTransformer
         $translation = $slug->translations->firstWhere('lang_code', $langCode);
 
         return $translation?->key;
+    }
+
+    private function resolveGalleryImages(string $langCode): array|null
+    {
+        $meta = $this->post->galleryMeta;
+        if (! $meta || ! $meta->relationLoaded('translations')) {
+            return null;
+        }
+
+        $translation = $meta->translations->firstWhere('lang_code', $langCode);
+
+        return $translation?->images;
     }
 }

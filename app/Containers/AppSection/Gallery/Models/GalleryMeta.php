@@ -35,6 +35,15 @@ final class GalleryMeta extends ParentModel
 
     public function getImagesAttribute(mixed $value): mixed
     {
-        return $this->getTranslatedAttribute('images', $value);
+        $images = $this->getTranslatedAttribute('images', $value);
+        if (is_string($images)) {
+            $decoded = json_decode($images, true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+            return [];
+        }
+
+        return $images;
     }
 }
