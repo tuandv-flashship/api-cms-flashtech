@@ -8,9 +8,24 @@ final class AuditLog
 {
     public static function getReferenceName(string $screen, Model $data): string
     {
-        return match ($screen) {
-            'user', 'auth' => (string) ($data->name ?? ''),
-            default => (string) ($data->name ?? $data->title ?? ($data?->getKey() ? 'ID: ' . $data->getKey : '')),
-        };
+        $attributes = $data->getAttributes();
+        $name = $attributes['name'] ?? null;
+        $title = $attributes['title'] ?? null;
+
+        if (in_array($screen, ['user', 'auth'], true)) {
+            return (string) ($name ?? $title ?? '');
+        }
+
+        $reference = $name ?? $title;
+        if ($reference !== null && $reference !== '') {
+            return (string) $reference;
+        }
+
+        $keyName = $data->getKeyName();
+        if (array_key_exists($keyName, $attributes) && $attributes[$keyName] !== null) {
+            return 'ID: ' . $attributes[$keyName];
+        }
+
+        return '';
     }
 }
