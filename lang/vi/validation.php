@@ -131,5 +131,18 @@ return [
     'uppercase' => 'Trường này phải là chữ in hoa.',
     'url' => 'Trường này không giống với định dạng một URL.',
     'uuid' => 'Trường này phải là một chuỗi UUID hợp lệ.',
+    'required' => 'Trường :attribute không được bỏ trống.',
+    'boolean' => 'Trường :attribute phải là true hoặc false.',
+    'string' => 'Trường :attribute phải là một chuỗi kí tự.',
+    'integer' => 'Trường :attribute phải là một số nguyên.',
+    'array' => 'Trường :attribute phải là dạng mảng.',
+    'date' => 'Trường :attribute không phải là định dạng của ngày-tháng.',
+    'exists' => 'Giá trị đã chọn của :attribute không hợp lệ.',
+    'in' => 'Giá trị đã chọn của :attribute không hợp lệ.',
+    'max' => [
+        'numeric' => 'Trường :attribute không được lớn hơn :max.',
+        'file' => 'Trường :attribute không được lớn hơn :max kilobytes.',
+        'string' => 'Trường :attribute không được vượt quá :max ký tự.',
+        'array' => 'Trường :attribute không được có quá :max phần tử.',
+    ],
 ];
-

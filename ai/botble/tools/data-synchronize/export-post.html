@@ -1,0 +1,375 @@
+<div class="page-wrapper">
+        <div class="page-header d-print-none">
+    <div class="container-fluid">
+        <div class="row g-2 align-items-center">
+            <div class="col">
+                <div class="page-pretitle">
+                    <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                                    <a class="mb-0 d-inline-block fs-6 lh-1" href="https://cms.botble.local/admin">Dashboard</a>
+                            </li>
+                    <li class="breadcrumb-item">
+                                    <h1 class="mb-0 d-inline-block fs-6 lh-1">Tools</h1>
+                            </li>
+                    <li class="breadcrumb-item">
+                                    <a class="mb-0 d-inline-block fs-6 lh-1" href="https://cms.botble.local/admin/tools/data-synchronize">Export/Import Data</a>
+                            </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                                    <h1 class="mb-0 d-inline-block fs-6 lh-1">Export Posts</h1>
+                            </li>
+            </ol>
+</nav>
+
+                </div>
+            </div>
+            <div class="col-auto ms-auto d-print-none">
+                <div class="btn-list">
+                                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <main class="page-body page-content">
+            <div class="container-fluid">
+                
+
+                    <form method="POST" action="https://cms.botble.local/admin/blog/tools/data-synchronize/export/posts" accept-charset="UTF-8" data-bb-toggle="export-data" class="data-synchronize-export-form" data-success-message="Exported successfully." data-error-message="Export failed."><input name="_token" type="hidden" value="yzujXS5QPnB8fFKEhsz2YFBJZpvJdekrHtuApiVQ">
+<div class="card">
+    <div class="card-header">
+    <h4 class="card-title">
+    Export Posts
+    </h4>
+</div>
+            
+            <div class="card-body">
+    <div class="mb-5">
+                            <div class="row g-3">
+                                                                    <div class="col">
+                                        <div class="text-center bg-body-tertiary rounded p-3">
+                                            <h3 class="text-muted mb-2">Total Posts</h3>
+                                            <div class="fs-1 fw-bold">22</div>
+                                        </div>
+                                    </div>
+                                                            </div>
+                        </div>
+                    
+                    
+                    <div>
+                                                    <label class="form-label">
+    Columns
+                                <a href="javascript:void(0)" class="ms-2 text-primary check-all-columns">Check all</a>
+
+    
+    </label>
+
+                            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3">
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="name" checked="">
+
+            <span class="form-check-label">
+            Name
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="description" checked="">
+
+            <span class="form-check-label">
+            Description
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="content" checked="">
+
+            <span class="form-check-label">
+            Content
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="is_featured" checked="">
+
+            <span class="form-check-label">
+            Is Featured
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="format_type" checked="">
+
+            <span class="form-check-label">
+            Format Type
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="image" checked="">
+
+            <span class="form-check-label">
+            Image
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="views" checked="">
+
+            <span class="form-check-label">
+            Views
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="slug" checked="">
+
+            <span class="form-check-label">
+            Slug
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="url" checked="">
+
+            <span class="form-check-label">
+            URL
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="status" checked="">
+
+            <span class="form-check-label">
+            Status
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="categories" checked="">
+
+            <span class="form-check-label">
+            Categories
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="tags" checked="">
+
+            <span class="form-check-label">
+            Tags
+        </span>
+    
+    </label>
+</div>
+                                                            </div>
+                                            </div>
+
+                    <div class="mb-3 position-relative">
+    <label class="form-label">
+    Format
+
+    
+    </label>
+        <div class="position-relative form-check-group">
+                    <label class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="format" value="csv" checked="">
+
+    <span class="form-check-label">CSV</span>
+</label>
+                    <label class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="format" value="xlsx">
+
+    <span class="form-check-label">Excel</span>
+</label>
+            </div>
+</div>
+
+                        
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <div class="mb-3 position-relative">
+    <label class="form-label" for="limit">
+    Limit
+
+    
+    </label>
+    
+    
+    
+    <input class="form-control" type="number" name="limit" id="limit" placeholder="Leave empty to export all" min="1">
+</div>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3 position-relative">
+    <label class="form-label" for="status">
+    Status
+
+    
+    </label>
+    
+    
+    
+    <select class="form-select" name="status" id="status">
+                                    <option value="" selected="">All Status</option>
+                            <option value="published">Published</option>
+                            <option value="draft">Draft</option>
+                            <option value="pending">Pending</option>
+                        </select>
+</div>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3 position-relative">
+    <label class="form-label" for="is_featured">
+    Is featured?
+
+    
+    </label>
+    
+    
+    
+    <select class="form-select" name="is_featured" id="is_featured">
+                                    <option value="" selected="">All</option>
+                            <option value="1">Yes</option>
+                            <option value="0" selected="">No</option>
+                        </select>
+</div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <div class="mb-3 position-relative">
+    <label class="form-label" for="category_id">
+    Category
+
+    
+    </label>
+    
+    
+    
+    <select class="form-select" name="category_id" id="category_id">
+                                    <option value="" selected="">All Categories</option>
+                            <option value="1">Artificial Intelligence</option>
+                            <option value="2">Cybersecurity</option>
+                            <option value="3">Blockchain Technology</option>
+                            <option value="4">5G and Connectivity</option>
+                            <option value="5">Augmented Reality (AR)</option>
+                            <option value="6">Green Technology</option>
+                            <option value="7">Quantum Computing</option>
+                            <option value="8">Edge Computing</option>
+                            <option value="9">loai 2</option>
+                            <option value="10">Flash Tech Vn</option>
+                        </select>
+</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <label for="start_date" class="form-label">Start Date</label>
+
+            <div class="input-group datepicker">
+    <input placeholder="Y-m-d" class="form-control flatpickr-input" data-input="" readonly="readonly" name="start_date" type="text">
+    <button class="btn btn-icon" type="button" data-toggle="data-toggle">
+                        <svg class="icon icon-left svg-icon-ti-ti-calendar" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12"></path>
+  <path d="M16 3v4"></path>
+  <path d="M8 3v4"></path>
+  <path d="M4 11h16"></path>
+  <path d="M11 15h1"></path>
+  <path d="M12 15v3"></path>
+</svg>            
+    
+        </button>
+    <button class="btn btn-icon   text-danger" type="button" data-clear="data-clear">
+                        <svg class="icon icon-left svg-icon-ti-ti-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M18 6l-12 12"></path>
+  <path d="M6 6l12 12"></path>
+</svg>            
+    
+        </button>
+</div>
+
+        </div>
+        <div class="col-md-3">
+            <label for="end_date" class="form-label">End Date</label>
+
+            <div class="input-group datepicker">
+    <input placeholder="Y-m-d" class="form-control flatpickr-input" data-input="" readonly="readonly" name="end_date" type="text">
+    <button class="btn btn-icon" type="button" data-toggle="data-toggle">
+                        <svg class="icon icon-left svg-icon-ti-ti-calendar" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12"></path>
+  <path d="M16 3v4"></path>
+  <path d="M8 3v4"></path>
+  <path d="M4 11h16"></path>
+  <path d="M11 15h1"></path>
+  <path d="M12 15v3"></path>
+</svg>            
+    
+        </button>
+    <button class="btn btn-icon   text-danger" type="button" data-clear="data-clear">
+                        <svg class="icon icon-left svg-icon-ti-ti-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M18 6l-12 12"></path>
+  <path d="M6 6l12 12"></path>
+</svg>            
+    
+        </button>
+</div>
+
+        </div>
+    </div>
+</div>
+                                    <div class="card-footer">
+    <button class="btn btn-primary" type="submit">
+    
+                        Export
+            
+        </button>
+</div>
+</div>
+</form>
+
+    
+                
+            </div>
+        </main>
+
+        <footer class="footer position-sticky footer-transparent d-print-none">
+    <div class="container-fluid">
+        <div class="text-start">
+            <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-between">
+                <div class="order-2 order-lg-1">
+                    Copyright 2026 © Botble App. Version <span class="fw-medium">7.6.4</span>
+                </div>
+                <div class="order-1 order-lg-2">
+                                            Page loaded in 0.75 seconds
+                                    </div>
+            </div>
+        </div>
+    </div>
+</footer>
+    </div>

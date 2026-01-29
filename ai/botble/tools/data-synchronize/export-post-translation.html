@@ -1,0 +1,200 @@
+<div class="page-wrapper">
+        <div class="page-header d-print-none">
+    <div class="container-fluid">
+        <div class="row g-2 align-items-center">
+            <div class="col">
+                <div class="page-pretitle">
+                    <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                                    <a class="mb-0 d-inline-block fs-6 lh-1" href="https://cms.botble.local/admin">Dashboard</a>
+                            </li>
+                    <li class="breadcrumb-item">
+                                    <h1 class="mb-0 d-inline-block fs-6 lh-1">Tools</h1>
+                            </li>
+                    <li class="breadcrumb-item">
+                                    <a class="mb-0 d-inline-block fs-6 lh-1" href="https://cms.botble.local/admin/tools/data-synchronize">Export/Import Data</a>
+                            </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                                    <h1 class="mb-0 d-inline-block fs-6 lh-1">Export Post Translations</h1>
+                            </li>
+            </ol>
+</nav>
+
+                </div>
+            </div>
+            <div class="col-auto ms-auto d-print-none">
+                <div class="btn-list">
+                                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <main class="page-body page-content">
+            <div class="container-fluid">
+                
+
+                    <form method="POST" action="https://cms.botble.local/admin/tools/data-synchronize/export/translations/model?class=Botble\Blog\Models\Post" accept-charset="UTF-8" data-bb-toggle="export-data" class="data-synchronize-export-form" data-success-message="Exported successfully." data-error-message="Export failed."><input name="_token" type="hidden" value="yzujXS5QPnB8fFKEhsz2YFBJZpvJdekrHtuApiVQ">
+<div class="card">
+    <div class="card-header">
+    <h4 class="card-title">
+    Export Post Translations
+    </h4>
+</div>
+            
+            <div class="card-body">
+    <div class="mb-5">
+                            <div class="row g-3">
+                                                                    <div class="col">
+                                        <div class="text-center bg-body-tertiary rounded p-3">
+                                            <h3 class="text-muted mb-2">Total</h3>
+                                            <div class="fs-1 fw-bold">22</div>
+                                        </div>
+                                    </div>
+                                                            </div>
+                        </div>
+                    
+                    
+                    <div>
+                                                    <label class="form-label">
+    Columns
+                                <a href="javascript:void(0)" class="ms-2 text-primary check-all-columns">Check all</a>
+
+    
+    </label>
+
+                            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3">
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="id" checked="">
+
+            <span class="form-check-label">
+            ID
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="name" checked="">
+
+            <span class="form-check-label">
+            Name
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="name_vi" checked="">
+
+            <span class="form-check-label">
+            Name (vi)
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="description_vi" checked="">
+
+            <span class="form-check-label">
+            Description (vi)
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="content_vi" checked="">
+
+            <span class="form-check-label">
+            Content (vi)
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="name_zh" checked="">
+
+            <span class="form-check-label">
+            Name (zh_CN)
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="description_zh" checked="">
+
+            <span class="form-check-label">
+            Description (zh_CN)
+        </span>
+    
+    </label>
+</div>
+                                                                    <div class="mb-3 position-relative">
+    <label class="form-check">
+    <input type="checkbox" name="columns[]" class="form-check-input export-column" value="content_zh" checked="">
+
+            <span class="form-check-label">
+            Content (zh_CN)
+        </span>
+    
+    </label>
+</div>
+                                                            </div>
+                                            </div>
+
+                    <div class="mb-3 position-relative">
+    <label class="form-label">
+    Format
+
+    
+    </label>
+        <div class="position-relative form-check-group">
+                    <label class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="format" value="csv" checked="">
+
+    <span class="form-check-label">CSV</span>
+</label>
+                    <label class="form-check form-check-inline">
+    <input class="form-check-input" type="radio" name="format" value="xlsx">
+
+    <span class="form-check-label">Excel</span>
+</label>
+            </div>
+</div>
+</div>
+                                    <div class="card-footer">
+    <button class="btn btn-primary" type="submit">
+    
+                        Export
+            
+        </button>
+</div>
+</div>
+</form>
+
+    
+                
+            </div>
+        </main>
+
+        <footer class="footer position-sticky footer-transparent d-print-none">
+    <div class="container-fluid">
+        <div class="text-start">
+            <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-between">
+                <div class="order-2 order-lg-1">
+                    Copyright 2026 © Botble App. Version <span class="fw-medium">7.6.4</span>
+                </div>
+                <div class="order-1 order-lg-2">
+                                            Page loaded in 1.29 seconds
+                                    </div>
+            </div>
+        </div>
+    </div>
+</footer>
+    </div>

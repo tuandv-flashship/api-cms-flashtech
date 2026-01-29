@@ -1,0 +1,8 @@
+{
+    "name": "apiato/tools",
+    "description": "Tools Container",
+    "type": "apiato-container",
+    "require": {
+        "openspout/openspout": "^4.28.5"
+    }
+}
