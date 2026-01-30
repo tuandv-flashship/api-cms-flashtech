@@ -5,10 +5,12 @@ namespace App\Containers\AppSection\Blog\Actions;
 use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\Blog\Events\CategoryCreated;
 use App\Containers\AppSection\Blog\Models\Category;
+use App\Containers\AppSection\Blog\Supports\CategorySupport;
 use App\Containers\AppSection\Blog\Tasks\CreateCategoryTask;
 use App\Containers\AppSection\CustomField\Supports\CustomFieldService;
 use App\Containers\AppSection\Slug\Supports\SlugHelper;
 use App\Ship\Parents\Actions\Action as ParentAction;
+use Illuminate\Support\Facades\DB;
 
 final class CreateCategoryAction extends ParentAction
 {
@@ -26,35 +28,35 @@ final class CreateCategoryAction extends ParentAction
      */
     public function run(array $data, ?string $slug = null, ?array $seoMeta = null, array|string|null $customFields = null): Category
     {
-        if (! empty($data['is_default'])) {
-            Category::query()->where('is_default', true)->update(['is_default' => false]);
-        }
+        return DB::transaction(function () use ($data, $slug, $seoMeta, $customFields) {
+            CategorySupport::resetDefaultCategoryIfRequested($data);
 
-        if (! array_key_exists('parent_id', $data) || $data['parent_id'] === null) {
-            $data['parent_id'] = 0;
-        }
+            if (! array_key_exists('parent_id', $data) || $data['parent_id'] === null) {
+                $data['parent_id'] = 0;
+            }
 
-        $category = $this->createCategoryTask->run($data);
+            $category = $this->createCategoryTask->run($data);
 
-        if ($slug !== null) {
-            $slug = trim($slug);
-            $this->slugHelper->createSlug($category, $slug === '' ? null : $slug);
-        } else {
-            $this->slugHelper->createSlug($category);
-        }
+            if ($slug !== null) {
+                $slug = trim($slug);
+                $this->slugHelper->createSlug($category, $slug === '' ? null : $slug);
+            } else {
+                $this->slugHelper->createSlug($category);
+            }
 
-        if ($seoMeta !== null) {
-            $category->setMeta('seo_meta', $seoMeta);
-        }
+            if ($seoMeta !== null) {
+                $category->setMeta('seo_meta', $seoMeta);
+            }
 
-        if ($customFields !== null) {
-            $this->customFieldService->saveCustomFieldsForModel($category, $customFields);
-        }
+            if ($customFields !== null) {
+                $this->customFieldService->saveCustomFieldsForModel($category, $customFields);
+            }
 
-        AuditLogRecorder::recordModel('created', $category);
+            AuditLogRecorder::recordModel('created', $category);
 
-        event(new CategoryCreated($category));
+            event(new CategoryCreated($category));
 
-        return $category->refresh();
+            return $category->refresh();
+        });
     }
 }

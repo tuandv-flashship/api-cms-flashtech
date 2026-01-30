@@ -8,11 +8,14 @@ use App\Containers\AppSection\Blog\Events\PostCreated;
 use App\Containers\AppSection\Blog\Events\PostPublished;
 use App\Containers\AppSection\Blog\Models\Tag;
 use App\Containers\AppSection\Blog\Models\Post;
+use App\Containers\AppSection\Blog\Supports\GalleryNormalizer;
+use App\Containers\AppSection\Blog\Supports\TagResolver;
 use App\Containers\AppSection\Blog\Tasks\CreatePostTask;
 use App\Containers\AppSection\CustomField\Supports\CustomFieldService;
 use App\Containers\AppSection\Gallery\Models\GalleryMeta;
 use App\Containers\AppSection\Slug\Supports\SlugHelper;
 use App\Ship\Parents\Actions\Action as ParentAction;
+use Illuminate\Support\Facades\DB;
 
 final class CreatePostAction extends ParentAction
 {
@@ -42,118 +45,55 @@ final class CreatePostAction extends ParentAction
         ?array $seoMeta = null,
         array|string|null $customFields = null
     ): Post {
-        $post = $this->createPostTask->run($data);
+        return DB::transaction(function () use ($data, $categoryIds, $tagIds, $tagNames, $slug, $gallery, $seoMeta, $customFields) {
+            $post = $this->createPostTask->run($data);
 
-        if ($categoryIds !== null) {
-            $post->categories()->sync($categoryIds);
-        }
+            if ($categoryIds !== null) {
+                $post->categories()->sync($categoryIds);
+            }
 
-        $tagIds = $this->resolveTagIds($tagIds, $tagNames);
-        if ($tagIds !== null) {
-            $post->tags()->sync($tagIds);
-        }
+            $tagIds = TagResolver::resolve($tagIds, $tagNames);
+            if ($tagIds !== null) {
+                $post->tags()->sync($tagIds);
+            }
 
-        if ($slug !== null) {
-            $slug = trim($slug);
-            $this->slugHelper->createSlug($post, $slug === '' ? null : $slug);
-        } else {
-            $this->slugHelper->createSlug($post);
-        }
+            if ($slug !== null) {
+                $slug = trim($slug);
+                $this->slugHelper->createSlug($post, $slug === '' ? null : $slug);
+            } else {
+                $this->slugHelper->createSlug($post);
+            }
 
-        $normalizedGallery = $this->normalizeGallery($gallery);
-        if ($normalizedGallery !== null) {
-            GalleryMeta::query()->updateOrCreate(
-                [
-                    'reference_id' => $post->getKey(),
-                    'reference_type' => Post::class,
-                ],
-                ['images' => $normalizedGallery]
-            );
-        }
+            $normalizedGallery = GalleryNormalizer::normalize($gallery);
+            if ($normalizedGallery !== null) {
+                GalleryMeta::query()->updateOrCreate(
+                    [
+                        'reference_id' => $post->getKey(),
+                        'reference_type' => Post::class,
+                    ],
+                    ['images' => $normalizedGallery]
+                );
+            }
 
-        if ($seoMeta !== null) {
-            $post->setMeta('seo_meta', $seoMeta);
-        }
+            if ($seoMeta !== null) {
+                $post->setMeta('seo_meta', $seoMeta);
+            }
 
-        if ($customFields !== null) {
-            $this->customFieldService->saveCustomFieldsForModel($post, $customFields);
-        }
+            if ($customFields !== null) {
+                $this->customFieldService->saveCustomFieldsForModel($post, $customFields);
+            }
 
-        AuditLogRecorder::recordModel('created', $post);
+            AuditLogRecorder::recordModel('created', $post);
 
-        event(new PostCreated($post));
+            event(new PostCreated($post));
 
-        if ($post->status === ContentStatus::PUBLISHED) {
-            event(new PostPublished($post));
-        }
+            if ($post->status === ContentStatus::PUBLISHED) {
+                event(new PostPublished($post));
+            }
 
-        return $post->refresh();
+            return $post->refresh();
+        });
     }
 
-    /**
-     * @param array<int, array<string, mixed>>|string|null $gallery
-     * @return array<int, array<string, mixed>>|null
-     */
-    private function normalizeGallery(array|string|null $gallery): ?array
-    {
-        if ($gallery === null) {
-            return null;
-        }
 
-        if (is_string($gallery)) {
-            $decoded = json_decode($gallery, true);
-            if (! is_array($decoded)) {
-                return null;
-            }
-            $gallery = $decoded;
-        }
-
-        $items = [];
-        foreach ($gallery as $item) {
-            if (! is_array($item)) {
-                continue;
-            }
-
-            $image = $item['img'] ?? $item['image'] ?? null;
-            if (! is_string($image) || trim($image) === '') {
-                continue;
-            }
-
-            $items[] = [
-                'img' => $image,
-                'description' => isset($item['description']) ? (string) $item['description'] : null,
-            ];
-        }
-
-        return $items;
-    }
-
-    /**
-     * @param int[]|null $tagIds
-     * @param string[]|null $tagNames
-     * @return int[]|null
-     */
-    private function resolveTagIds(?array $tagIds, ?array $tagNames): ?array
-    {
-        $tagIds = $tagIds ?? [];
-        $tagNames = $tagNames ?? [];
-
-        foreach ($tagNames as $tagName) {
-            $tagName = trim((string) $tagName);
-            if ($tagName === '') {
-                continue;
-            }
-
-            $tag = Tag::query()->firstOrCreate(
-                ['name' => $tagName],
-                ['status' => ContentStatus::PUBLISHED]
-            );
-
-            $tagIds[] = $tag->getKey();
-        }
-
-        $tagIds = array_values(array_unique(array_filter($tagIds)));
-
-        return $tagIds !== [] ? $tagIds : null;
-    }
 }

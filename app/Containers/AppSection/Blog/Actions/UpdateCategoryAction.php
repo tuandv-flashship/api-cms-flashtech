@@ -5,11 +5,13 @@ namespace App\Containers\AppSection\Blog\Actions;
 use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\Blog\Events\CategoryUpdated;
 use App\Containers\AppSection\Blog\Models\Category;
+use App\Containers\AppSection\Blog\Supports\CategorySupport;
 use App\Containers\AppSection\Blog\Tasks\FindCategoryTask;
 use App\Containers\AppSection\Blog\Tasks\UpdateCategoryTask;
 use App\Containers\AppSection\CustomField\Supports\CustomFieldService;
 use App\Containers\AppSection\Slug\Supports\SlugHelper;
 use App\Ship\Parents\Actions\Action as ParentAction;
+use Illuminate\Support\Facades\DB;
 
 final class UpdateCategoryAction extends ParentAction
 {
@@ -34,35 +36,35 @@ final class UpdateCategoryAction extends ParentAction
         array|string|null $customFields = null
     ): Category
     {
-        if (array_key_exists('is_default', $data) && (bool) $data['is_default']) {
-            Category::query()->where('is_default', true)->update(['is_default' => false]);
-        }
+        return DB::transaction(function () use ($id, $data, $slug, $seoMeta, $customFields) {
+            CategorySupport::resetDefaultCategoryIfRequested($data);
 
-        if (array_key_exists('parent_id', $data) && $data['parent_id'] === null) {
-            $data['parent_id'] = 0;
-        }
+            if (array_key_exists('parent_id', $data) && $data['parent_id'] === null) {
+                $data['parent_id'] = 0;
+            }
 
-        $category = $data === []
-            ? $this->findCategoryTask->run($id)
-            : $this->updateCategoryTask->run($id, $data);
+            $category = $data === []
+                ? $this->findCategoryTask->run($id)
+                : $this->updateCategoryTask->run($id, $data);
 
-        if ($slug !== null) {
-            $slug = trim($slug);
-            $this->slugHelper->createSlug($category, $slug === '' ? null : $slug);
-        }
+            if ($slug !== null) {
+                $slug = trim($slug);
+                $this->slugHelper->createSlug($category, $slug === '' ? null : $slug);
+            }
 
-        if ($seoMeta !== null) {
-            $category->setMeta('seo_meta', $seoMeta);
-        }
+            if ($seoMeta !== null) {
+                $category->setMeta('seo_meta', $seoMeta);
+            }
 
-        if ($customFields !== null) {
-            $this->customFieldService->saveCustomFieldsForModel($category, $customFields);
-        }
+            if ($customFields !== null) {
+                $this->customFieldService->saveCustomFieldsForModel($category, $customFields);
+            }
 
-        AuditLogRecorder::recordModel('updated', $category);
+            AuditLogRecorder::recordModel('updated', $category);
 
-        event(new CategoryUpdated($category));
+            event(new CategoryUpdated($category));
 
-        return $category->refresh();
+            return $category->refresh();
+        });
     }
 }
