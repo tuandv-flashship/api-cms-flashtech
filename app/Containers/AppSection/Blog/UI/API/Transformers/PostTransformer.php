@@ -6,6 +6,7 @@ use App\Containers\AppSection\Blog\Models\Post;
 use App\Containers\AppSection\CustomField\Supports\CustomFieldService;
 use App\Containers\AppSection\CustomField\UI\API\Transformers\CustomFieldBoxTransformer;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
+use App\Containers\AppSection\Media\Services\MediaService;
 use App\Containers\AppSection\User\UI\API\Transformers\UserTransformer;
 use App\Ship\Parents\Transformers\Traits\HasOriginLang;
 use App\Ship\Parents\Transformers\Transformer as ParentTransformer;
@@ -26,6 +27,8 @@ final class PostTransformer extends ParentTransformer
 
     public function transform(Post $post): array
     {
+        $mediaService = app(MediaService::class);
+
         return [
             'type' => $post->getResourceKey(),
             'id' => $post->getHashedKey(),
@@ -34,7 +37,7 @@ final class PostTransformer extends ParentTransformer
             'content' => $post->content,
             'status' => $post->status?->value ?? (string) $post->status,
             'is_featured' => (bool) $post->is_featured,
-            'image' => $post->image,
+            'image' => $mediaService->getImageUrl($post->image),
             'gallery' => $this->resolveGallery($post),
             'views' => $post->views,
             'format_type' => $post->format_type,

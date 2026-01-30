@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Page\UI\API\Transformers;
 
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
+use App\Containers\AppSection\Media\Services\MediaService;
 use App\Containers\AppSection\Page\Models\Page;
 use App\Containers\AppSection\User\UI\API\Transformers\UserTransformer;
 use App\Ship\Parents\Transformers\Traits\HasOriginLang;
@@ -21,6 +22,8 @@ final class PageTransformer extends ParentTransformer
 
     public function transform(Page $page): array
     {
+        $mediaService = app(MediaService::class);
+
         return [
             'type' => $page->getResourceKey(),
             'id' => $page->getHashedKey(),
@@ -28,7 +31,7 @@ final class PageTransformer extends ParentTransformer
             'description' => $page->description,
             'content' => $page->content,
             'status' => $page->status?->value ?? (string) $page->status,
-            'image' => $page->image,
+            'image' => $mediaService->getImageUrl($page->image),
             'template' => $page->template,
             'slug' => $page->slug,
             'url' => $page->url,

@@ -4,6 +4,7 @@ namespace App\Containers\AppSection\Gallery\UI\API\Transformers;
 
 use App\Containers\AppSection\Gallery\Models\Gallery;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
+use App\Containers\AppSection\Media\Services\MediaService;
 use App\Ship\Parents\Transformers\Traits\HasOriginLang;
 use App\Ship\Parents\Transformers\Transformer as ParentTransformer;
 use League\Fractal\Resource\Collection;
@@ -19,6 +20,7 @@ final class GalleryTransformer extends ParentTransformer
     public function transform(Gallery $gallery): array
     {
         $meta = $gallery->relationLoaded('meta') ? $gallery->meta : null;
+        $mediaService = app(MediaService::class);
 
         return [
             'type' => $gallery->getResourceKey(),
@@ -28,7 +30,7 @@ final class GalleryTransformer extends ParentTransformer
             'status' => $gallery->status?->value ?? (string) $gallery->status,
             'is_featured' => (bool) $gallery->is_featured,
             'order' => $gallery->order,
-            'image' => $gallery->image,
+            'image' => $mediaService->getImageUrl($gallery->image),
             'slug' => $gallery->slug,
             'url' => $gallery->url,
             'seo_meta' => $gallery->getMeta('seo_meta'),
