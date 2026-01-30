@@ -4,6 +4,7 @@ namespace App\Containers\AppSection\Blog\Actions;
 
 use App\Containers\AppSection\Blog\Models\Post;
 use App\Containers\AppSection\Blog\Tasks\FindPostTask;
+use App\Containers\AppSection\CustomField\Supports\CustomFieldService;
 use App\Containers\AppSection\Gallery\Models\GalleryMeta;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
 use App\Containers\AppSection\LanguageAdvanced\Actions\UpdateSlugTranslationAction;
@@ -14,6 +15,7 @@ final class UpdatePostTranslationAction extends ParentAction
     public function __construct(
         private readonly FindPostTask $findPostTask,
         private readonly UpdateSlugTranslationAction $updateSlugTranslationAction,
+        private readonly CustomFieldService $customFieldService,
     ) {
     }
 
@@ -26,7 +28,8 @@ final class UpdatePostTranslationAction extends ParentAction
         string $langCode,
         ?string $slug = null,
         ?array $seoMeta = null,
-        array|string|null $gallery = null
+        array|string|null $gallery = null,
+        array|string|null $customFields = null
     ): Post
     {
         $post = $this->findPostTask->run($id, ['galleryMeta', 'slugable']);
@@ -35,6 +38,10 @@ final class UpdatePostTranslationAction extends ParentAction
 
         if ($seoMeta !== null) {
             $post->setMeta($this->buildSeoMetaKey($langCode), $seoMeta);
+        }
+
+        if ($customFields !== null) {
+            $this->customFieldService->saveCustomFieldsForModel($post, $customFields, $langCode);
         }
 
         $normalizedGallery = $this->normalizeGallery($gallery);

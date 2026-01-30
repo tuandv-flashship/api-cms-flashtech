@@ -1,0 +1,53 @@
+<?php
+
+namespace App\Containers\AppSection\Page\Actions;
+
+use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
+use App\Containers\AppSection\CustomField\Supports\CustomFieldService;
+use App\Containers\AppSection\Page\Models\Page;
+use App\Containers\AppSection\Page\Tasks\CreatePageTask;
+use App\Containers\AppSection\Slug\Supports\SlugHelper;
+use App\Ship\Parents\Actions\Action as ParentAction;
+
+final class CreatePageAction extends ParentAction
+{
+    public function __construct(
+        private readonly CreatePageTask $createPageTask,
+        private readonly SlugHelper $slugHelper,
+        private readonly CustomFieldService $customFieldService,
+    ) {
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @param array<string, mixed>|null $seoMeta
+     * @param array<int, mixed>|string|null $customFields
+     */
+    public function run(
+        array $data,
+        ?string $slug = null,
+        ?array $seoMeta = null,
+        array|string|null $customFields = null
+    ): Page {
+        $page = $this->createPageTask->run($data);
+
+        if ($slug !== null) {
+            $slug = trim($slug);
+            $this->slugHelper->createSlug($page, $slug === '' ? null : $slug);
+        } else {
+            $this->slugHelper->createSlug($page);
+        }
+
+        if ($seoMeta !== null) {
+            $page->setMeta('seo_meta', $seoMeta);
+        }
+
+        if ($customFields !== null) {
+            $this->customFieldService->saveCustomFieldsForModel($page, $customFields);
+        }
+
+        AuditLogRecorder::recordModel('created', $page);
+
+        return $page->refresh()->load(['slugable', 'user']);
+    }
+}

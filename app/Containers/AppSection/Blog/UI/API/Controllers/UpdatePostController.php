@@ -34,6 +34,7 @@ final class UpdatePostController extends ApiController
             $payload['slug'] ?? null,
             $payload['gallery'] ?? null,
             $payload['seo_meta'] ?? null,
+            $payload['custom_fields'] ?? null,
         );
 
         return Response::create($post, PostTransformer::class)->ok();

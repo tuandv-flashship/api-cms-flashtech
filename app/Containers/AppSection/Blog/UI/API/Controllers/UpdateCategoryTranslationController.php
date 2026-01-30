@@ -23,6 +23,7 @@ final class UpdateCategoryTranslationController extends ApiController
             (string) $payload['lang_code'],
             $payload['slug'] ?? null,
             $payload['seo_meta'] ?? null,
+            $payload['custom_fields'] ?? null,
         );
 
         return Response::create($category, CategoryTransformer::class)->ok();

@@ -4,11 +4,14 @@ namespace App\Containers\AppSection\Gallery\UI\API\Transformers;
 
 use App\Containers\AppSection\Gallery\Models\Gallery;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
+use App\Ship\Parents\Transformers\Traits\HasOriginLang;
 use App\Ship\Parents\Transformers\Transformer as ParentTransformer;
 use League\Fractal\Resource\Collection;
 
 final class GalleryTransformer extends ParentTransformer
 {
+    use HasOriginLang;
+
     protected array $availableIncludes = [
         'translations',
     ];
@@ -32,6 +35,7 @@ final class GalleryTransformer extends ParentTransformer
             'author_id' => $this->hashId($gallery->author_id),
             'author_type' => $gallery->author_type,
             'gallery' => $meta ? ($meta->images ?? []) : [],
+            'origin_lang' => $this->getOriginLang(),
             'created_at' => $gallery->created_at?->toISOString(),
             'updated_at' => $gallery->updated_at?->toISOString(),
         ];

@@ -31,6 +31,7 @@ final class UpdateCategoryTranslationRequest extends ParentRequest
             'description' => ['sometimes', 'nullable', 'string', 'max:400'],
             'slug' => ['sometimes', 'nullable', 'string', 'max:255'],
             'seo_meta' => ['sometimes', 'nullable', 'array'],
+            'custom_fields' => ['sometimes'],
         ];
     }
 

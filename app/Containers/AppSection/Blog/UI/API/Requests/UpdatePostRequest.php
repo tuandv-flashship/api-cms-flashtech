@@ -47,6 +47,7 @@ final class UpdatePostRequest extends ParentRequest
             'gallery' => ['sometimes', 'array'],
             'gallery.*.img' => ['required', 'string'],
             'gallery.*.description' => ['nullable', 'string'],
+            'custom_fields' => ['sometimes'],
         ];
     }
 

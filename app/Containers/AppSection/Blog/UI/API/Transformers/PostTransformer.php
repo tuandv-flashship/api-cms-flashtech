@@ -3,19 +3,25 @@
 namespace App\Containers\AppSection\Blog\UI\API\Transformers;
 
 use App\Containers\AppSection\Blog\Models\Post;
+use App\Containers\AppSection\CustomField\Supports\CustomFieldService;
+use App\Containers\AppSection\CustomField\UI\API\Transformers\CustomFieldBoxTransformer;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
 use App\Containers\AppSection\User\UI\API\Transformers\UserTransformer;
+use App\Ship\Parents\Transformers\Traits\HasOriginLang;
 use App\Ship\Parents\Transformers\Transformer as ParentTransformer;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\Item;
 
 final class PostTransformer extends ParentTransformer
 {
+    use HasOriginLang;
+
     protected array $availableIncludes = [
         'categories',
         'tags',
         'author',
         'translations',
+        'customFields',
     ];
 
     public function transform(Post $post): array
@@ -39,6 +45,7 @@ final class PostTransformer extends ParentTransformer
             'author_type' => $post->author_type,
             'category_ids' => $post->categories->map(fn ($category) => $category->getHashedKey())->values()->all(),
             'tag_ids' => $post->tags->map(fn ($tag) => $tag->getHashedKey())->values()->all(),
+            'origin_lang' => $this->getOriginLang(),
             'created_at' => $post->created_at?->toISOString(),
             'updated_at' => $post->updated_at?->toISOString(),
         ];
@@ -75,6 +82,21 @@ final class PostTransformer extends ParentTransformer
         $translations = $post->translations->where('lang_code', $langCode)->values();
 
         return $this->collection($translations, new PostTranslationTransformer($post));
+    }
+
+    public function includeCustomFields(Post $post): Collection
+    {
+        $langCode = $this->resolveLangCode();
+        $customFieldService = app(CustomFieldService::class);
+
+        $customFieldsData = $customFieldService->exportCustomFieldsData(
+            Post::class,
+            (int) $post->getKey(),
+            [],
+            $langCode
+        );
+
+        return $this->collection($customFieldsData, new CustomFieldBoxTransformer());
     }
 
     private function resolveLangCode(): ?string

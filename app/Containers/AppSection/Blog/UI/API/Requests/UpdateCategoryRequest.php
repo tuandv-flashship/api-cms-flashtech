@@ -32,6 +32,7 @@ final class UpdateCategoryRequest extends ParentRequest
             'is_default' => ['sometimes', 'boolean'],
             'slug' => ['sometimes', 'nullable', 'string', 'max:255'],
             'seo_meta' => ['sometimes', 'array'],
+            'custom_fields' => ['sometimes'],
         ];
     }
 

@@ -4,6 +4,7 @@ namespace App\Containers\AppSection\Blog\Models;
 
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
 use App\Containers\AppSection\Gallery\Models\GalleryMeta;
+use App\Containers\AppSection\CustomField\Models\CustomField;
 use App\Containers\AppSection\LanguageAdvanced\Traits\HasLanguageTranslations;
 use App\Containers\AppSection\MetaBox\Traits\HasMetaBoxes;
 use App\Containers\AppSection\Revision\Traits\RevisionableTrait;
@@ -61,6 +62,10 @@ final class Post extends ParentModel
                 ->where('reference_id', $post->getKey())
                 ->where('reference_type', self::class)
                 ->delete();
+            CustomField::query()
+                ->where('use_for', self::class)
+                ->where('use_for_id', $post->getKey())
+                ->each(static fn (CustomField $field) => $field->delete());
         });
 
         static::creating(function (self $post): void {

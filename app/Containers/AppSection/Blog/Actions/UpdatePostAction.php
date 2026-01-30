@@ -8,6 +8,7 @@ use App\Containers\AppSection\Blog\Models\Post;
 use App\Containers\AppSection\Blog\Models\Tag;
 use App\Containers\AppSection\Blog\Tasks\FindPostTask;
 use App\Containers\AppSection\Blog\Tasks\UpdatePostTask;
+use App\Containers\AppSection\CustomField\Supports\CustomFieldService;
 use App\Containers\AppSection\Gallery\Models\GalleryMeta;
 use App\Containers\AppSection\Slug\Supports\SlugHelper;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -18,6 +19,7 @@ final class UpdatePostAction extends ParentAction
         private readonly FindPostTask $findPostTask,
         private readonly UpdatePostTask $updatePostTask,
         private readonly SlugHelper $slugHelper,
+        private readonly CustomFieldService $customFieldService,
     ) {
     }
 
@@ -28,6 +30,7 @@ final class UpdatePostAction extends ParentAction
      * @param string[]|null $tagNames
      * @param array<int, array<string, mixed>>|string|null $gallery
      * @param array<string, mixed>|null $seoMeta
+     * @param array<int, mixed>|string|null $customFields
      */
     public function run(
         int $id,
@@ -37,7 +40,8 @@ final class UpdatePostAction extends ParentAction
         ?array $tagNames = null,
         ?string $slug = null,
         array|string|null $gallery = null,
-        ?array $seoMeta = null
+        ?array $seoMeta = null,
+        array|string|null $customFields = null
     ): Post {
         $post = $data === []
             ? $this->findPostTask->run($id)
@@ -70,6 +74,10 @@ final class UpdatePostAction extends ParentAction
 
         if ($seoMeta !== null) {
             $post->setMeta('seo_meta', $seoMeta);
+        }
+
+        if ($customFields !== null) {
+            $this->customFieldService->saveCustomFieldsForModel($post, $customFields);
         }
 
         AuditLogRecorder::recordModel('updated', $post);

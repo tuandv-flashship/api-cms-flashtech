@@ -12,6 +12,7 @@ return [
      */
     'supported' => [
         'post' => \App\Containers\AppSection\Blog\Models\Post::class,
+        'page' => \App\Containers\AppSection\Page\Models\Page::class,
     ],
 
     'default_per_page' => 20,

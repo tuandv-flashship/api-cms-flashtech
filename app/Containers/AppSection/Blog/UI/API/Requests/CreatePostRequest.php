@@ -46,6 +46,7 @@ final class CreatePostRequest extends ParentRequest
             'gallery' => ['nullable', 'array'],
             'gallery.*.img' => ['required', 'string'],
             'gallery.*.description' => ['nullable', 'string'],
+            'custom_fields' => ['nullable'],
         ];
     }
 

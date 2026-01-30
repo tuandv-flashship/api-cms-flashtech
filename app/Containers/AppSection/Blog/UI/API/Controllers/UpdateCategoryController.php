@@ -31,6 +31,7 @@ final class UpdateCategoryController extends ApiController
             $data,
             $payload['slug'] ?? null,
             $payload['seo_meta'] ?? null,
+            $payload['custom_fields'] ?? null,
         );
 
         return Response::create($category, CategoryTransformer::class)->ok();

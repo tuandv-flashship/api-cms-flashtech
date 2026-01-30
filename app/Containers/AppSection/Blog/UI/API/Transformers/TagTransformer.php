@@ -4,11 +4,14 @@ namespace App\Containers\AppSection\Blog\UI\API\Transformers;
 
 use App\Containers\AppSection\Blog\Models\Tag;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
+use App\Ship\Parents\Transformers\Traits\HasOriginLang;
 use App\Ship\Parents\Transformers\Transformer as ParentTransformer;
 use League\Fractal\Resource\Collection;
 
 final class TagTransformer extends ParentTransformer
 {
+    use HasOriginLang;
+
     protected array $availableIncludes = [
         'translations',
     ];
@@ -24,6 +27,7 @@ final class TagTransformer extends ParentTransformer
             'slug' => $tag->slug,
             'url' => $tag->url,
             'seo_meta' => $tag->getMeta('seo_meta'),
+            'origin_lang' => $this->getOriginLang(),
             'created_at' => $tag->created_at?->toISOString(),
             'updated_at' => $tag->updated_at?->toISOString(),
         ];

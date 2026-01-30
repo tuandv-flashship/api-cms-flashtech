@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Blog\Models;
 
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
+use App\Containers\AppSection\CustomField\Models\CustomField;
 use App\Containers\AppSection\LanguageAdvanced\Traits\HasLanguageTranslations;
 use App\Containers\AppSection\MetaBox\Traits\HasMetaBoxes;
 use App\Containers\AppSection\Slug\Traits\HasSlug;
@@ -48,6 +49,10 @@ final class Category extends ParentModel
         static::deleted(function (self $category): void {
             $category->children()->each(fn (self $child) => $child->delete());
             $category->posts()->detach();
+            CustomField::query()
+                ->where('use_for', self::class)
+                ->where('use_for_id', $category->getKey())
+                ->each(static fn (CustomField $field) => $field->delete());
         });
 
         static::creating(function (self $category): void {

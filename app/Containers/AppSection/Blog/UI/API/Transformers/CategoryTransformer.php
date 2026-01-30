@@ -4,6 +4,7 @@ namespace App\Containers\AppSection\Blog\UI\API\Transformers;
 
 use App\Containers\AppSection\Blog\Models\Category;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
+use App\Ship\Parents\Transformers\Traits\HasOriginLang;
 use App\Ship\Parents\Transformers\Transformer as ParentTransformer;
 use League\Fractal\Resource\Primitive;
 use League\Fractal\Resource\Collection;
@@ -11,6 +12,8 @@ use League\Fractal\Resource\Item;
 
 final class CategoryTransformer extends ParentTransformer
 {
+    use HasOriginLang;
+
     protected array $availableIncludes = [
         'parent',
         'translations',
@@ -32,6 +35,7 @@ final class CategoryTransformer extends ParentTransformer
             'order' => $category->order,
             'is_featured' => (bool) $category->is_featured,
             'is_default' => (bool) $category->is_default,
+            'origin_lang' => $this->getOriginLang(),
             'created_at' => $category->created_at?->toISOString(),
             'updated_at' => $category->updated_at?->toISOString(),
         ];

@@ -4,6 +4,7 @@ namespace App\Containers\AppSection\Blog\Actions;
 
 use App\Containers\AppSection\Blog\Models\Category;
 use App\Containers\AppSection\Blog\Tasks\FindCategoryTask;
+use App\Containers\AppSection\CustomField\Supports\CustomFieldService;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
 use App\Containers\AppSection\LanguageAdvanced\Actions\UpdateSlugTranslationAction;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -13,6 +14,7 @@ final class UpdateCategoryTranslationAction extends ParentAction
     public function __construct(
         private readonly FindCategoryTask $findCategoryTask,
         private readonly UpdateSlugTranslationAction $updateSlugTranslationAction,
+        private readonly CustomFieldService $customFieldService,
     ) {
     }
 
@@ -24,7 +26,8 @@ final class UpdateCategoryTranslationAction extends ParentAction
         array $data,
         string $langCode,
         ?string $slug = null,
-        ?array $seoMeta = null
+        ?array $seoMeta = null,
+        array|string|null $customFields = null
     ): Category
     {
         $category = $this->findCategoryTask->run($id);
@@ -33,6 +36,10 @@ final class UpdateCategoryTranslationAction extends ParentAction
 
         if ($seoMeta !== null) {
             $category->setMeta($this->buildSeoMetaKey($langCode), $seoMeta);
+        }
+
+        if ($customFields !== null) {
+            $this->customFieldService->saveCustomFieldsForModel($category, $customFields, $langCode);
         }
 
         $slugKey = $this->resolveSlugKey($slug, $data['name'] ?? null);
