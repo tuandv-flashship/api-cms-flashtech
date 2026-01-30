@@ -4,6 +4,8 @@ namespace App\Containers\AppSection\Blog\Actions;
 
 use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
+use App\Containers\AppSection\Blog\Events\PostCreated;
+use App\Containers\AppSection\Blog\Events\PostPublished;
 use App\Containers\AppSection\Blog\Models\Tag;
 use App\Containers\AppSection\Blog\Models\Post;
 use App\Containers\AppSection\Blog\Tasks\CreatePostTask;
@@ -78,6 +80,12 @@ final class CreatePostAction extends ParentAction
         }
 
         AuditLogRecorder::recordModel('created', $post);
+
+        event(new PostCreated($post));
+
+        if ($post->status === ContentStatus::PUBLISHED) {
+            event(new PostPublished($post));
+        }
 
         return $post->refresh();
     }

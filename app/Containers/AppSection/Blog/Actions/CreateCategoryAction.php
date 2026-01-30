@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Blog\Actions;
 
 use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
+use App\Containers\AppSection\Blog\Events\CategoryCreated;
 use App\Containers\AppSection\Blog\Models\Category;
 use App\Containers\AppSection\Blog\Tasks\CreateCategoryTask;
 use App\Containers\AppSection\CustomField\Supports\CustomFieldService;
@@ -51,6 +52,8 @@ final class CreateCategoryAction extends ParentAction
         }
 
         AuditLogRecorder::recordModel('created', $category);
+
+        event(new CategoryCreated($category));
 
         return $category->refresh();
     }

@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Blog\Actions;
 
 use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
+use App\Containers\AppSection\Blog\Events\TagUpdated;
 use App\Containers\AppSection\Blog\Models\Tag;
 use App\Containers\AppSection\Blog\Tasks\FindTagTask;
 use App\Containers\AppSection\Blog\Tasks\UpdateTagTask;
@@ -38,6 +39,8 @@ final class UpdateTagAction extends ParentAction
         }
 
         AuditLogRecorder::recordModel('updated', $tag);
+
+        event(new TagUpdated($tag));
 
         return $tag->refresh();
     }

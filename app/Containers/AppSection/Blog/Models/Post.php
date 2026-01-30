@@ -10,6 +10,8 @@ use App\Containers\AppSection\MetaBox\Traits\HasMetaBoxes;
 use App\Containers\AppSection\Revision\Traits\RevisionableTrait;
 use App\Containers\AppSection\Slug\Traits\HasSlug;
 use App\Containers\AppSection\User\Models\User;
+use App\Ship\Casts\SafeContent;
+use App\Ship\Casts\SafeContentCms;
 use App\Ship\Parents\Models\Model as ParentModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -51,6 +53,9 @@ final class Post extends ParentModel
         'status' => ContentStatus::class,
         'is_featured' => 'bool',
         'views' => 'int',
+        'name' => SafeContent::class,
+        'description' => SafeContent::class,
+        'content' => SafeContentCms::class,
     ];
 
     protected static function booted(): void

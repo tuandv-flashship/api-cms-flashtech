@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Blog\Actions;
 
 use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
+use App\Containers\AppSection\Blog\Events\TagCreated;
 use App\Containers\AppSection\Blog\Models\Tag;
 use App\Containers\AppSection\Blog\Tasks\CreateTagTask;
 use App\Containers\AppSection\Slug\Supports\SlugHelper;
@@ -36,6 +37,8 @@ final class CreateTagAction extends ParentAction
         }
 
         AuditLogRecorder::recordModel('created', $tag);
+
+        event(new TagCreated($tag));
 
         return $tag->refresh();
     }

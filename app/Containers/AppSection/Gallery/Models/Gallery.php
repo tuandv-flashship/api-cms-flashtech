@@ -7,6 +7,7 @@ use App\Containers\AppSection\LanguageAdvanced\Traits\HasLanguageTranslations;
 use App\Containers\AppSection\MetaBox\Traits\HasMetaBoxes;
 use App\Containers\AppSection\Slug\Traits\HasSlug;
 use App\Containers\AppSection\User\Models\User;
+use App\Ship\Casts\SafeContent;
 use App\Ship\Parents\Models\Model as ParentModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -35,6 +36,8 @@ final class Gallery extends ParentModel
         'status' => ContentStatus::class,
         'is_featured' => 'bool',
         'order' => 'int',
+        'name' => SafeContent::class,
+        'description' => SafeContent::class,
     ];
 
     protected static function booted(): void

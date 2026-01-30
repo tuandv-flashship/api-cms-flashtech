@@ -4,6 +4,8 @@ namespace App\Containers\AppSection\Blog\Actions;
 
 use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
+use App\Containers\AppSection\Blog\Events\PostPublished;
+use App\Containers\AppSection\Blog\Events\PostUpdated;
 use App\Containers\AppSection\Blog\Models\Post;
 use App\Containers\AppSection\Blog\Models\Tag;
 use App\Containers\AppSection\Blog\Tasks\FindPostTask;
@@ -43,8 +45,11 @@ final class UpdatePostAction extends ParentAction
         ?array $seoMeta = null,
         array|string|null $customFields = null
     ): Post {
+        $existingPost = $this->findPostTask->run($id);
+        $previousStatus = $existingPost->status;
+
         $post = $data === []
-            ? $this->findPostTask->run($id)
+            ? $existingPost
             : $this->updatePostTask->run($id, $data);
 
         if ($categoryIds !== null) {
@@ -81,6 +86,13 @@ final class UpdatePostAction extends ParentAction
         }
 
         AuditLogRecorder::recordModel('updated', $post);
+
+        event(new PostUpdated($post));
+
+        // Dispatch PostPublished if status changed to published
+        if ($previousStatus !== ContentStatus::PUBLISHED && $post->status === ContentStatus::PUBLISHED) {
+            event(new PostPublished($post, $previousStatus));
+        }
 
         return $post->refresh();
     }

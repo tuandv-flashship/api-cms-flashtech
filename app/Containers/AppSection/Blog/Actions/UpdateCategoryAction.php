@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Blog\Actions;
 
 use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
+use App\Containers\AppSection\Blog\Events\CategoryUpdated;
 use App\Containers\AppSection\Blog\Models\Category;
 use App\Containers\AppSection\Blog\Tasks\FindCategoryTask;
 use App\Containers\AppSection\Blog\Tasks\UpdateCategoryTask;
@@ -59,6 +60,8 @@ final class UpdateCategoryAction extends ParentAction
         }
 
         AuditLogRecorder::recordModel('updated', $category);
+
+        event(new CategoryUpdated($category));
 
         return $category->refresh();
     }

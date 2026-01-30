@@ -14,9 +14,6 @@ final class AuthorizationSeeder_1 extends ParentSeeder
         $roleName = Role::SUPER_ADMIN->value;
 
         foreach (array_keys(config('auth.guards')) as $guardName) {
-            if ($guardName == 'web') {
-                continue;
-            }
 
             $exists = RoleModel::query()
                 ->where('name', strtolower($roleName))

@@ -8,6 +8,7 @@ use App\Containers\AppSection\LanguageAdvanced\Traits\HasLanguageTranslations;
 use App\Containers\AppSection\MetaBox\Traits\HasMetaBoxes;
 use App\Containers\AppSection\Slug\Traits\HasSlug;
 use App\Containers\AppSection\User\Models\User;
+use App\Ship\Casts\SafeContent;
 use App\Ship\Parents\Models\Model as ParentModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -42,6 +43,8 @@ final class Category extends ParentModel
         'is_featured' => 'bool',
         'is_default' => 'bool',
         'order' => 'int',
+        'name' => SafeContent::class,
+        'description' => SafeContent::class,
     ];
 
     protected static function booted(): void
