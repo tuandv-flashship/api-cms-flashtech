@@ -82,19 +82,23 @@ final class MediaSettingsStore
         $defaults = (array) config('media.settings_defaults', []);
         $defaults = array_merge($defaults, $this->resolveDefaultSizes());
 
-        $rows = Setting::query()
-            ->where(function ($query): void {
-                $query->where('key', 'like', 'media_%')
-                    ->orWhere('key', 'user_can_only_view_own_media');
-            })
-            ->get(['key', 'value']);
+        try {
+            $rows = Setting::query()
+                ->where(function ($query): void {
+                    $query->where('key', 'like', 'media_%')
+                        ->orWhere('key', 'user_can_only_view_own_media');
+                })
+                ->get(['key', 'value']);
 
-        $values = [];
-        foreach ($rows as $row) {
-            $values[$row->key] = $row->value;
+            $values = [];
+            foreach ($rows as $row) {
+                $values[$row->key] = $row->value;
+            }
+
+            return array_replace($defaults, $values);
+        } catch (\Throwable) {
+            return $defaults;
         }
-
-        return array_replace($defaults, $values);
     }
 
     /**
