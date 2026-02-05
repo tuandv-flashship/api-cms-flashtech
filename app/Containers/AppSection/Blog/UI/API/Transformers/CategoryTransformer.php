@@ -53,6 +53,7 @@ final class CategoryTransformer extends ParentTransformer
 
     public function includeChildren(Category $category): Collection
     {
+        $category->loadMissing('children'); // Fix Lazy Loading
         return $this->collection($category->children, new self());
     }
 
