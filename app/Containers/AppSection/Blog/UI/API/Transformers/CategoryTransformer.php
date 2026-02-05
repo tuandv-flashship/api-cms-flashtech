@@ -16,6 +16,7 @@ final class CategoryTransformer extends ParentTransformer
 
     protected array $availableIncludes = [
         'parent',
+        'children',
         'translations',
     ];
 
@@ -48,6 +49,11 @@ final class CategoryTransformer extends ParentTransformer
         }
 
         return $this->nullableItem($category->parent, new self());
+    }
+
+    public function includeChildren(Category $category): Collection
+    {
+        return $this->collection($category->children, new self());
     }
 
     public function includeTranslations(Category $category): Collection

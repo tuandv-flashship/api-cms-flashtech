@@ -34,6 +34,10 @@ final class RoleRepository extends ParentRepository
         foreach (array_keys(config('auth.guards')) as $guard) {
             Assert::nullOrStringNotEmpty($guard);
 
+            if (config("auth.guards.{$guard}.provider") !== 'users') {
+                continue;
+            }
+
             $role = $this->getModel()::findByName(RoleEnum::SUPER_ADMIN->value, $guard);
             $user->assignRole($role);
         }

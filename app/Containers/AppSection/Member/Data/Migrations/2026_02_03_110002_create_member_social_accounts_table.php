@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('member_social_accounts', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('member_id')->constrained('members')->cascadeOnDelete();
+            $table->string('provider', 50);
+            $table->string('provider_id');
+            $table->text('token');
+            $table->string('avatar')->nullable();
+            $table->timestamps();
+
+            $table->unique(['provider', 'provider_id']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('member_social_accounts');
+    }
+};

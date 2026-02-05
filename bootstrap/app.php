@@ -6,6 +6,7 @@ use Apiato\Http\Middleware\ValidateJsonContent;
 use App\Containers\AppSection\Authentication\UI\WEB\Controllers\HomePageController;
 use App\Containers\AppSection\Authentication\UI\WEB\Controllers\LoginController;
 use App\Containers\AppSection\Language\Middleware\SetLocaleFromHeader;
+use App\Containers\AppSection\Member\Middleware\VerifyMemberCsrfToken;
 use App\Containers\AppSection\RequestLog\Middleware\LogRequestErrors;
 use App\Ship\Middleware\ValidateAppId;
 use Illuminate\Foundation\Application;
@@ -30,6 +31,9 @@ return Application::configure(basePath: $basePath)
         $middleware->append([
             HandleCors::class,
             ValidateAppId::class,
+        ]);
+        $middleware->alias([
+            'member.csrf' => VerifyMemberCsrfToken::class,
         ]);
         $middleware->api(append: [
             SetLocaleFromHeader::class,

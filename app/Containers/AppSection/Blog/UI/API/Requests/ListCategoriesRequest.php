@@ -8,9 +8,33 @@ use Illuminate\Validation\Rule;
 
 final class ListCategoriesRequest extends ParentRequest
 {
-    protected array $decode = [
-        'parent_id',
-    ];
+    protected function prepareForValidation(): void
+    {
+        $parentId = $this->input('parent_id');
+        
+        if (!is_null($parentId)) {
+            // Case 1: parent_id = 0 (plain integer for root)
+            if ($parentId == 0) {
+                 // Do nothing, keep it as 0
+            } else {
+                 // Case 2: potential Hash ID
+                 // We manually decode it because we removed 'parent_id' from $decode array
+                 // to prevent auto-decoding logic from stripping '0' or failing.
+                 
+                 // Simpler: use Hashids facade directly if available or standard apiato function
+                 // But wait, standard logic in Request::input is: hashids()->decode($value)
+                 // This returns an ARRAY.
+                 
+                 $decodedArray = \Vinkla\Hashids\Facades\Hashids::decode($parentId);
+                 if (!empty($decodedArray)) {
+                     $this->merge(['parent_id' => $decodedArray[0]]);
+                 }
+                 // If empty, it means it's not a valid hash. 
+                 // It could be a raw ID (if we allow debugging) or just invalid.
+                 // We leave it as is, and validation 'exists' will probably fail if it's not found.
+            }
+        }
+    }
 
     public function rules(): array
     {

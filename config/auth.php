@@ -1,5 +1,6 @@
 <?php
 
+use App\Containers\AppSection\Member\Models\Member;
 use App\Containers\AppSection\User\Models\User;
 
 return [
@@ -47,6 +48,11 @@ return [
             'driver' => 'passport',
             'provider' => 'users',
         ],
+
+        'member' => [
+            'driver' => 'passport',
+            'provider' => 'members',
+        ],
     ],
 
     /*
@@ -70,6 +76,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+
+        'members' => [
+            'driver' => 'eloquent',
+            'model' => Member::class,
         ],
 
         // 'users' => [
@@ -102,6 +113,13 @@ return [
             'provider' => 'users',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
             'expire' => 60,
+            'throttle' => 60,
+        ],
+
+        'members' => [
+            'provider' => 'members',
+            'table' => 'member_password_resets',
+            'expire' => env('MEMBER_PASSWORD_RESET_EXPIRE', 60),
             'throttle' => 60,
         ],
     ],
