@@ -29,7 +29,10 @@ final class ListCategoriesTask extends ParentTask
         // Better: pass includes array to Task. But for quick fix:
         $includes = request()->query('include');
         if($includes && str_contains($includes, 'children')) {
-            $with[] = 'children';
+            // Eager load children AND their nested relations needed by Transformer
+            // Specifically 'slugable' is used in Transformer via $category->slug which triggers slugable.
+            $with[] = 'children.slugable'; 
+            $with[] = 'children'; // Keep base relation too if needed, though dot notation usually covers deep, but safer to have base for collection access if behavior differs.
              // Also load translations for children if language advanced is used, but basic children rel is key.
              // If children also have translations:
              // $with[] = 'children.translations'; // If needed. 
