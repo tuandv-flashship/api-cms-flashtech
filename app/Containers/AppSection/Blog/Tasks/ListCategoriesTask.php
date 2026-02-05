@@ -20,6 +20,21 @@ final class ListCategoriesTask extends ParentTask
             Category::class
         );
 
+        // Check if 'children' is requested in includes to eager load it
+        // Note: Task doesn't directly access Request, but we can verify usually via Apiato Repository or here if needed.
+        // However, to fix N+1 securely we should add it if we know we need it.
+        // A simpler way is to check the request directly or just rely on 'with' if we passed includes.
+        
+        // Since we are inside a Task, accessing request() helper is acceptable but coupling.
+        // Better: pass includes array to Task. But for quick fix:
+        $includes = request()->query('include');
+        if($includes && str_contains($includes, 'children')) {
+            $with[] = 'children';
+             // Also load translations for children if language advanced is used, but basic children rel is key.
+             // If children also have translations:
+             // $with[] = 'children.translations'; // If needed. 
+        }
+
         $query = Category::query()
             ->with($with)
             ->when(isset($filters['status']), function (Builder $query) use ($filters): void {
