@@ -12,17 +12,23 @@ use App\Containers\AppSection\Member\UI\API\Requests\Admin\UpdateMemberRequest;
 use App\Ship\Parents\Actions\Action as ParentAction;
 use App\Containers\AppSection\Member\Enums\MemberStatus;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-class UpdateMemberAction extends ParentAction
+final class UpdateMemberAction extends ParentAction
 {
+    public function __construct(
+        private readonly FindMemberByIdTask $findMemberByIdTask,
+        private readonly UpdateMemberTask $updateMemberTask,
+        private readonly RevokeMemberTokensTask $revokeMemberTokensTask,
+        private readonly CreateMemberActivityLogTask $createMemberActivityLogTask,
+    ) {
+    }
+
     public function run(UpdateMemberRequest $request): Member
     {
         $data = $request->validated();
-        
-        // Admin updates member, so we find by ID
-        $member = app(FindMemberByIdTask::class)->run($request->id);
+
+        $member = $this->findMemberByIdTask->run($request->id);
         $statusBefore = $member->status;
         $sendVerification = (bool) ($data['send_verification'] ?? false);
         unset($data['send_verification']);
@@ -41,10 +47,6 @@ class UpdateMemberAction extends ParentAction
             && !empty($data['username'])
             && strtolower((string) $data['username']) !== strtolower((string) $member->username);
 
-        if ($hasPasswordChange) {
-            $data['password'] = Hash::make($data['password']);
-        }
-
         if ($emailChanged) {
             if (config('member.email_verification.enabled') && $sendVerification) {
                 $data['email_verified_at'] = null;
@@ -57,7 +59,7 @@ class UpdateMemberAction extends ParentAction
             }
         }
 
-        $member = app(UpdateMemberTask::class)->run($member, $data);
+        $member = $this->updateMemberTask->run($member->id, $data);
 
         if ($emailChanged && config('member.email_verification.enabled') && $sendVerification) {
             MemberRegistered::dispatch($member);
@@ -67,14 +69,14 @@ class UpdateMemberAction extends ParentAction
             && $member->status !== MemberStatus::ACTIVE;
 
         if ($hasPasswordChange || $statusBecameInactive) {
-            app(RevokeMemberTokensTask::class)->run($member);
+            $this->revokeMemberTokensTask->run($member);
         }
 
         $adminId = Auth::guard('api')->id();
         $referenceName = $adminId ? 'admin:' . $adminId : null;
 
         if ($emailChanged) {
-            app(CreateMemberActivityLogTask::class)->run([
+            $this->createMemberActivityLogTask->run([
                 'member_id' => $member->id,
                 'action' => 'admin_update_email',
                 'reference_name' => $referenceName,
@@ -82,7 +84,7 @@ class UpdateMemberAction extends ParentAction
         }
 
         if ($usernameChanged) {
-            app(CreateMemberActivityLogTask::class)->run([
+            $this->createMemberActivityLogTask->run([
                 'member_id' => $member->id,
                 'action' => 'admin_update_username',
                 'reference_name' => $referenceName,

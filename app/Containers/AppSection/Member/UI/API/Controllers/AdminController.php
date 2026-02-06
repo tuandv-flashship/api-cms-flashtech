@@ -17,39 +17,48 @@ use App\Containers\AppSection\Member\UI\API\Transformers\MemberTransformer;
 use App\Ship\Parents\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 
-class AdminController extends ApiController
+final class AdminController extends ApiController
 {
+    public function __construct(
+        private readonly GetAllMembersAction $getAllMembersAction,
+        private readonly CreateMemberAction $createMemberAction,
+        private readonly FindMemberByIdAction $findMemberByIdAction,
+        private readonly UpdateMemberAction $updateMemberAction,
+        private readonly DeleteMemberAction $deleteMemberAction,
+    ) {
+    }
+
     public function getAllMembers(GetAllMembersRequest $request): JsonResponse
     {
-        $members = app(GetAllMembersAction::class)->run($request);
+        $members = $this->getAllMembersAction->run($request);
 
         return Response::create($members, MemberTransformer::class)->ok();
     }
 
     public function createMember(CreateMemberRequest $request): JsonResponse
     {
-        $member = app(CreateMemberAction::class)->run($request);
+        $member = $this->createMemberAction->run($request);
 
         return Response::create($member, MemberTransformer::class)->created();
     }
 
     public function findMemberById(FindMemberByIdRequest $request): JsonResponse
     {
-        $member = app(FindMemberByIdAction::class)->run($request);
+        $member = $this->findMemberByIdAction->run($request);
 
         return Response::create($member, MemberTransformer::class)->ok();
     }
 
     public function updateMember(UpdateMemberRequest $request): JsonResponse
     {
-        $member = app(UpdateMemberAction::class)->run($request);
+        $member = $this->updateMemberAction->run($request);
 
         return Response::create($member, MemberTransformer::class)->ok();
     }
 
     public function deleteMember(DeleteMemberRequest $request): JsonResponse
     {
-        app(DeleteMemberAction::class)->run($request);
+        $this->deleteMemberAction->run($request);
 
         return Response::noContent();
     }

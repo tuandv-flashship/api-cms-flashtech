@@ -7,7 +7,7 @@ use App\Containers\AppSection\Member\UI\API\Requests\GetMemberProfileRequest;
 use App\Ship\Parents\Actions\Action as ParentAction;
 use Illuminate\Support\Facades\Auth;
 
-class GetMemberProfileAction extends ParentAction
+final class GetMemberProfileAction extends ParentAction
 {
     public function run(GetMemberProfileRequest $request): Member
     {

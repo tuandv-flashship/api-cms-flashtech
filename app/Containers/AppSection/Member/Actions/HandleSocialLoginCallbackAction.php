@@ -4,10 +4,12 @@ namespace App\Containers\AppSection\Member\Actions;
 
 use App\Containers\AppSection\Member\Enums\MemberStatus;
 use App\Containers\AppSection\Member\Models\Member;
-use App\Containers\AppSection\Member\Models\MemberSocialAccount;
-use App\Containers\AppSection\Member\Tasks\CreateMemberActivityLogTask;
-use App\Containers\AppSection\Member\Actions\IssueMemberTokenAction;
 use App\Containers\AppSection\Authentication\Values\UserCredential;
+use App\Containers\AppSection\Member\Tasks\CreateMemberActivityLogTask;
+use App\Containers\AppSection\Member\Tasks\CreateMemberTask;
+use App\Containers\AppSection\Member\Tasks\FindMemberByEmailTask;
+use App\Containers\AppSection\Member\Tasks\FindMemberSocialAccountByProviderTask;
+use App\Containers\AppSection\Member\Tasks\UpdateOrCreateMemberSocialAccountTask;
 use App\Containers\AppSection\Member\Values\MemberClientType;
 use App\Ship\Parents\Actions\Action as ParentAction;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -16,8 +18,18 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
-class HandleSocialLoginCallbackAction extends ParentAction
+final class HandleSocialLoginCallbackAction extends ParentAction
 {
+    public function __construct(
+        private readonly FindMemberByEmailTask $findMemberByEmailTask,
+        private readonly FindMemberSocialAccountByProviderTask $findMemberSocialAccountByProviderTask,
+        private readonly CreateMemberTask $createMemberTask,
+        private readonly UpdateOrCreateMemberSocialAccountTask $updateOrCreateMemberSocialAccountTask,
+        private readonly IssueMemberTokenAction $issueMemberTokenAction,
+        private readonly CreateMemberActivityLogTask $createMemberActivityLogTask,
+    ) {
+    }
+
     public function run(
         string $provider,
         string|null $redirectUrl = null,
@@ -35,48 +47,58 @@ class HandleSocialLoginCallbackAction extends ParentAction
         }
 
         $socialUser = $driver->user();
-        $email = $socialUser->getEmail();
-
-        if (!$email) {
-            throw new AuthorizationException('Social login email is missing.');
+        $providerId = $socialUser->getId();
+        if (!$providerId) {
+            throw new AuthorizationException('Social login provider id is missing.');
         }
 
-        $member = Member::where('email', $email)->first();
+        $socialAccount = $this->findMemberSocialAccountByProviderTask->run($provider, (string) $providerId);
+        if ($socialAccount && $socialAccount->member) {
+            $member = $socialAccount->member;
+        } else {
+            $email = $socialUser->getEmail();
+            if (!$email) {
+                throw new AuthorizationException('Social login email is missing.');
+            }
 
-        if (!$member) {
-            $usernameBase = Str::before($email, '@');
+            $member = $this->findMemberByEmailTask->run($email);
 
-            $member = Member::create([
-                'name' => $socialUser->getName() ?? $socialUser->getNickname(),
-                'username' => Member::generateUniqueUsername($usernameBase),
-                'email' => $email,
-                'password' => Hash::make(Str::random(16)), // Random password
-                'status' => MemberStatus::ACTIVE,
-                'email_verified_at' => now(),
-            ]);
+            if (!$member) {
+                $usernameBase = Str::before($email, '@');
+
+                $member = $this->createMemberTask->run([
+                    'name' => $socialUser->getName() ?? $socialUser->getNickname(),
+                    'username' => Member::generateUniqueUsername($usernameBase),
+                    'email' => $email,
+                    'password' => Str::random(16),
+                    'status' => MemberStatus::ACTIVE,
+                    'email_verified_at' => now(),
+                ]);
+            }
         }
 
-        // Link social account if not exists
-        if (!$member->socialAccounts()->where('provider', $provider)->exists()) {
-            MemberSocialAccount::create([
+        $this->updateOrCreateMemberSocialAccountTask->run(
+            [
                 'member_id' => $member->id,
                 'provider' => $provider,
-                'provider_id' => $socialUser->getId(),
+            ],
+            [
+                'provider_id' => $providerId,
                 'token' => $socialUser->token,
                 'avatar' => $socialUser->getAvatar(),
-            ]);
-        }
+            ],
+        );
 
         $oneTimeToken = Str::random(64);
         $ttlMinutes = max(1, (int) config('member.social.one_time_token_ttl', 1));
         Cache::put($member->socialLoginTokenCacheKey(), Hash::make($oneTimeToken), now()->addMinutes($ttlMinutes));
 
-        $tokenResult = app(IssueMemberTokenAction::class)->run(
+        $tokenResult = $this->issueMemberTokenAction->run(
             UserCredential::create($member->email, $oneTimeToken),
             $clientType,
         );
 
-        app(CreateMemberActivityLogTask::class)->run([
+        $this->createMemberActivityLogTask->run([
             'member_id' => $member->id,
             'action' => 'login',
         ]);

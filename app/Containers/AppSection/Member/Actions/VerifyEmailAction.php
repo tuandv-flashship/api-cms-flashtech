@@ -3,14 +3,20 @@
 namespace App\Containers\AppSection\Member\Actions;
 
 use App\Containers\AppSection\Member\Enums\MemberStatus;
-use App\Containers\AppSection\Member\Models\Member;
+use App\Containers\AppSection\Member\Tasks\FindMemberByIdTask;
+use App\Containers\AppSection\Member\Tasks\UpdateMemberTask;
 use App\Containers\AppSection\Member\UI\API\Requests\VerifyEmailRequest;
 use App\Ship\Parents\Actions\Action as ParentAction;
 use Illuminate\Auth\Access\AuthorizationException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class VerifyEmailAction extends ParentAction
+final class VerifyEmailAction extends ParentAction
 {
+    public function __construct(
+        private readonly FindMemberByIdTask $findMemberByIdTask,
+        private readonly UpdateMemberTask $updateMemberTask,
+    ) {
+    }
+
     public function run(VerifyEmailRequest $request): void
     {
         if (!config('member.email_verification.enabled')) {
@@ -24,11 +30,7 @@ class VerifyEmailAction extends ParentAction
         $id = $request->id;
         $hash = $request->hash;
 
-        $member = Member::find($id);
-
-        if (!$member) {
-            throw new NotFoundHttpException('Member not found.');
-        }
+        $member = $this->findMemberByIdTask->run($id);
 
         if (!hash_equals((string) $hash, sha1($member->getEmailForVerification()))) {
              throw new AuthorizationException('Invalid hash.');
@@ -36,8 +38,9 @@ class VerifyEmailAction extends ParentAction
 
         if (!$member->hasVerifiedEmail()) {
             $member->markEmailAsVerified();
-            $member->status = MemberStatus::ACTIVE;
-            $member->save();
+            $this->updateMemberTask->run($member->id, [
+                'status' => MemberStatus::ACTIVE,
+            ]);
         }
     }
 }

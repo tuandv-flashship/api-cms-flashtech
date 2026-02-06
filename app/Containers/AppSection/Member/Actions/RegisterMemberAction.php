@@ -10,11 +10,14 @@ use App\Containers\AppSection\Member\UI\API\Requests\RegisterMemberRequest;
 use App\Ship\Parents\Actions\Action as ParentAction;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Config;
 
-class RegisterMemberAction extends ParentAction
+final class RegisterMemberAction extends ParentAction
 {
+    public function __construct(
+        private readonly CreateMemberTask $createMemberTask,
+    ) {
+    }
+
     public function run(RegisterMemberRequest $request): Member
     {
         if (!config('member.auth.registration_enabled', true)) {
@@ -28,15 +31,14 @@ class RegisterMemberAction extends ParentAction
                 : ($data['name'] ?? 'member');
             $data['username'] = Member::generateUniqueUsername($base);
         }
-        $data['password'] = Hash::make($data['password']);
-        
-        $isEmailVerificationEnabled = Config::get('member.email_verification.enabled');
+
+        $isEmailVerificationEnabled = (bool) config('member.email_verification.enabled');
         $data['status'] = $isEmailVerificationEnabled ? MemberStatus::PENDING : MemberStatus::ACTIVE;
         if (!$isEmailVerificationEnabled) {
             $data['email_verified_at'] = now();
         }
 
-        $member = app(CreateMemberTask::class)->run($data);
+        $member = $this->createMemberTask->run($data);
 
         MemberRegistered::dispatch($member);
 

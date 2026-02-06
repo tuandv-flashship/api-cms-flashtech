@@ -8,10 +8,14 @@ use App\Containers\AppSection\Member\Models\Member;
 use App\Containers\AppSection\Member\Tasks\CreateMemberTask;
 use App\Containers\AppSection\Member\UI\API\Requests\Admin\CreateMemberRequest;
 use App\Ship\Parents\Actions\Action as ParentAction;
-use Illuminate\Support\Facades\Hash;
 
-class CreateMemberAction extends ParentAction
+final class CreateMemberAction extends ParentAction
 {
+    public function __construct(
+        private readonly CreateMemberTask $createMemberTask,
+    ) {
+    }
+
     public function run(CreateMemberRequest $request): Member
     {
         $data = $request->validated();
@@ -20,8 +24,6 @@ class CreateMemberAction extends ParentAction
             $base = $data['email'] ?? $data['name'] ?? 'member';
             $data['username'] = Member::generateUniqueUsername($base);
         }
-
-        $data['password'] = Hash::make($data['password']);
 
         $emailVerificationEnabled = (bool) config('member.email_verification.enabled');
         $emailVerified = (bool) ($data['email_verified'] ?? false);
@@ -50,7 +52,7 @@ class CreateMemberAction extends ParentAction
             $data['status'] = $status ?? MemberStatus::ACTIVE;
         }
 
-        $member = app(CreateMemberTask::class)->run($data);
+        $member = $this->createMemberTask->run($data);
 
         if ($emailVerificationEnabled && $sendVerification && !$member->hasVerifiedEmail()) {
             MemberRegistered::dispatch($member);

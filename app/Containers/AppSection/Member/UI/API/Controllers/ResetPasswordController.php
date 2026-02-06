@@ -8,11 +8,16 @@ use App\Containers\AppSection\Member\UI\API\Requests\ResetPasswordRequest;
 use App\Ship\Parents\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 
-class ResetPasswordController extends ApiController
+final class ResetPasswordController extends ApiController
 {
+    public function __construct(
+        private readonly ResetPasswordAction $resetPasswordAction,
+    ) {
+    }
+
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
-        app(ResetPasswordAction::class)->run($request->validated());
+        $this->resetPasswordAction->run($request->validated());
 
         return Response::json([
             'message' => 'Password has been reset successfully.',

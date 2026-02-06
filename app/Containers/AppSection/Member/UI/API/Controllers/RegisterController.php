@@ -9,11 +9,16 @@ use App\Containers\AppSection\Member\UI\API\Transformers\MemberTransformer;
 use App\Ship\Parents\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 
-class RegisterController extends ApiController
+final class RegisterController extends ApiController
 {
+    public function __construct(
+        private readonly RegisterMemberAction $registerMemberAction,
+    ) {
+    }
+
     public function registerMember(RegisterMemberRequest $request): JsonResponse
     {
-        $member = app(RegisterMemberAction::class)->run($request);
+        $member = $this->registerMemberAction->run($request);
 
         return Response::create($member, MemberTransformer::class)->created();
     }

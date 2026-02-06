@@ -3,10 +3,13 @@
 namespace App\Containers\AppSection\User\Models;
 
 use App\Containers\AppSection\Authorization\Enums\Role as RoleEnum;
+use App\Containers\AppSection\Device\Enums\DeviceOwnerType;
+use App\Containers\AppSection\Device\Models\Device;
 use App\Containers\AppSection\User\Data\Collections\UserCollection;
 use App\Containers\AppSection\User\Enums\Gender;
 use App\Ship\Parents\Models\UserModel as ParentUserModel;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class User extends ParentUserModel
 {
@@ -54,6 +57,12 @@ final class User extends ParentUserModel
         }
 
         return true;
+    }
+
+    public function devices(): HasMany
+    {
+        return $this->hasMany(Device::class, 'owner_id')
+            ->where('owner_type', DeviceOwnerType::USER);
     }
 
     protected function email(): Attribute

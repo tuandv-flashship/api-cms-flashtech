@@ -9,7 +9,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 
-class SendVerificationEmailAction extends ParentAction
+final class SendVerificationEmailAction extends ParentAction
 {
     public function run(Member $member): void
     {

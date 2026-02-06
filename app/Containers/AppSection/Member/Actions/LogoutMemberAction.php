@@ -12,10 +12,15 @@ use Symfony\Component\HttpFoundation\Cookie;
 
 final class LogoutMemberAction extends ParentAction
 {
+    public function __construct(
+        private readonly CreateMemberActivityLogTask $createMemberActivityLogTask,
+    ) {
+    }
+
     public function run(Member|null $member): Cookie
     {
         if ($member) {
-            app(CreateMemberActivityLogTask::class)->run([
+            $this->createMemberActivityLogTask->run([
                 'member_id' => $member->id,
                 'action' => 'logout',
             ]);

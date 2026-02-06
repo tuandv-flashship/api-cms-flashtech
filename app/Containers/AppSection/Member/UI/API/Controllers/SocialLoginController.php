@@ -14,8 +14,15 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Throwable;
 
-class SocialLoginController extends ApiController
+final class SocialLoginController extends ApiController
 {
+    public function __construct(
+        private readonly GetSocialLoginUrlAction $getSocialLoginUrlAction,
+        private readonly HandleSocialLoginCallbackAction $handleSocialLoginCallbackAction,
+        private readonly MemberTokenResponder $memberTokenResponder,
+    ) {
+    }
+
     public function redirectToProvider(SocialLoginRequest $request): JsonResponse
     {
         try {
@@ -29,7 +36,7 @@ class SocialLoginController extends ApiController
                 ]);
             }
 
-            $url = app(GetSocialLoginUrlAction::class)->run($request->provider, $redirectUrl);
+            $url = $this->getSocialLoginUrlAction->run($request->provider, $redirectUrl);
 
             return Response::json(['url' => $url]);
         } catch (AuthorizationException $exception) {
@@ -53,7 +60,7 @@ class SocialLoginController extends ApiController
                 ]);
             }
 
-            $result = app(HandleSocialLoginCallbackAction::class)->run(
+            $result = $this->handleSocialLoginCallbackAction->run(
                 $request->provider,
                 $redirectUrl,
                 $clientType,
@@ -62,7 +69,7 @@ class SocialLoginController extends ApiController
             if (!MemberClientType::isMobile($clientType)) {
                 $webRedirectUrl = $this->webRedirectUrl();
                 if ($webRedirectUrl) {
-                    return app(MemberTokenResponder::class)->redirectLogin(
+                    return $this->memberTokenResponder->redirectLogin(
                         $result['member'],
                         $result['token'],
                         $webRedirectUrl,
@@ -70,7 +77,7 @@ class SocialLoginController extends ApiController
                 }
             }
 
-            return app(MemberTokenResponder::class)->login(
+            return $this->memberTokenResponder->login(
                 $result['member'],
                 $result['token'],
                 $clientType,
@@ -78,6 +85,7 @@ class SocialLoginController extends ApiController
         } catch (AuthorizationException $exception) {
             $code = match ($exception->getMessage()) {
                 'Social login provider is disabled.' => 'social_login_disabled',
+                'Social login provider id is missing.' => 'social_login_provider_id_missing',
                 'Social login email is missing.' => 'social_login_email_missing',
                 default => 'social_login_failed',
             };

@@ -3,10 +3,13 @@
 namespace App\Containers\AppSection\Member\Actions;
 
 use App\Ship\Parents\Actions\Action as ParentAction;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-class ForgotPasswordAction extends ParentAction
+final class ForgotPasswordAction extends ParentAction
 {
     public function run(string $email): void
     {
@@ -14,18 +17,53 @@ class ForgotPasswordAction extends ParentAction
             return;
         }
 
+        $this->recordAuditAttempt($email);
+
         $status = Password::broker('members')->sendResetLink([
             'email' => $email,
         ]);
 
-        if ($status === Password::RESET_LINK_SENT) {
+        if (in_array($status, [
+            Password::RESET_LINK_SENT,
+            Password::INVALID_USER,
+            Password::RESET_THROTTLED,
+        ], true)) {
             return;
         }
 
-        if ($status === Password::RESET_THROTTLED) {
-            throw ValidationException::withMessages(['throttle' => __($status)]);
+        throw ValidationException::withMessages(['email' => __($status)]);
+    }
+
+    private function recordAuditAttempt(string $email): void
+    {
+        if (!config('member.password_reset.audit.enabled', true)) {
+            return;
         }
 
-        throw ValidationException::withMessages(['email' => __($status)]);
+        $windowMinutes = max(1, (int) config('member.password_reset.audit.window_minutes', 5));
+        $warningThreshold = max(1, (int) config('member.password_reset.audit.warning_threshold', 20));
+
+        $normalizedEmail = Str::lower(trim($email));
+        $emailHash = hash('sha256', $normalizedEmail);
+        $ip = request()?->ip() ?? 'unknown';
+
+        $cacheKey = sprintf(
+            'member:password-reset:attempt:%s:%s:%d',
+            $ip,
+            $emailHash,
+            intdiv(time(), $windowMinutes * 60),
+        );
+
+        Cache::add($cacheKey, 0, now()->addMinutes($windowMinutes));
+        $attempts = (int) Cache::increment($cacheKey);
+
+        if ($attempts >= $warningThreshold) {
+            Log::warning('Member password reset threshold exceeded', [
+                'ip_address' => $ip,
+                'email_hash' => $emailHash,
+                'attempts' => $attempts,
+                'window_minutes' => $windowMinutes,
+            ]);
+        }
     }
 }

@@ -15,32 +15,40 @@ use App\Containers\AppSection\Member\UI\API\Transformers\MemberTransformer;
 use App\Ship\Parents\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 
-class MemberController extends ApiController
+final class MemberController extends ApiController
 {
+    public function __construct(
+        private readonly GetMemberProfileAction $getMemberProfileAction,
+        private readonly UpdateMemberProfileAction $updateMemberProfileAction,
+        private readonly VerifyEmailAction $verifyEmailAction,
+        private readonly ChangePasswordAction $changePasswordAction,
+    ) {
+    }
+
     public function getProfile(GetMemberProfileRequest $request): JsonResponse
     {
-        $member = app(GetMemberProfileAction::class)->run($request);
+        $member = $this->getMemberProfileAction->run($request);
 
         return Response::create($member, MemberTransformer::class)->ok();
     }
 
     public function updateProfile(UpdateMemberProfileRequest $request): JsonResponse
     {
-        $member = app(UpdateMemberProfileAction::class)->run($request);
+        $member = $this->updateMemberProfileAction->run($request);
 
         return Response::create($member, MemberTransformer::class)->ok();
     }
 
     public function verifyEmail(VerifyEmailRequest $request): JsonResponse
     {
-        app(VerifyEmailAction::class)->run($request);
+        $this->verifyEmailAction->run($request);
 
         return Response::ok(['message' => 'Email verified successfully.']);
     }
 
     public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
-        app(ChangePasswordAction::class)->run($request);
+        $this->changePasswordAction->run($request);
 
         return Response::noContent();
     }

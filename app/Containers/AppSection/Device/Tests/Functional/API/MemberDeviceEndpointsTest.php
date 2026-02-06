@@ -1,0 +1,135 @@
+<?php
+
+namespace App\Containers\AppSection\Device\Tests\Functional\API;
+
+use App\Containers\AppSection\Device\Tests\Functional\ApiTestCase;
+use App\Containers\AppSection\Member\Models\Member;
+
+final class MemberDeviceEndpointsTest extends ApiTestCase
+{
+    public function testMemberDeviceLifecycle(): void
+    {
+        $member = Member::factory()->create();
+
+        $deviceId = 'device-1';
+        $keyId = $this->randomKeyId();
+        $publicKey = $this->randomPublicKey();
+
+        $registerResponse = $this->actingAs($member, 'member')->postJson(
+            route('api_member_register_device'),
+            [
+                'device_id' => $deviceId,
+                'key_id' => $keyId,
+                'public_key' => $publicKey,
+            ],
+        );
+
+        $registerResponse->assertOk();
+        $registerResponse->assertJsonPath('data.device_id', $deviceId);
+        $registerResponse->assertJsonPath('meta.key_id', $keyId);
+
+        $listResponse = $this->actingAs($member, 'member')->getJson(
+            route('api_member_list_devices'),
+        );
+        $listResponse->assertOk();
+        $listResponse->assertJsonCount(1, 'data');
+
+        $updateResponse = $this->actingAs($member, 'member')->patchJson(
+            route('api_member_update_device', ['device_id' => $deviceId]),
+            [
+                'push_token' => 'token-1',
+                'push_provider' => 'fcm',
+            ],
+        );
+        $updateResponse->assertOk();
+
+        $keysResponse = $this->actingAs($member, 'member')->getJson(
+            route('api_member_list_device_keys', [
+                'device_id' => $deviceId,
+                'include_public_key' => 1,
+            ]),
+        );
+        $keysResponse->assertOk();
+        $this->assertArrayNotHasKey('public_key', $keysResponse->json('data.0'));
+
+        $newKeyId = $this->randomKeyId();
+        $newPublicKey = $this->randomPublicKey();
+
+        $rotateResponse = $this->actingAs($member, 'member')->postJson(
+            route('api_member_rotate_device_key', ['device_id' => $deviceId]),
+            [
+                'key_id' => $newKeyId,
+                'public_key' => $newPublicKey,
+            ],
+        );
+        $rotateResponse->assertOk();
+        $rotateResponse->assertJsonPath('data.key_id', $newKeyId);
+
+        $this->assertDatabaseHas('device_keys', ['key_id' => $newKeyId, 'status' => 'active']);
+        $this->assertDatabaseHas('device_keys', ['key_id' => $keyId, 'status' => 'revoked']);
+
+        $revokeKeyResponse = $this->actingAs($member, 'member')->deleteJson(
+            route('api_member_revoke_device_key', [
+                'device_id' => $deviceId,
+                'key_id' => $newKeyId,
+            ]),
+        );
+        $revokeKeyResponse->assertOk();
+        $revokeKeyResponse->assertJsonPath('data.status', 'revoked');
+        $this->assertDatabaseHas('device_keys', ['key_id' => $newKeyId, 'status' => 'revoked']);
+
+        $revokeDeviceResponse = $this->actingAs($member, 'member')->deleteJson(
+            route('api_member_revoke_device', ['device_id' => $deviceId]),
+        );
+        $revokeDeviceResponse->assertOk();
+        $revokeDeviceResponse->assertJsonPath('data.status', 'revoked');
+        $this->assertDatabaseHas('devices', ['device_id' => $deviceId, 'status' => 'revoked']);
+    }
+
+    public function testMemberCanIncludeKeysOnList(): void
+    {
+        $member = Member::factory()->create();
+
+        $deviceId = 'device-include-keys';
+        $keyId = $this->randomKeyId();
+        $publicKey = $this->randomPublicKey();
+
+        $registerResponse = $this->actingAs($member, 'member')->postJson(
+            route('api_member_register_device'),
+            [
+                'device_id' => $deviceId,
+                'key_id' => $keyId,
+                'public_key' => $publicKey,
+            ],
+        );
+        $registerResponse->assertOk();
+
+        $listResponse = $this->actingAs($member, 'member')->getJson(
+            route('api_member_list_devices', ['include' => 'keys']),
+        );
+
+        $listResponse->assertOk();
+        $this->assertSame($deviceId, $listResponse->json('data.0.device_id'));
+        $this->assertSame($keyId, $listResponse->json('data.0.keys.data.0.key_id'));
+        $this->assertNull($listResponse->json('data.0.keys.data.0.public_key'));
+    }
+
+    private function randomKeyId(): string
+    {
+        return $this->base64UrlEncode(random_bytes(12));
+    }
+
+    private function randomPublicKey(): string
+    {
+        $length = defined('SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES')
+            ? SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES
+            : 32;
+
+        return $this->base64UrlEncode(random_bytes($length));
+    }
+
+    private function base64UrlEncode(string $value): string
+    {
+        return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
+    }
+}

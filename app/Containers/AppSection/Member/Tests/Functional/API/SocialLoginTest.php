@@ -4,6 +4,7 @@ namespace App\Containers\AppSection\Member\Tests\Functional\API;
 
 use App\Containers\AppSection\Member\Enums\MemberStatus;
 use App\Containers\AppSection\Member\Models\Member;
+use App\Containers\AppSection\Member\Models\MemberSocialAccount;
 use App\Containers\AppSection\Authentication\Data\Factories\ClientFactory;
 use App\Containers\AppSection\Member\Tests\Functional\ApiTestCase;
 use Illuminate\Support\Facades\Config;
@@ -68,7 +69,7 @@ class SocialLoginTest extends ApiTestCase
         $response->assertCookie('memberRefreshToken');
         $response->assertJsonStructure([
             'data' => [
-                'object',
+                'type',
                 'id',
                 'name',
                 'email',
@@ -85,5 +86,62 @@ class SocialLoginTest extends ApiTestCase
             'provider' => $provider,
             'provider_id' => '123456789',
         ]);
+    }
+
+    public function testHandleProviderCallbackUsesExistingSocialAccountWhenEmailChanged(): void
+    {
+        ClientFactory::memberClient();
+
+        $provider = 'google';
+        $member = Member::create([
+            'name' => 'Existing Social User',
+            'email' => 'old-email@test.com',
+            'password' => 'password123!',
+            'status' => MemberStatus::ACTIVE,
+            'email_verified_at' => now(),
+        ]);
+        MemberSocialAccount::create([
+            'member_id' => $member->id,
+            'provider' => $provider,
+            'provider_id' => 'provider-user-1',
+            'token' => 'old-token',
+            'avatar' => null,
+        ]);
+
+        $socialUser = new SocialiteUser();
+        $socialUser->id = 'provider-user-1';
+        $socialUser->name = 'Existing Social User';
+        $socialUser->email = 'new-email@test.com';
+        $socialUser->token = 'new-token';
+        $socialUser->avatar = 'https://avatar.new';
+
+        $providerMock = Mockery::mock('Laravel\Socialite\Two\AbstractProvider');
+        $providerMock->shouldReceive('stateless')->andReturnSelf();
+        $providerMock->shouldReceive('user')->andReturn($socialUser);
+
+        Socialite::shouldReceive('driver')->with($provider)->andReturn($providerMock);
+
+        $url = route('api_member_social_login_callback', ['provider' => $provider]);
+        $response = $this->getJson($url);
+
+        $response->assertOk();
+        $response->assertCookie('memberRefreshToken');
+        $response->assertJsonPath('data.email', 'old-email@test.com');
+
+        $this->assertDatabaseCount('members', 1);
+        $this->assertDatabaseHas('member_social_accounts', [
+            'member_id' => $member->id,
+            'provider' => $provider,
+            'provider_id' => 'provider-user-1',
+        ]);
+
+        $updatedAccount = MemberSocialAccount::query()
+            ->where('member_id', $member->id)
+            ->where('provider', $provider)
+            ->first();
+
+        $this->assertNotNull($updatedAccount);
+        $this->assertSame('new-token', $updatedAccount->token);
+        $this->assertNotSame('new-token', (string) $updatedAccount->getRawOriginal('token'));
     }
 }

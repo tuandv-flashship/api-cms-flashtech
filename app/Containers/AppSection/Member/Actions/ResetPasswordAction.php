@@ -2,15 +2,20 @@
 
 namespace App\Containers\AppSection\Member\Actions;
 
-use App\Ship\Parents\Actions\Action as ParentAction;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Auth\Access\AuthorizationException;
 use App\Containers\AppSection\Member\Models\Member;
 use App\Containers\AppSection\Member\Tasks\RevokeMemberTokensTask;
+use App\Ship\Parents\Actions\Action as ParentAction;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Validation\ValidationException;
 
-class ResetPasswordAction extends ParentAction
+final class ResetPasswordAction extends ParentAction
 {
+    public function __construct(
+        private readonly RevokeMemberTokensTask $revokeMemberTokensTask,
+    ) {
+    }
+
     public function run(array $data): void
     {
         if (!config('member.password_reset.enabled')) {
@@ -19,15 +24,15 @@ class ResetPasswordAction extends ParentAction
 
         $status = Password::broker('members')->reset(
             $data,
-            static function (Member $member, string $password): void {
+            function (Member $member, string $password): void {
                 $member->forceFill([
                     'password' => $password,
                 ]);
 
                 $member->save();
 
-                app(RevokeMemberTokensTask::class)->run($member);
-            }
+                $this->revokeMemberTokensTask->run($member);
+            },
         );
 
         if ($status === Password::PASSWORD_RESET) {

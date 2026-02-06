@@ -7,14 +7,14 @@ use App\Ship\Exceptions\DeleteResourceFailedException;
 use App\Ship\Parents\Tasks\Task as ParentTask;
 use Exception;
 
-class DeleteMemberTask extends ParentTask
+final class DeleteMemberTask extends ParentTask
 {
     public function __construct(
-        protected MemberRepository $repository
+        private readonly MemberRepository $repository
     ) {
     }
 
-    public function run($id): int
+    public function run(int|string $id): int
     {
         try {
             return $this->repository->delete($id);

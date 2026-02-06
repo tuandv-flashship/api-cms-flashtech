@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Member\UI\API\Transformers;
 
+use App\Containers\AppSection\Member\Enums\MemberStatus;
 use App\Containers\AppSection\Member\Models\Member;
 use App\Ship\Parents\Transformers\Transformer as ParentTransformer;
 
@@ -17,19 +18,21 @@ class MemberTransformer extends ParentTransformer
 
     public function transform(Member $member): array
     {
+        $status = $member->status;
+
         return [
-            'object' => 'Member',
+            'type' => $member->getResourceKey(),
             'id' => $member->getHashedKey(),
             'name' => $member->name,
             'username' => $member->username,
             'email' => $member->email,
-            'email_verified_at' => $member->email_verified_at,
-            'dob' => $member->dob,
+            'email_verified_at' => $member->email_verified_at?->toISOString(),
+            'dob' => $member->dob?->toDateString(),
             'phone' => $member->phone,
             'description' => $member->description,
-            'status' => $member->status,
-            'created_at' => $member->created_at,
-            'updated_at' => $member->updated_at,
+            'status' => $status instanceof MemberStatus ? $status->value : $status,
+            'created_at' => $member->created_at?->toISOString(),
+            'updated_at' => $member->updated_at?->toISOString(),
         ];
     }
 }

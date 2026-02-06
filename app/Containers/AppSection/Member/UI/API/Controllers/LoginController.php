@@ -10,20 +10,25 @@ use App\Ship\Parents\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
-class LoginController extends ApiController
+final class LoginController extends ApiController
 {
+    public function __construct(
+        private readonly LoginMemberAction $loginMemberAction,
+        private readonly MemberTokenResponder $memberTokenResponder,
+    ) {
+    }
+
     public function loginMember(LoginMemberRequest $request): JsonResponse
     {
         try {
             $clientType = MemberClientType::fromRequest($request);
 
-            $result = app(LoginMemberAction::class)->run($request, $clientType);
+            $result = $this->loginMemberAction->run($request, $clientType);
             $token = $result['token'];
 
-            return app(MemberTokenResponder::class)->login(
+            return $this->memberTokenResponder->login(
                 $result['member'],
                 $token,
                 $clientType,
@@ -42,24 +47,10 @@ class LoginController extends ApiController
             ], 403);
         }
 
-        if ($exception instanceof NotFoundHttpException) {
-            return response()->json([
-                'message' => $exception->getMessage(),
-                'error_code' => 'member_not_found',
-            ], 404);
-        }
-
         if ($exception instanceof AuthenticationException) {
-            $code = match ($exception->getMessage()) {
-                'Invalid credentials.' => 'invalid_credentials',
-                'Email is not verified.' => 'email_not_verified',
-                'Member account is not active.' => 'member_not_active',
-                default => 'authentication_failed',
-            };
-
             return response()->json([
-                'message' => $exception->getMessage(),
-                'error_code' => $code,
+                'message' => 'Invalid credentials.',
+                'error_code' => 'invalid_credentials',
             ], 401);
         }
 

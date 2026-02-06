@@ -15,8 +15,15 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
-class UpdateMemberProfileAction extends ParentAction
+final class UpdateMemberProfileAction extends ParentAction
 {
+    public function __construct(
+        private readonly UpdateMemberTask $updateMemberTask,
+        private readonly RevokeMemberTokensTask $revokeMemberTokensTask,
+        private readonly CreateMemberActivityLogTask $createMemberActivityLogTask,
+    ) {
+    }
+
     public function run(UpdateMemberProfileRequest $request): Member
     {
         $data = $request->validated();
@@ -78,14 +85,7 @@ class UpdateMemberProfileAction extends ParentAction
             }
 
             unset($data['current_password']);
-            $data['password'] = Hash::make($data['password']);
         }
-
-        // Handle avatar_id decoding if needed?
-        // Apiato requests usually handle decoding if configured in $decode property.
-        // But standard validation just checks string.
-        // Assuming Request decodes it or we use hashed id.
-        // If Request uses 'decode', data will have decoded id.
 
         $emailChanged = array_key_exists('email', $data) && $data['email'] !== $member->email;
         $isEmailVerificationEnabled = config('member.email_verification.enabled');
@@ -99,7 +99,7 @@ class UpdateMemberProfileAction extends ParentAction
             }
         }
 
-        $member = app(UpdateMemberTask::class)->run($member, $data);
+        $member = $this->updateMemberTask->run($member->id, $data);
 
         if ($emailChanged && $isEmailVerificationEnabled) {
             // Dispatch after persisting the new email to ensure the queued listener uses the correct address.
@@ -110,25 +110,25 @@ class UpdateMemberProfileAction extends ParentAction
             && $member->status !== MemberStatus::ACTIVE;
 
         if ($hasPasswordChange || $statusBecameInactive) {
-            app(RevokeMemberTokensTask::class)->run($member);
+            $this->revokeMemberTokensTask->run($member);
         }
 
         if ($hasProfileChanges) {
-            app(CreateMemberActivityLogTask::class)->run([
+            $this->createMemberActivityLogTask->run([
                 'member_id' => $member->id,
                 'action' => 'update_setting',
             ]);
         }
 
         if ($hasAvatarChange) {
-            app(CreateMemberActivityLogTask::class)->run([
+            $this->createMemberActivityLogTask->run([
                 'member_id' => $member->id,
                 'action' => 'changed_avatar',
             ]);
         }
 
         if ($hasPasswordChange) {
-            app(CreateMemberActivityLogTask::class)->run([
+            $this->createMemberActivityLogTask->run([
                 'member_id' => $member->id,
                 'action' => 'update_security',
             ]);

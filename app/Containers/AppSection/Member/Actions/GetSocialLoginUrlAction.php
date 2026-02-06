@@ -6,7 +6,7 @@ use App\Ship\Parents\Actions\Action as ParentAction;
 use Illuminate\Auth\Access\AuthorizationException;
 use Laravel\Socialite\Facades\Socialite;
 
-class GetSocialLoginUrlAction extends ParentAction
+final class GetSocialLoginUrlAction extends ParentAction
 {
     public function run(string $provider, string|null $redirectUrl = null): string
     {

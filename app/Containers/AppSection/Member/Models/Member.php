@@ -2,12 +2,15 @@
 
 namespace App\Containers\AppSection\Member\Models;
 
+use App\Containers\AppSection\Device\Models\Device;
+use App\Containers\AppSection\Device\Enums\DeviceOwnerType;
 use App\Containers\AppSection\Media\Models\MediaFile;
 use App\Containers\AppSection\Member\Enums\MemberStatus;
 use App\Containers\AppSection\Member\Notifications\ResetPasswordNotification;
 use App\Containers\AppSection\Member\Models\MemberActivityLog;
 use App\Ship\Parents\Models\UserModel as ParentUserModel;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
@@ -58,9 +61,15 @@ class Member extends ParentUserModel
         return $this->hasMany(MemberActivityLog::class);
     }
 
+    public function devices(): HasMany
+    {
+        return $this->hasMany(Device::class, 'owner_id')
+            ->where('owner_type', DeviceOwnerType::MEMBER);
+    }
+
     /**
-     * Allows Passport to find the member by email (case-insensitive) and
-     * enforce member login rules for password grant.
+     * Allows Passport to find the member by username/email (case-insensitive)
+     * and enforce member login rules for password grant.
      */
     public function findForPassport(string $username): self|null
     {
@@ -68,7 +77,7 @@ class Member extends ParentUserModel
             return null;
         }
 
-        $login = strtolower($username);
+        $login = self::normalizeLogin($username);
         $baseQuery = self::query()
             ->where('status', MemberStatus::ACTIVE);
 
@@ -76,17 +85,7 @@ class Member extends ParentUserModel
             $baseQuery->whereNotNull('email_verified_at');
         }
 
-        $member = (clone $baseQuery)
-            ->where('username', $login)
-            ->first();
-
-        if ($member) {
-            return $member;
-        }
-
-        return (clone $baseQuery)
-            ->where('email', $login)
-            ->first();
+        return self::applyLoginIdentifierFilter((clone $baseQuery), $login)->first();
     }
 
     public function sendPasswordResetNotification($token): void
@@ -172,5 +171,21 @@ class Member extends ParentUserModel
                 return $candidate;
             }
         }
+    }
+
+    public static function applyLoginIdentifierFilter(Builder $query, string $login): Builder
+    {
+        $normalized = self::normalizeLogin($login);
+
+        if (filter_var($normalized, FILTER_VALIDATE_EMAIL)) {
+            return $query->where('email', $normalized);
+        }
+
+        return $query->where('username', $normalized);
+    }
+
+    public static function normalizeLogin(string $login): string
+    {
+        return strtolower(trim($login));
     }
 }

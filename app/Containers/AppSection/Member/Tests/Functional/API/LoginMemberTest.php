@@ -36,7 +36,7 @@ class LoginMemberTest extends ApiTestCase
         $response->assertCookie('memberRefreshToken');
         $response->assertJsonStructure([
             'data' => [
-                'object',
+                'type',
                 'id',
                 'name',
                 'email',
@@ -71,7 +71,7 @@ class LoginMemberTest extends ApiTestCase
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
-                'object',
+                'type',
                 'id',
                 'name',
                 'email',
@@ -115,7 +115,11 @@ class LoginMemberTest extends ApiTestCase
 
         $response = $this->postJson($this->endpoint, $data);
 
-        $response->assertNotFound();
+        $response->assertStatus(401);
+        $response->assertJson([
+            'message' => 'Invalid credentials.',
+            'error_code' => 'invalid_credentials',
+        ]);
     }
 
     public function testLoginPendingMemberIsBlocked(): void
@@ -136,7 +140,8 @@ class LoginMemberTest extends ApiTestCase
 
         $response->assertStatus(401);
         $response->assertJson([
-            'message' => 'Member account is not active.',
+            'message' => 'Invalid credentials.',
+            'error_code' => 'invalid_credentials',
         ]);
     }
 
@@ -158,7 +163,8 @@ class LoginMemberTest extends ApiTestCase
 
         $response->assertStatus(401);
         $response->assertJson([
-            'message' => 'Member account is not active.',
+            'message' => 'Invalid credentials.',
+            'error_code' => 'invalid_credentials',
         ]);
     }
 }

@@ -4,17 +4,19 @@ namespace App\Containers\AppSection\Member\Tasks;
 
 use App\Containers\AppSection\Member\Data\Repositories\MemberRepository;
 use App\Ship\Parents\Tasks\Task as ParentTask;
-use Apiato\Core\Page\Page;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class GetAllMembersTask extends ParentTask
+final class GetAllMembersTask extends ParentTask
 {
     public function __construct(
-        protected MemberRepository $repository
+        private readonly MemberRepository $repository
     ) {
     }
 
-    public function run(): mixed
+    public function run(): LengthAwarePaginator
     {
-        return $this->repository->paginate();
+        return $this->repository
+            ->addRequestCriteria()
+            ->paginate();
     }
 }

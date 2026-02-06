@@ -5,12 +5,17 @@ namespace App\Containers\AppSection\Member\Actions;
 use App\Containers\AppSection\Member\Tasks\GetAllMembersTask;
 use App\Containers\AppSection\Member\UI\API\Requests\Admin\GetAllMembersRequest;
 use App\Ship\Parents\Actions\Action as ParentAction;
-use Apiato\Core\Page\Page;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class GetAllMembersAction extends ParentAction
+final class GetAllMembersAction extends ParentAction
 {
-    public function run(GetAllMembersRequest $request): mixed
+    public function __construct(
+        private readonly GetAllMembersTask $getAllMembersTask,
+    ) {
+    }
+
+    public function run(GetAllMembersRequest $request): LengthAwarePaginator
     {
-        return app(GetAllMembersTask::class)->run();
+        return $this->getAllMembersTask->run();
     }
 }

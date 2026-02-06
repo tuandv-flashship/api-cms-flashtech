@@ -25,7 +25,7 @@ class RegisterMemberTest extends ApiTestCase
         $response->assertStatus(201);
         $response->assertJsonStructure([
             'data' => [
-                'object',
+                'type',
                 'id',
                 'name',
                 'email',

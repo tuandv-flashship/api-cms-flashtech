@@ -4,8 +4,8 @@ namespace App\Containers\AppSection\Member\Actions;
 
 use App\Containers\AppSection\Member\Events\MemberLoggedIn;
 use App\Containers\AppSection\Member\Enums\MemberStatus;
-use App\Containers\AppSection\Member\Models\Member;
 use App\Containers\AppSection\Member\Tasks\CreateMemberActivityLogTask;
+use App\Containers\AppSection\Member\Tasks\FindMemberByLoginTask;
 use App\Containers\AppSection\Member\UI\API\Requests\LoginMemberRequest;
 use App\Containers\AppSection\Member\Actions\IssueMemberTokenAction;
 use App\Containers\AppSection\Member\Values\MemberClientType;
@@ -14,10 +14,16 @@ use App\Ship\Parents\Actions\Action as ParentAction;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Hash;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class LoginMemberAction extends ParentAction
+final class LoginMemberAction extends ParentAction
 {
+    public function __construct(
+        private readonly FindMemberByLoginTask $findMemberByLoginTask,
+        private readonly IssueMemberTokenAction $issueMemberTokenAction,
+        private readonly CreateMemberActivityLogTask $createMemberActivityLogTask,
+    ) {
+    }
+
     public function run(LoginMemberRequest $request, string $clientType = MemberClientType::WEB): array
     {
         $input = $request->validated();
@@ -26,39 +32,29 @@ class LoginMemberAction extends ParentAction
             throw new AuthorizationException('Member login is disabled.');
         }
 
-        $login = strtolower($input['login']);
+        $login = (string) $input['login'];
 
-        $member = Member::query()
-            ->where('username', $login)
-            ->first();
+        $member = $this->findMemberByLoginTask->run($login);
 
-        if (!$member) {
-            $member = Member::where('email', $login)->first();
-        }
-
-        if (!$member) {
-            throw new NotFoundHttpException('Member not found.');
-        }
-
-        if (!Hash::check($input['password'], $member->password)) {
+        if (!$member || !Hash::check($input['password'], $member->password)) {
             throw new AuthenticationException('Invalid credentials.');
         }
 
         if (config('member.email_verification.enabled') && !$member->hasVerifiedEmail()) {
-            throw new AuthenticationException('Email is not verified.');
+            throw new AuthenticationException('Invalid credentials.');
         }
 
         if ($member->status !== MemberStatus::ACTIVE) {
-            throw new AuthenticationException('Member account is not active.');
+            throw new AuthenticationException('Invalid credentials.');
         }
 
-        $token = app(IssueMemberTokenAction::class)->run(
+        $token = $this->issueMemberTokenAction->run(
             UserCredential::create($login, $input['password']),
             $clientType,
         );
 
         MemberLoggedIn::dispatch($member);
-        app(CreateMemberActivityLogTask::class)->run([
+        $this->createMemberActivityLogTask->run([
             'member_id' => $member->id,
             'action' => 'login',
         ]);

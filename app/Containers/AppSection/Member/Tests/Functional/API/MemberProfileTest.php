@@ -18,7 +18,7 @@ class MemberProfileTest extends ApiTestCase
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
-                'object',
+                'type',
                 'id',
                 'name',
                 'email',

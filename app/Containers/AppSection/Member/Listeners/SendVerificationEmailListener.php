@@ -9,8 +9,13 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 class SendVerificationEmailListener extends ParentListener implements ShouldQueue
 {
+    public function __construct(
+        private readonly SendVerificationEmailAction $sendVerificationEmailAction,
+    ) {
+    }
+
     public function handle(MemberRegistered $event): void
     {
-        app(SendVerificationEmailAction::class)->run($event->member);
+        $this->sendVerificationEmailAction->run($event->member);
     }
 }

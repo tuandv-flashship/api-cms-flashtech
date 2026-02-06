@@ -15,6 +15,14 @@ class MemberSocialAccount extends ParentModel
         'avatar',
     ];
 
+    protected $hidden = [
+        'token',
+    ];
+
+    protected $casts = [
+        'token' => 'encrypted',
+    ];
+
     public function member(): BelongsTo
     {
         return $this->belongsTo(Member::class);

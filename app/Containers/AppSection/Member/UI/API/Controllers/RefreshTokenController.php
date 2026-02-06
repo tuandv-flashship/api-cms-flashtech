@@ -15,19 +15,25 @@ use League\OAuth2\Server\Exception\OAuthServerException;
 
 final class RefreshTokenController extends ApiController
 {
-    public function __invoke(RefreshMemberTokenRequest $request, RefreshMemberTokenAction $action): JsonResponse
+    public function __construct(
+        private readonly RefreshMemberTokenAction $refreshMemberTokenAction,
+        private readonly MemberTokenResponder $memberTokenResponder,
+    ) {
+    }
+
+    public function __invoke(RefreshMemberTokenRequest $request): JsonResponse
     {
         try {
             $clientType = MemberClientType::fromRequest($request);
 
             $refreshToken = MemberRefreshToken::createFrom($request);
 
-            $token = $action->run(
+            $token = $this->refreshMemberTokenAction->run(
                 RefreshToken::create($refreshToken->value()),
                 $clientType,
             );
 
-            return app(MemberTokenResponder::class)->refresh($token, $clientType);
+            return $this->memberTokenResponder->refresh($token, $clientType);
         } catch (OAuthServerException $exception) {
             $payload = $exception->getPayload();
             $errorType = $exception->getErrorType();

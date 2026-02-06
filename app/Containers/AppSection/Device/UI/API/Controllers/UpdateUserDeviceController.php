@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Containers\AppSection\Device\UI\API\Controllers;
+
+use Apiato\Support\Facades\Response;
+use App\Containers\AppSection\Device\Actions\UpdateDeviceAction;
+use App\Containers\AppSection\Device\UI\API\Requests\UpdateUserDeviceRequest;
+use App\Containers\AppSection\Device\UI\API\Transformers\DeviceTransformer;
+use App\Ship\Parents\Controllers\ApiController;
+use Illuminate\Http\JsonResponse;
+use App\Containers\AppSection\Device\Enums\DeviceOwnerType;
+
+final class UpdateUserDeviceController extends ApiController
+{
+    public function __invoke(UpdateUserDeviceRequest $request): JsonResponse
+    {
+        $userId = (int) $request->user('api')->id;
+
+        $device = app(UpdateDeviceAction::class)->run(
+            DeviceOwnerType::USER,
+            $userId,
+            (string) $request->route('device_id'),
+            $request->validated(),
+        );
+
+        return Response::create($device, DeviceTransformer::class)->ok();
+    }
+}

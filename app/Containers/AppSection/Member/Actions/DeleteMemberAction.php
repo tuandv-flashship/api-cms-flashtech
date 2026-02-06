@@ -8,13 +8,20 @@ use App\Containers\AppSection\Member\Tasks\DeleteMemberTask;
 use App\Containers\AppSection\Member\UI\API\Requests\Admin\DeleteMemberRequest;
 use App\Ship\Parents\Actions\Action as ParentAction;
 
-class DeleteMemberAction extends ParentAction
+final class DeleteMemberAction extends ParentAction
 {
+    public function __construct(
+        private readonly FindMemberByIdTask $findMemberByIdTask,
+        private readonly CreateMemberActivityLogTask $createMemberActivityLogTask,
+        private readonly DeleteMemberTask $deleteMemberTask,
+    ) {
+    }
+
     public function run(DeleteMemberRequest $request): void
     {
-        $member = app(FindMemberByIdTask::class)->run($request->id);
+        $member = $this->findMemberByIdTask->run($request->id);
 
-        app(CreateMemberActivityLogTask::class)->run([
+        $this->createMemberActivityLogTask->run([
             'member_id' => $member->id,
             'action' => 'delete',
             'user_agent' => $request->userAgent(),
@@ -23,6 +30,6 @@ class DeleteMemberAction extends ParentAction
             'ip_address' => $request->ip(),
         ]);
 
-        app(DeleteMemberTask::class)->run($member->id);
+        $this->deleteMemberTask->run($member->id);
     }
 }

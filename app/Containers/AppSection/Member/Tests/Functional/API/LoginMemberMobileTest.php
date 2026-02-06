@@ -33,7 +33,7 @@ class LoginMemberMobileTest extends ApiTestCase
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
-                'object',
+                'type',
                 'id',
                 'name',
                 'email',
@@ -69,7 +69,7 @@ class LoginMemberMobileTest extends ApiTestCase
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
-                'object',
+                'type',
                 'id',
                 'name',
                 'email',

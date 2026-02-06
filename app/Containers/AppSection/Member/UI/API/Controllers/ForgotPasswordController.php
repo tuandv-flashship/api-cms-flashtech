@@ -8,11 +8,16 @@ use App\Containers\AppSection\Member\UI\API\Requests\ForgotPasswordRequest;
 use App\Ship\Parents\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 
-class ForgotPasswordController extends ApiController
+final class ForgotPasswordController extends ApiController
 {
+    public function __construct(
+        private readonly ForgotPasswordAction $forgotPasswordAction,
+    ) {
+    }
+
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
-        app(ForgotPasswordAction::class)->run($request->email);
+        $this->forgotPasswordAction->run($request->email);
 
         return Response::json([
             'message' => 'Password reset link sent.',

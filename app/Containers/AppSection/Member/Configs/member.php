@@ -13,6 +13,11 @@ return [
         'expire' => env('MEMBER_PASSWORD_RESET_EXPIRE', 60),
         // Optional frontend reset URL. If set, token + email will be appended as query params.
         'url' => env('MEMBER_PASSWORD_RESET_URL'),
+        'audit' => [
+            'enabled' => env('MEMBER_PASSWORD_RESET_AUDIT_ENABLED', true),
+            'window_minutes' => env('MEMBER_PASSWORD_RESET_AUDIT_WINDOW_MINUTES', 5),
+            'warning_threshold' => env('MEMBER_PASSWORD_RESET_AUDIT_WARNING_THRESHOLD', 20),
+        ],
     ],
     'email' => [
         'templates' => [

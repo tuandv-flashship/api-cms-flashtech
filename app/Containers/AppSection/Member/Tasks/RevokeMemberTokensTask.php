@@ -6,7 +6,7 @@ use App\Containers\AppSection\Member\Models\Member;
 use App\Ship\Parents\Tasks\Task as ParentTask;
 use Illuminate\Support\Facades\DB;
 
-class RevokeMemberTokensTask extends ParentTask
+final class RevokeMemberTokensTask extends ParentTask
 {
     public function run(Member $member): void
     {
