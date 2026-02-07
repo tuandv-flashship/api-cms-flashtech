@@ -9,6 +9,24 @@ final class DownloadMediaFileRequest extends ParentRequest
 {
     protected array $decode = ['folder_id'];
 
+    /**
+     * @return array{
+     *  url:string,
+     *  folder_id:int,
+     *  visibility:?string,
+     *  access_mode:?string
+     * }
+     */
+    public function downloadInput(): array
+    {
+        return [
+            'url' => (string) $this->input('url'),
+            'folder_id' => (int) $this->input('folder_id', 0),
+            'visibility' => $this->input('visibility'),
+            'access_mode' => $this->input('access_mode'),
+        ];
+    }
+
     public function rules(): array
     {
         return [

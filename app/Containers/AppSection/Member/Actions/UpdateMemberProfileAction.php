@@ -72,10 +72,6 @@ final class UpdateMemberProfileAction extends ParentAction
             }
         }
 
-        $inputKeys = array_keys($data);
-
-        $hasProfileChanges = !empty(array_diff($inputKeys, ['avatar_id', 'password']));
-        $hasAvatarChange = array_key_exists('avatar_id', $data);
         $hasPasswordChange = array_key_exists('password', $data);
 
         if ($hasPasswordChange) {
@@ -84,6 +80,8 @@ final class UpdateMemberProfileAction extends ParentAction
                 throw new IncorrectPasswordException();
             }
 
+            unset($data['current_password']);
+        } else {
             unset($data['current_password']);
         }
 
@@ -97,6 +95,20 @@ final class UpdateMemberProfileAction extends ParentAction
             } else {
                 $data['email_verified_at'] = now();
             }
+        }
+
+        $hasAvatarChange = array_key_exists('avatar_id', $data);
+        $hasProfileChanges = !empty(array_diff(array_keys($data), [
+            'avatar_id',
+            'password',
+            'current_password',
+            'username_changed_at',
+            'email_verified_at',
+            'status',
+        ]));
+
+        if ($data === []) {
+            return $member;
         }
 
         $member = $this->updateMemberTask->run($member->id, $data);

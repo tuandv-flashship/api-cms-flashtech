@@ -12,11 +12,16 @@ use App\Containers\AppSection\Device\Enums\DeviceOwnerType;
 
 final class RevokeMemberDeviceKeyController extends ApiController
 {
+    public function __construct(
+        private readonly RevokeDeviceKeyAction $revokeDeviceKeyAction,
+    ) {
+    }
+
     public function __invoke(RevokeMemberDeviceKeyRequest $request): JsonResponse
     {
         $memberId = (int) $request->user('member')->id;
 
-        $deviceKey = app(RevokeDeviceKeyAction::class)->run(
+        $deviceKey = $this->revokeDeviceKeyAction->run(
             DeviceOwnerType::MEMBER,
             $memberId,
             (string) $request->route('device_id'),

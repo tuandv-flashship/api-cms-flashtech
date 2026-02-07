@@ -13,29 +13,20 @@ final class ListCategoriesTask extends ParentTask
     /**
      * @param array<string, mixed> $filters
      */
-    public function run(array $filters, int $perPage, int $page): LengthAwarePaginator
+    public function run(array $filters): LengthAwarePaginator
     {
+        $perPage = max(1, (int) request()->input('limit', config('repository.pagination.limit', 10)));
+        $page = max(1, (int) request()->input('page', 1));
+
         $with = LanguageAdvancedManager::withTranslations(
             ['slugable', 'parent'],
             Category::class
         );
 
-        // Check if 'children' is requested in includes to eager load it
-        // Note: Task doesn't directly access Request, but we can verify usually via Apiato Repository or here if needed.
-        // However, to fix N+1 securely we should add it if we know we need it.
-        // A simpler way is to check the request directly or just rely on 'with' if we passed includes.
-        
-        // Since we are inside a Task, accessing request() helper is acceptable but coupling.
-        // Better: pass includes array to Task. But for quick fix:
         $includes = request()->query('include');
-        if($includes && str_contains($includes, 'children')) {
-            // Eager load children AND their nested relations needed by Transformer
-            // Specifically 'slugable' is used in Transformer via $category->slug which triggers slugable.
-            $with[] = 'children.slugable'; 
-            $with[] = 'children'; // Keep base relation too if needed, though dot notation usually covers deep, but safer to have base for collection access if behavior differs.
-             // Also load translations for children if language advanced is used, but basic children rel is key.
-             // If children also have translations:
-             // $with[] = 'children.translations'; // If needed. 
+        if ($includes && str_contains($includes, 'children')) {
+            $with[] = 'children.slugable';
+            $with[] = 'children';
         }
 
         $query = Category::query()

@@ -23,4 +23,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::delete('users/devices/{device_id}/keys/{key_id}', RevokeUserDeviceKeyController::class)
     ->name('api_user_revoke_device_key')
-    ->middleware(['auth:api']);
+    ->middleware([
+        'auth:api',
+        'request.signature',
+        'throttle:' . config('device.throttle.revoke_key', '20,1'),
+    ]);

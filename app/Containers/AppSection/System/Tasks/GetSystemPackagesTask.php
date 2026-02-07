@@ -13,7 +13,7 @@ final class GetSystemPackagesTask extends ParentTask
     {
     }
 
-    public function run(int $page = 1, int $perPage = 15): LengthAwarePaginator
+    public function run(): LengthAwarePaginator
     {
         $ttl = (int) config('appSection-system.packages_cache_seconds', 300);
 
@@ -22,8 +22,8 @@ final class GetSystemPackagesTask extends ParentTask
             : $this->buildPackages();
 
         $total = count($packages);
-        $page = max(1, $page);
-        $perPage = max(1, $perPage);
+        $page = max(1, (int) request()->input('page', LengthAwarePaginator::resolveCurrentPage()));
+        $perPage = max(1, (int) request()->input('limit', config('repository.pagination.limit', 10)));
         $offset = ($page - 1) * $perPage;
 
         $items = array_slice($packages, $offset, $perPage);

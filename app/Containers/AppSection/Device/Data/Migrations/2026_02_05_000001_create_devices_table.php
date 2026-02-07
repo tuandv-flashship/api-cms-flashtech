@@ -22,6 +22,7 @@ return new class extends Migration {
             $table->timestamps();
 
             $table->index(['owner_type', 'owner_id']);
+            $table->index(['owner_type', 'owner_id', 'last_seen_at', 'id'], 'devices_owner_last_seen_id_index');
             $table->unique(['owner_type', 'owner_id', 'device_id']);
         });
     }

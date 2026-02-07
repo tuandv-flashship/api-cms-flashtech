@@ -2,11 +2,12 @@
 
 namespace App\Containers\AppSection\Device\Actions;
 
-use App\Containers\AppSection\Device\Data\Repositories\DeviceRepository;
 use App\Containers\AppSection\Device\Enums\DeviceOwnerType;
 use App\Containers\AppSection\Device\Models\Device;
 use App\Containers\AppSection\Device\Tasks\FindDeviceByOwnerTask;
+use App\Containers\AppSection\Device\Tasks\NullifyDevicesByPushTokenHashTask;
 use App\Containers\AppSection\Device\Tasks\UpdateDeviceTask;
+use App\Containers\AppSection\Device\Supports\PushTokenHasher;
 use App\Ship\Parents\Actions\Action as ParentAction;
 use Illuminate\Support\Facades\DB;
 
@@ -15,7 +16,7 @@ final class UpdateDeviceAction extends ParentAction
     public function __construct(
         private readonly FindDeviceByOwnerTask $findDeviceByOwnerTask,
         private readonly UpdateDeviceTask $updateDeviceTask,
-        private readonly DeviceRepository $deviceRepository,
+        private readonly NullifyDevicesByPushTokenHashTask $nullifyDevicesByPushTokenHashTask,
     ) {
     }
 
@@ -43,18 +44,15 @@ final class UpdateDeviceAction extends ParentAction
             }
 
             if (array_key_exists('push_token', $payload)) {
-                $updates['push_token_hash'] = $this->hashPushToken($payload['push_token'] ?? null);
+                $updates['push_token_hash'] = PushTokenHasher::hash($payload['push_token'] ?? null);
             }
 
             if (!empty($updates['push_token_hash']) && !empty($updates['push_provider'])) {
-                $this->deviceRepository->getModel()->newQuery()
-                    ->where('push_provider', $updates['push_provider'])
-                    ->where('push_token_hash', $updates['push_token_hash'])
-                    ->where('id', '<>', $device->id)
-                    ->update([
-                        'push_token' => null,
-                        'push_token_hash' => null,
-                    ]);
+                $this->nullifyDevicesByPushTokenHashTask->run(
+                    (string) $updates['push_provider'],
+                    (string) $updates['push_token_hash'],
+                    $device->id,
+                );
             }
 
             $updates['last_seen_at'] = now();
@@ -65,14 +63,5 @@ final class UpdateDeviceAction extends ParentAction
 
             return $device;
         });
-    }
-
-    private function hashPushToken(string|null $token): string|null
-    {
-        if ($token === null || $token === '') {
-            return null;
-        }
-
-        return hash('sha256', $token);
     }
 }

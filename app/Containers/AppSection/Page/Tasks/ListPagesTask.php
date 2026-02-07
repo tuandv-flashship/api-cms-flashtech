@@ -13,8 +13,11 @@ final class ListPagesTask extends ParentTask
     /**
      * @param array<string, mixed> $filters
      */
-    public function run(array $filters, int $perPage, int $page): LengthAwarePaginator
+    public function run(array $filters): LengthAwarePaginator
     {
+        $perPage = max(1, (int) request()->input('limit', config('repository.pagination.limit', 10)));
+        $page = max(1, (int) request()->input('page', 1));
+
         $with = LanguageAdvancedManager::withTranslations(['slugable', 'user'], Page::class);
 
         $query = Page::query()

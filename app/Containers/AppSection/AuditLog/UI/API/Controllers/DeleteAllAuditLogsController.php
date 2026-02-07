@@ -10,9 +10,14 @@ use Illuminate\Http\JsonResponse;
 
 final class DeleteAllAuditLogsController extends ApiController
 {
-    public function __invoke(DeleteAllAuditLogsRequest $request, DeleteAllAuditLogsAction $action): JsonResponse
+    public function __construct(
+        private readonly DeleteAllAuditLogsAction $deleteAllAuditLogsAction,
+    ) {
+    }
+
+    public function __invoke(DeleteAllAuditLogsRequest $request): JsonResponse
     {
-        $action->run();
+        $this->deleteAllAuditLogsAction->run();
 
         return Response::noContent();
     }

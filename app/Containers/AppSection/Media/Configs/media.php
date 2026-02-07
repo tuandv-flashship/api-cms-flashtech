@@ -104,6 +104,10 @@ return [
             ],
         ],
     ],
+    'throttle' => [
+        'upload' => env('MEDIA_THROTTLE_UPLOAD', '30,1'),
+        'download_url' => env('MEDIA_THROTTLE_DOWNLOAD_URL', '20,1'),
+    ],
     'preview' => [
         'document' => [
             'enabled' => env('MEDIA_DOCUMENT_PREVIEW_ENABLED', true),

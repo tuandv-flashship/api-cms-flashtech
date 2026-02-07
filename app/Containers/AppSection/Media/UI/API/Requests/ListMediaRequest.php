@@ -17,7 +17,6 @@ final class ListMediaRequest extends ParentRequest
             'search' => ['nullable', 'string', 'max:255'],
             'sort_by' => ['nullable', 'string', 'max:50'],
             'filter' => ['nullable', 'string', 'max:50'],
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:200'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:200'],
             'page' => ['nullable', 'integer', 'min:1'],
             'selected_file_id' => ['nullable', 'integer', 'min:1'],

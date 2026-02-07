@@ -28,4 +28,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::patch('users/devices/{device_id}', UpdateUserDeviceController::class)
     ->name('api_user_update_device')
-    ->middleware(['auth:api']);
+    ->middleware([
+        'auth:api',
+        'request.signature',
+        'throttle:' . config('device.throttle.update', '30,1'),
+    ]);

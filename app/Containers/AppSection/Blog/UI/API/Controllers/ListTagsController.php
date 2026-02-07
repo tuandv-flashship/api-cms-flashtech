@@ -15,10 +15,7 @@ final class ListTagsController extends ApiController
     public function __invoke(ListTagsRequest $request, ListTagsAction $action): JsonResponse
     {
         $payload = $request->validated();
-        $perPage = (int) ($payload['limit'] ?? $payload['per_page'] ?? 15);
-        $page = (int) ($payload['page'] ?? 1);
-
-        $tags = $action->run($payload, $perPage, $page);
+        $tags = $action->run($payload);
 
         $response = Response::create($tags, TagTransformer::class);
 

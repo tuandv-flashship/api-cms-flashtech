@@ -12,8 +12,8 @@ final class GetRequestLogWidgetAction extends ParentAction
     {
     }
 
-    public function run(int $page = 1, int $perPage = 10): LengthAwarePaginator
+    public function run(): LengthAwarePaginator
     {
-        return $this->getRequestLogWidgetTask->run($page, $perPage);
+        return $this->getRequestLogWidgetTask->run();
     }
 }

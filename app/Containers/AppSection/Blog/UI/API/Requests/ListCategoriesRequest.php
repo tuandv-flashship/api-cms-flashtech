@@ -46,7 +46,6 @@ final class ListCategoriesRequest extends ParentRequest
             'search' => ['nullable', 'string', 'max:255'],
             'order_by' => ['nullable', Rule::in(['id', 'name', 'order', 'created_at', 'updated_at'])],
             'order' => ['nullable', Rule::in(['asc', 'desc'])],
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:200'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:200'],
             'page' => ['nullable', 'integer', 'min:1'],
         ];

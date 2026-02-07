@@ -2,11 +2,16 @@
 
 namespace App\Ship\Exceptions;
 
-use App\Ship\Parents\Exceptions\Exception;
 use Symfony\Component\HttpFoundation\Response;
 
-class UpdateResourceFailedException extends Exception
+class UpdateResourceFailedException extends ApiErrorException
 {
-    protected $code = Response::HTTP_INTERNAL_SERVER_ERROR;
-    protected $message = 'Failed to update Resource.';
+    public function __construct(string $message = 'Failed to update Resource.')
+    {
+        parent::__construct(
+            message: $message,
+            errorCode: 'resource_update_failed',
+            status: Response::HTTP_INTERNAL_SERVER_ERROR,
+        );
+    }
 }

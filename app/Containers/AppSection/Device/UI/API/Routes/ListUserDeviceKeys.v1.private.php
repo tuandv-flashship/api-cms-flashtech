@@ -22,4 +22,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('users/devices/{device_id}/keys', ListUserDeviceKeysController::class)
     ->name('api_user_list_device_keys')
-    ->middleware(['auth:api']);
+    ->middleware([
+        'auth:api',
+        'throttle:' . config('device.throttle.list_device_keys', '30,1'),
+    ]);

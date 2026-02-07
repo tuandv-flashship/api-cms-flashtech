@@ -23,7 +23,7 @@ class SocialLoginRequest extends ParentRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'provider' => $this->route('provider'),
+            'provider' => strtolower((string) $this->route('provider')),
         ]);
     }
 

@@ -12,8 +12,8 @@ final class ListAuditLogsAction extends ParentAction
     {
     }
 
-    public function run(int $page = 1, int $perPage = 15): LengthAwarePaginator
+    public function run(): LengthAwarePaginator
     {
-        return $this->listAuditLogsTask->run($page, $perPage);
+        return $this->listAuditLogsTask->run();
     }
 }

@@ -9,6 +9,38 @@ final class UploadMediaFileRequest extends ParentRequest
 {
     protected array $decode = ['folder_id'];
 
+    /**
+     * @return array{
+     *  folder_id:int,
+     *  visibility:?string,
+     *  access_mode:?string,
+     *  dzuuid:?string,
+     *  dzchunkindex:?int,
+     *  dztotalchunkcount:int,
+     *  dztotalfilesize:int,
+     *  dzchunksize:int,
+     *  filename:?string,
+     *  has_chunk_index:bool,
+     *  has_chunk_uuid:bool
+     * }
+     */
+    public function uploadInput(): array
+    {
+        return [
+            'folder_id' => (int) $this->input('folder_id', 0),
+            'visibility' => $this->input('visibility'),
+            'access_mode' => $this->input('access_mode'),
+            'dzuuid' => $this->input('dzuuid'),
+            'dzchunkindex' => $this->has('dzchunkindex') ? (int) $this->input('dzchunkindex') : null,
+            'dztotalchunkcount' => (int) $this->input('dztotalchunkcount', 1),
+            'dztotalfilesize' => (int) $this->input('dztotalfilesize', 0),
+            'dzchunksize' => (int) $this->input('dzchunksize', 0),
+            'filename' => $this->input('filename'),
+            'has_chunk_index' => $this->has('dzchunkindex'),
+            'has_chunk_uuid' => $this->filled('dzuuid'),
+        ];
+    }
+
     public function rules(): array
     {
         return [

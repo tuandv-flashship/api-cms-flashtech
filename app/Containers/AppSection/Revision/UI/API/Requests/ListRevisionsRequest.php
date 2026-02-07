@@ -21,7 +21,6 @@ final class ListRevisionsRequest extends ParentRequest
         return [
             'type' => $typeRules,
             'revisionable_id' => ['required', 'integer', 'min:1'],
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:200'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:200'],
             'page' => ['nullable', 'integer', 'min:1'],
             'order' => ['nullable', 'string', Rule::in(['asc', 'desc'])],

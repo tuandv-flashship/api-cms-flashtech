@@ -3,15 +3,19 @@
 namespace App\Containers\AppSection\Device\Actions;
 
 use App\Containers\AppSection\Device\Enums\DeviceOwnerType;
+use App\Containers\AppSection\Device\Exceptions\DeviceOperationException;
 use App\Containers\AppSection\Device\Models\DeviceKey;
-use App\Containers\AppSection\Device\Data\Repositories\DeviceKeyRepository;
 use App\Containers\AppSection\Device\Tasks\FindDeviceByOwnerTask;
 use App\Containers\AppSection\Device\Tasks\FindDeviceKeyByKeyIdTask;
+use App\Containers\AppSection\Device\Tasks\ListDeviceKeyIdsByDeviceIdTask;
+use App\Containers\AppSection\Device\Tasks\RevokeDeviceKeysByDeviceIdTask;
 use App\Containers\AppSection\Device\Tasks\UpdateDeviceTask;
 use App\Containers\AppSection\Device\Tasks\UpdateOrCreateDeviceKeyTask;
+use App\Containers\AppSection\Device\Supports\DeviceSignatureCacheKey;
+use App\Containers\AppSection\Device\Supports\PublicKeyValidator;
 use App\Ship\Parents\Actions\Action as ParentAction;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 final class RotateDeviceKeyAction extends ParentAction
 {
@@ -20,7 +24,8 @@ final class RotateDeviceKeyAction extends ParentAction
         private readonly FindDeviceKeyByKeyIdTask $findDeviceKeyByKeyIdTask,
         private readonly UpdateOrCreateDeviceKeyTask $updateOrCreateDeviceKeyTask,
         private readonly UpdateDeviceTask $updateDeviceTask,
-        private readonly DeviceKeyRepository $deviceKeyRepository,
+        private readonly RevokeDeviceKeysByDeviceIdTask $revokeDeviceKeysByDeviceIdTask,
+        private readonly ListDeviceKeyIdsByDeviceIdTask $listDeviceKeyIdsByDeviceIdTask,
     ) {
     }
 
@@ -28,20 +33,17 @@ final class RotateDeviceKeyAction extends ParentAction
     {
         return DB::transaction(function () use ($ownerType, $ownerId, $deviceId, $keyId, $publicKey): DeviceKey {
             $device = $this->findDeviceByOwnerTask->run($ownerType, $ownerId, $deviceId);
+            $staleKeyIds = $this->listDeviceKeyIdsByDeviceIdTask->run($device->id);
 
-            $this->assertValidPublicKey($publicKey);
+            PublicKeyValidator::assertValidEd25519PublicKey($publicKey);
 
             $existingKey = $this->findDeviceKeyByKeyIdTask->run($keyId);
 
             if ($existingKey && $existingKey->device_id !== $device->id) {
-                throw ValidationException::withMessages([
-                    'key_id' => ['The key_id has already been taken.'],
-                ]);
+                throw DeviceOperationException::keyIdTaken();
             }
 
-            $this->deviceKeyRepository->getModel()->newQuery()
-                ->where('device_id', $device->id)
-                ->update(['status' => DeviceKey::STATUS_REVOKED]);
+            $this->revokeDeviceKeysByDeviceIdTask->run($device->id);
 
             $key = $this->updateOrCreateDeviceKeyTask->run(
                 ['key_id' => $keyId],
@@ -54,41 +56,12 @@ final class RotateDeviceKeyAction extends ParentAction
             );
 
             $this->updateDeviceTask->run($device->id, ['last_seen_at' => now()]);
+            $staleKeyIds[] = $keyId;
+            foreach (array_unique($staleKeyIds) as $staleKeyId) {
+                Cache::forget(DeviceSignatureCacheKey::keyContext($staleKeyId));
+            }
 
             return $key;
         });
-    }
-
-    private function assertValidPublicKey(string $publicKey): void
-    {
-        $decoded = $this->base64UrlDecode($publicKey);
-
-        if ($decoded === null) {
-            throw ValidationException::withMessages([
-                'public_key' => ['The public_key is invalid.'],
-            ]);
-        }
-
-        if (defined('SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES')) {
-            $expected = SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES;
-            if (strlen($decoded) !== $expected) {
-                throw ValidationException::withMessages([
-                    'public_key' => ['The public_key length is invalid.'],
-                ]);
-            }
-        }
-    }
-
-    private function base64UrlDecode(string $value): string|null
-    {
-        $padded = strtr($value, '-_', '+/');
-        $padLength = strlen($padded) % 4;
-        if ($padLength > 0) {
-            $padded .= str_repeat('=', 4 - $padLength);
-        }
-
-        $decoded = base64_decode($padded, true);
-
-        return $decoded === false ? null : $decoded;
     }
 }

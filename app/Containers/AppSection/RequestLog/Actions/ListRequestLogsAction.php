@@ -12,8 +12,8 @@ final class ListRequestLogsAction extends ParentAction
     {
     }
 
-    public function run(int $page = 1, int $perPage = 15): LengthAwarePaginator
+    public function run(): LengthAwarePaginator
     {
-        return $this->listRequestLogsTask->run($page, $perPage);
+        return $this->listRequestLogsTask->run();
     }
 }

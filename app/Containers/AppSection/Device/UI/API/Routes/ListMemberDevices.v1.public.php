@@ -20,4 +20,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('member/devices', ListMemberDevicesController::class)
     ->name('api_member_list_devices')
-    ->middleware(['auth:member']);
+    ->middleware([
+        'auth:member',
+        'throttle:' . config('device.throttle.list_devices', '30,1'),
+    ]);

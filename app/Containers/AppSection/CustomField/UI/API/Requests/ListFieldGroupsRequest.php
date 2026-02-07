@@ -14,7 +14,6 @@ final class ListFieldGroupsRequest extends ParentRequest
             'status' => ['nullable', Rule::enum(ContentStatus::class)],
             'order_by' => ['nullable', Rule::in(['id', 'title', 'order', 'created_at', 'updated_at'])],
             'order' => ['nullable', Rule::in(['asc', 'desc'])],
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:200'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:200'],
             'page' => ['nullable', 'integer', 'min:1'],
         ];

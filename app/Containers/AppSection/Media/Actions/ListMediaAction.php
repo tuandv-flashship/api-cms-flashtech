@@ -26,8 +26,8 @@ final class ListMediaAction extends ParentAction
         $search = trim((string) ($filters['search'] ?? ''));
         $filter = (string) ($filters['filter'] ?? 'everything');
         $sortBy = (string) ($filters['sort_by'] ?? 'name-asc');
-        $perPage = (int) ($filters['limit'] ?? $filters['per_page'] ?? 30);
-        $page = (int) ($filters['page'] ?? 1);
+        $perPage = max(1, (int) ($filters['limit'] ?? config('repository.pagination.limit', 10)));
+        $page = max(1, (int) ($filters['page'] ?? 1));
         $includeSignedUrl = filter_var($filters['include_signed_url'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
         $folderQuery = MediaFolder::query();

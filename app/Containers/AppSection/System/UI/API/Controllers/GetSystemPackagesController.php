@@ -13,13 +13,7 @@ final class GetSystemPackagesController extends ApiController
 {
     public function __invoke(GetSystemPackagesRequest $request, GetSystemPackagesAction $action): JsonResponse
     {
-        $page = (int) $request->input('page', 1);
-        $limit = $request->input('limit');
-        $perPage = is_numeric($limit)
-            ? (int) $limit
-            : (int) $request->input('per_page', $request->input('paginate', 15));
-
-        $packages = $action->run($page, $perPage);
+        $packages = $action->run();
 
         return Response::create($packages, SystemPackageTransformer::class)->ok();
     }

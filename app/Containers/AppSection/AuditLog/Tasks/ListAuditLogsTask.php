@@ -2,17 +2,21 @@
 
 namespace App\Containers\AppSection\AuditLog\Tasks;
 
-use App\Containers\AppSection\AuditLog\Models\AuditHistory;
+use App\Containers\AppSection\AuditLog\Data\Repositories\AuditHistoryRepository;
 use App\Ship\Parents\Tasks\Task as ParentTask;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 final class ListAuditLogsTask extends ParentTask
 {
-    public function run(int $page = 1, int $perPage = 15): LengthAwarePaginator
+    public function __construct(
+        private readonly AuditHistoryRepository $repository,
+    ) {
+    }
+
+    public function run(): LengthAwarePaginator
     {
-        return AuditHistory::query()
-            ->with(['user', 'actor'])
-            ->latest()
-            ->paginate($perPage, ['*'], 'page', $page);
+        return $this->repository
+            ->scope(fn ($query) => $query->with(['user', 'actor'])->latest())
+            ->paginate();
     }
 }

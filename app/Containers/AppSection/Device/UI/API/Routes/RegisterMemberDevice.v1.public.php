@@ -29,4 +29,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('member/devices', RegisterMemberDeviceController::class)
     ->name('api_member_register_device')
-    ->middleware(['auth:member']);
+    ->middleware([
+        'auth:member',
+        'request.signature',
+        'throttle:' . config('device.throttle.register', '20,1'),
+    ]);

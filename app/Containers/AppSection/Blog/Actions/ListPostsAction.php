@@ -16,8 +16,8 @@ final class ListPostsAction extends ParentAction
     /**
      * @param array<string, mixed> $filters
      */
-    public function run(array $filters, int $perPage, int $page): LengthAwarePaginator
+    public function run(array $filters): LengthAwarePaginator
     {
-        return $this->listPostsTask->run($filters, $perPage, $page);
+        return $this->listPostsTask->run($filters);
     }
 }

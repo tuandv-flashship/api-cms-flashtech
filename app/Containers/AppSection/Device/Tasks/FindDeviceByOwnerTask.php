@@ -4,9 +4,9 @@ namespace App\Containers\AppSection\Device\Tasks;
 
 use App\Containers\AppSection\Device\Data\Repositories\DeviceRepository;
 use App\Containers\AppSection\Device\Enums\DeviceOwnerType;
+use App\Containers\AppSection\Device\Exceptions\DeviceOperationException;
 use App\Containers\AppSection\Device\Models\Device;
 use App\Ship\Parents\Tasks\Task as ParentTask;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 final class FindDeviceByOwnerTask extends ParentTask
 {
@@ -25,8 +25,8 @@ final class FindDeviceByOwnerTask extends ParentTask
             'device_id' => $deviceId,
         ])->first();
 
-        if (!$device) {
-            throw (new ModelNotFoundException())->setModel(Device::class);
+        if (! $device) {
+            throw DeviceOperationException::deviceNotFound();
         }
 
         return $device;
