@@ -13,8 +13,20 @@ final class FindCategoryByIdAction extends ParentAction
     ) {
     }
 
-    public function run(int $id): Category
+    public function run(int $id, bool $includeParent = false, bool $includeChildren = false): Category
     {
-        return $this->findCategoryTask->run($id, ['slugable', 'parent']);
+        $with = ['slugable'];
+
+        if ($includeParent) {
+            $with[] = 'parent';
+            $with[] = 'parent.slugable';
+        }
+
+        if ($includeChildren) {
+            $with[] = 'children';
+            $with[] = 'children.slugable';
+        }
+
+        return $this->findCategoryTask->run($id, $with);
     }
 }

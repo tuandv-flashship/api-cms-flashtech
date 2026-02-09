@@ -6,27 +6,20 @@ use Apiato\Support\Facades\Response;
 use App\Containers\AppSection\Blog\Actions\UpdateTagAction;
 use App\Containers\AppSection\Blog\UI\API\Requests\UpdateTagRequest;
 use App\Containers\AppSection\Blog\UI\API\Transformers\TagTransformer;
+use App\Containers\AppSection\Blog\UI\API\Transporters\UpdateTagTransporter;
 use App\Ship\Parents\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Arr;
 
 final class UpdateTagController extends ApiController
 {
     public function __invoke(UpdateTagRequest $request, UpdateTagAction $action): JsonResponse
     {
-        $payload = $request->validated();
-        $data = Arr::only($payload, [
-            'name',
-            'description',
-            'status',
+        $transporter = UpdateTagTransporter::fromArray([
+            'tag_id' => $request->tag_id,
+            ...$request->validated(),
         ]);
 
-        $tag = $action->run(
-            $request->tag_id,
-            $data,
-            $payload['slug'] ?? null,
-            $payload['seo_meta'] ?? null,
-        );
+        $tag = $action->run($transporter);
 
         return Response::create($tag, TagTransformer::class)->ok();
     }

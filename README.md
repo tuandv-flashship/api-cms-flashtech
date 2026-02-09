@@ -18,8 +18,16 @@ FORCE_SETTINGS_SEED=true php artisan db:seed --class=App\\Containers\\AppSection
 - Container README template: `docs/container-readme-template.md`
 - Regenerate index: `bash scripts/generate-containers-index.sh docs/containers-index.md auto-generated`
 - Run docs checks: `make docs`
+- Run docs checks (composer): `composer docs`
 - Regenerate index quickly: `make docs-fix`
+- Regenerate index quickly (composer): `composer docs-fix`
 - Check container README schema only: `make docs-schema`
+- Run refactor audit checklist: `make refactor-audit`
+- Run refactor audit checklist (composer): `composer refactor-audit`
+- Run P0 baseline functional tests: `make p0-baseline`
+- Run P0 baseline functional tests (composer): `composer p0-baseline`
+- Install pre-commit docs hook (make): `make hooks-install`
+- Install pre-commit docs hook: `bash scripts/install-git-hooks.sh`
 - AuditLog: `app/Containers/AppSection/AuditLog/README.md`
 - Authentication: `app/Containers/AppSection/Authentication/README.md`
 - Authorization: `app/Containers/AppSection/Authorization/README.md`

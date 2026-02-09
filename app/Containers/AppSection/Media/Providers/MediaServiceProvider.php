@@ -15,11 +15,8 @@ use League\Flysystem\Filesystem;
 
 final class MediaServiceProvider extends ParentServiceProvider
 {
-    public function boot(): void
+    public function boot(MediaSettingsStore $settings, ConfigRepository $config): void
     {
-        $settings = app(MediaSettingsStore::class);
-        $config = app('config');
-
         $this->applyChunkSettings($config, $settings);
         $this->applyUploadPathSettings($config, $settings);
         $this->applyDiskSettings($config, $settings);

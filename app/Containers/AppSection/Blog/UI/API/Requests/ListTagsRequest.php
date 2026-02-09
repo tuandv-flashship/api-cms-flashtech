@@ -9,7 +9,8 @@ use Illuminate\Validation\Rule;
 final class ListTagsRequest extends ParentRequest
 {
     protected array $decode = [];
-
+    
+    
     public function rules(): array
     {
         return [
@@ -17,6 +18,7 @@ final class ListTagsRequest extends ParentRequest
             'search' => ['nullable', 'string', 'max:255'],
             'order_by' => ['nullable', Rule::in(['id', 'name', 'created_at', 'updated_at'])],
             'order' => ['nullable', Rule::in(['asc', 'desc'])],
+            'include' => ['nullable', 'string', 'max:255'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:200'],
             'page' => ['nullable', 'integer', 'min:1'],
         ];

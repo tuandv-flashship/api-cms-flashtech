@@ -8,7 +8,8 @@ use Illuminate\Validation\Rule;
 final class MediaGlobalActionRequest extends ParentRequest
 {
     protected array $decode = ['selected.*.id', 'destination', 'item.id', 'imageId'];
-
+    
+    
     public function rules(): array
     {
         $rules = [

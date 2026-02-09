@@ -12,7 +12,7 @@ final class UpdateCategoryRequest extends ParentRequest
         'category_id',
         'parent_id',
     ];
-
+    
     public function rules(): array
     {
         $parentRules = ['sometimes', 'nullable', 'integer', 'min:0', Rule::notIn([$this->category_id])];

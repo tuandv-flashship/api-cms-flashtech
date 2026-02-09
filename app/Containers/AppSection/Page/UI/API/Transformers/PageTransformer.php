@@ -3,7 +3,7 @@
 namespace App\Containers\AppSection\Page\UI\API\Transformers;
 
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
-use App\Containers\AppSection\Media\Services\MediaService;
+use App\Containers\AppSection\Media\Supports\MediaRuntimeServices;
 use App\Containers\AppSection\Page\Models\Page;
 use App\Containers\AppSection\User\UI\API\Transformers\UserTransformer;
 use App\Ship\Parents\Transformers\Traits\HasOriginLang;
@@ -22,7 +22,7 @@ final class PageTransformer extends ParentTransformer
 
     public function transform(Page $page): array
     {
-        $mediaService = app(MediaService::class);
+        $mediaService = MediaRuntimeServices::mediaService();
 
         return [
             'type' => $page->getResourceKey(),
@@ -77,17 +77,5 @@ final class PageTransformer extends ParentTransformer
         return $normalized ?? (string) $langCode;
     }
 
-    private function hashId(int|string|null $id): int|string|null
-    {
-        if ($id === null) {
-            return null;
-        }
 
-        $intId = (int) $id;
-        if ($intId <= 0) {
-            return $intId;
-        }
-
-        return config('apiato.hash-id') ? hashids()->encodeOrFail($intId) : $intId;
-    }
 }

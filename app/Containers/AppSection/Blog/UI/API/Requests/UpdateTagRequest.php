@@ -11,7 +11,7 @@ final class UpdateTagRequest extends ParentRequest
     protected array $decode = [
         'tag_id',
     ];
-
+    
     public function rules(): array
     {
         return [

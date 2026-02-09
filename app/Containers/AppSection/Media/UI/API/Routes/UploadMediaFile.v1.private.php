@@ -19,7 +19,5 @@ use App\Containers\AppSection\Media\UI\API\Controllers\UploadMediaFileController
 use Illuminate\Support\Facades\Route;
 
 Route::post('media/files/upload', UploadMediaFileController::class)
-    ->middleware([
-        'auth:api',
-        'throttle:' . config('media.throttle.upload', '30,1'),
-    ]);
+    ->name('api_media_upload_media_file')
+    ->middleware(['auth:api']);

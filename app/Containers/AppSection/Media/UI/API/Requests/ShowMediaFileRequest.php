@@ -6,6 +6,7 @@ use App\Ship\Parents\Requests\Request as ParentRequest;
 
 final class ShowMediaFileRequest extends ParentRequest
 {
+    protected array $decode = [];
     protected function prepareForValidation(): void
     {
         $this->merge([

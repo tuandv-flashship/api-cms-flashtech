@@ -8,7 +8,8 @@ use App\Ship\Parents\Requests\Request as ParentRequest;
 final class ListLanguagesRequest extends ParentRequest
 {
     protected array $decode = [];
-
+    
+    
     public function rules(): array
     {
         return [];

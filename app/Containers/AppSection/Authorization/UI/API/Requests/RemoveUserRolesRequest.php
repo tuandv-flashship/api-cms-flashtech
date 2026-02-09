@@ -10,7 +10,7 @@ final class RemoveUserRolesRequest extends ParentRequest
         'user_id',
         'role_ids.*',
     ];
-
+    
     public function rules(): array
     {
         return [

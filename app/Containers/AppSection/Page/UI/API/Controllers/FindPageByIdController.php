@@ -14,7 +14,7 @@ final class FindPageByIdController extends ApiController
 {
     public function __invoke(FindPageByIdRequest $request, FindPageByIdAction $action): JsonResponse
     {
-        $page = $action->run($request->page_id, ['slugable', 'user']);
+        $page = $action->run($request->page_id, $request->query('include'));
 
         $response = Response::create($page, PageTransformer::class);
 

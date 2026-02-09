@@ -8,21 +8,11 @@ use App\Containers\AppSection\Member\Values\MemberPhoneNormalizer;
 use App\Ship\Parents\Requests\Request as ParentRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateMemberRequest extends ParentRequest
+final class UpdateMemberRequest extends ParentRequest
 {
-    protected array $access = [
-        'permissions' => 'members.edit',
-        'roles' => '',
-    ];
-
     protected array $decode = [
         'id',
     ];
-
-    protected array $urlParameters = [
-        'id',
-    ];
-
     protected function prepareForValidation(): void
     {
         if ($this->has('phone')) {

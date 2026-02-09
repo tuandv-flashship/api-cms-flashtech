@@ -40,6 +40,7 @@ Admin routes are defined in:
 - Mobile client can use header `x-client: mobile` to receive `refresh_token` in JSON.
 - Social callback returns JSON by default.
 - If `MEMBER_SOCIAL_WEB_REDIRECT_URL` is configured, callback returns `302` to that URL and appends token data in URL fragment.
+- Member activity events are standardized via `MemberActivityAction` enum (`register`, `login`, `logout`, `request_password_reset`, `reset_password`, `verify_email`, `update_setting`, `changed_avatar`, `update_security`, admin actions).
 
 ### Main Config
 
@@ -49,8 +50,10 @@ Member auth/runtime settings:
 Related env keys (common):
 - `CLIENT_MEMBER_ID`, `CLIENT_MEMBER_SECRET`
 - `CLIENT_MOBILE_ID`, `CLIENT_MOBILE_SECRET`
+- `MEMBER_LOGIN_THROTTLE`, `MEMBER_REGISTER_THROTTLE`
+- `MEMBER_PASSWORD_RESET_THROTTLE`
 - `MEMBER_REFRESH_THROTTLE`, `MEMBER_LOGOUT_THROTTLE`
-- `MEMBER_PROFILE_READ_THROTTLE`, `MEMBER_PROFILE_UPDATE_THROTTLE`
+- `MEMBER_PROFILE_UPDATE_THROTTLE`
 - `MEMBER_CHANGE_PASSWORD_THROTTLE`
 - `MEMBER_VERIFY_EMAIL_THROTTLE`
 - `MEMBER_SOCIAL_REDIRECT_THROTTLE`, `MEMBER_SOCIAL_CALLBACK_THROTTLE`

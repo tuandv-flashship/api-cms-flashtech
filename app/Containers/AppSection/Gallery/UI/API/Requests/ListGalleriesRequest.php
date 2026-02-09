@@ -11,7 +11,8 @@ final class ListGalleriesRequest extends ParentRequest
     protected array $decode = [
         'author_id',
     ];
-
+    
+    
     public function rules(): array
     {
         return [
@@ -21,6 +22,7 @@ final class ListGalleriesRequest extends ParentRequest
             'search' => ['nullable', 'string', 'max:255'],
             'order_by' => ['nullable', Rule::in(['id', 'name', 'order', 'created_at', 'updated_at'])],
             'order' => ['nullable', Rule::in(['asc', 'desc'])],
+            'include' => ['nullable', 'string', 'max:255'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:200'],
             'page' => ['nullable', 'integer', 'min:1'],
         ];

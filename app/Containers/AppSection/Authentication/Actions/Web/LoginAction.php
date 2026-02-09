@@ -13,7 +13,7 @@ final class LoginAction extends ParentAction
     {
         $credentials = [
             'email' => static fn (Builder $query): Builder => $query
-                ->orWhereRaw('lower(email) = lower(?)', [$email]),
+                ->where('email', strtolower($email)),
             'password' => $password,
         ];
 

@@ -4,6 +4,7 @@ namespace App\Containers\AppSection\Blog\Tasks;
 
 use App\Containers\AppSection\Blog\Models\Post;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
+use App\Ship\Supports\RequestIncludes;
 use App\Ship\Parents\Tasks\Task as ParentTask;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,13 +16,17 @@ final class ListPostsTask extends ParentTask
      */
     public function run(array $filters): LengthAwarePaginator
     {
-        $perPage = max(1, (int) request()->input('limit', config('repository.pagination.limit', 10)));
-        $page = max(1, (int) request()->input('page', 1));
+        $perPage = max(1, (int) ($filters['limit'] ?? config('repository.pagination.limit', 10)));
+        $page = max(1, (int) ($filters['page'] ?? 1));
 
         $with = LanguageAdvancedManager::withTranslations(
-            ['categories', 'tags', 'slugable', 'author', 'galleryMeta'],
+            ['categories', 'tags', 'slugable', 'galleryMeta'],
             Post::class
         );
+
+        if (RequestIncludes::has($filters['include'] ?? null, 'author')) {
+            $with[] = 'author';
+        }
 
         $langCode = LanguageAdvancedManager::getTranslationLocale();
         if ($langCode && ! LanguageAdvancedManager::isDefaultLocale($langCode)) {

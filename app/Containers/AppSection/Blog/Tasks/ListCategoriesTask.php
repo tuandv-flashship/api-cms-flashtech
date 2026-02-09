@@ -4,6 +4,7 @@ namespace App\Containers\AppSection\Blog\Tasks;
 
 use App\Containers\AppSection\Blog\Models\Category;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
+use App\Ship\Supports\RequestIncludes;
 use App\Ship\Parents\Tasks\Task as ParentTask;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,16 +16,15 @@ final class ListCategoriesTask extends ParentTask
      */
     public function run(array $filters): LengthAwarePaginator
     {
-        $perPage = max(1, (int) request()->input('limit', config('repository.pagination.limit', 10)));
-        $page = max(1, (int) request()->input('page', 1));
+        $perPage = max(1, (int) ($filters['limit'] ?? config('repository.pagination.limit', 10)));
+        $page = max(1, (int) ($filters['page'] ?? 1));
 
         $with = LanguageAdvancedManager::withTranslations(
             ['slugable', 'parent'],
             Category::class
         );
 
-        $includes = request()->query('include');
-        if ($includes && str_contains($includes, 'children')) {
+        if (RequestIncludes::has($filters['include'] ?? null, 'children')) {
             $with[] = 'children.slugable';
             $with[] = 'children';
         }

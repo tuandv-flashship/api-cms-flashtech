@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Member\Actions;
 
+use App\Containers\AppSection\Member\Enums\MemberActivityAction;
 use App\Containers\AppSection\Member\UI\API\Requests\ChangePasswordRequest;
 use App\Containers\AppSection\Member\Tasks\CreateMemberActivityLogTask;
 use App\Containers\AppSection\Member\Tasks\RevokeMemberTokensTask;
@@ -37,7 +38,7 @@ final class ChangePasswordAction extends ParentAction
 
         $this->createMemberActivityLogTask->run([
             'member_id' => $member->id,
-            'action' => 'update_security',
+            'action' => MemberActivityAction::UPDATE_SECURITY->value,
         ]);
     }
 }

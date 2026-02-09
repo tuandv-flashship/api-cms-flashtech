@@ -9,10 +9,11 @@ use Illuminate\Validation\Rule;
 final class ListRevisionsRequest extends ParentRequest
 {
     protected array $decode = ['revisionable_id'];
-
+    
+    
     public function rules(): array
     {
-        $supportedTypes = app(RevisionableResolver::class)->supportedTypes();
+        $supportedTypes = (new RevisionableResolver())->supportedTypes();
         $typeRules = ['required', 'string'];
         if ($supportedTypes !== []) {
             $typeRules[] = Rule::in($supportedTypes);

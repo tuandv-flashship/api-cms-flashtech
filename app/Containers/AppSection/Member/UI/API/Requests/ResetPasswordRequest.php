@@ -5,21 +5,11 @@ namespace App\Containers\AppSection\Member\UI\API\Requests;
 use App\Ship\Parents\Requests\Request as ParentRequest;
 use Illuminate\Validation\Rules\Password;
 
-class ResetPasswordRequest extends ParentRequest
+final class ResetPasswordRequest extends ParentRequest
 {
-    protected array $access = [
-        'permissions' => '',
-        'roles' => '',
-    ];
-
-    protected array $decode = [
-        //
-    ];
-
-    protected array $urlParameters = [
-        //
-    ];
-
+    protected array $decode = [];
+    
+    
     public function rules(): array
     {
         return [

@@ -2,17 +2,21 @@
 
 namespace App\Containers\AppSection\Member\Actions;
 
+use App\Containers\AppSection\Member\Enums\MemberActivityAction;
 use App\Containers\AppSection\Member\Enums\MemberStatus;
 use App\Containers\AppSection\Member\Events\MemberRegistered;
 use App\Containers\AppSection\Member\Models\Member;
+use App\Containers\AppSection\Member\Tasks\CreateMemberActivityLogTask;
 use App\Containers\AppSection\Member\Tasks\CreateMemberTask;
 use App\Containers\AppSection\Member\UI\API\Requests\Admin\CreateMemberRequest;
 use App\Ship\Parents\Actions\Action as ParentAction;
+use Illuminate\Support\Facades\Auth;
 
 final class CreateMemberAction extends ParentAction
 {
     public function __construct(
         private readonly CreateMemberTask $createMemberTask,
+        private readonly CreateMemberActivityLogTask $createMemberActivityLogTask,
     ) {
     }
 
@@ -53,6 +57,14 @@ final class CreateMemberAction extends ParentAction
         }
 
         $member = $this->createMemberTask->run($data);
+
+        $adminId = Auth::guard('api')->id();
+        $referenceName = $adminId ? 'admin:' . $adminId : null;
+        $this->createMemberActivityLogTask->run([
+            'member_id' => $member->id,
+            'action' => MemberActivityAction::ADMIN_CREATE->value,
+            'reference_name' => $referenceName,
+        ]);
 
         if ($emailVerificationEnabled && $sendVerification && !$member->hasVerifiedEmail()) {
             MemberRegistered::dispatch($member);

@@ -7,21 +7,9 @@ use App\Containers\AppSection\Member\Values\MemberPhoneNormalizer;
 use App\Ship\Parents\Requests\Request as ParentRequest;
 use Illuminate\Validation\Rule;
 
-class CreateMemberRequest extends ParentRequest
+final class CreateMemberRequest extends ParentRequest
 {
-    protected array $access = [
-        'permissions' => 'members.create',
-        'roles' => '',
-    ];
-
-    protected array $decode = [
-        //
-    ];
-
-    protected array $urlParameters = [
-        //
-    ];
-
+    protected array $decode = [];
     protected function prepareForValidation(): void
     {
         if ($this->has('phone')) {

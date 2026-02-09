@@ -15,8 +15,8 @@ final class ListGalleriesTask extends ParentTask
      */
     public function run(array $filters): LengthAwarePaginator
     {
-        $perPage = max(1, (int) request()->input('limit', config('repository.pagination.limit', 10)));
-        $page = max(1, (int) request()->input('page', 1));
+        $perPage = max(1, (int) ($filters['limit'] ?? config('repository.pagination.limit', 10)));
+        $page = max(1, (int) ($filters['page'] ?? 1));
 
         $with = LanguageAdvancedManager::withTranslations(['slugable'], Gallery::class);
 

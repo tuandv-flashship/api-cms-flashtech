@@ -30,7 +30,7 @@ final class RunSystemCommandJob implements ShouldQueue
 
     public function handle(): void
     {
-        $definition = SystemCommandRegistry::resolve($this->action);
+        $definition = SystemCommandRegistry::find($this->action);
         if ($definition === null) {
             $this->storeResult([
                 'status' => 'failed',

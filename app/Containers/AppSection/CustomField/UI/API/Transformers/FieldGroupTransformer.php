@@ -117,22 +117,5 @@ final class FieldGroupTransformer extends ParentTransformer
         return is_array($decoded) ? $decoded : null;
     }
 
-    private function hashId(int|string|null $id): int|string|null
-    {
-        if ($id === null || $id === '') {
-            return null;
-        }
 
-        $numeric = filter_var($id, FILTER_VALIDATE_INT);
-        if ($numeric === false) {
-            return $id;
-        }
-
-        $intId = (int) $numeric;
-        if ($intId <= 0) {
-            return $intId;
-        }
-
-        return config('apiato.hash-id') ? hashids()->encodeOrFail($intId) : $intId;
-    }
 }

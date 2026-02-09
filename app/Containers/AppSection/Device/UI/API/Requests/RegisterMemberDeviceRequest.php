@@ -4,21 +4,11 @@ namespace App\Containers\AppSection\Device\UI\API\Requests;
 
 use App\Ship\Parents\Requests\Request as ParentRequest;
 
-class RegisterMemberDeviceRequest extends ParentRequest
+final class RegisterMemberDeviceRequest extends ParentRequest
 {
-    protected array $access = [
-        'permissions' => '',
-        'roles' => '',
-    ];
-
-    protected array $decode = [
-        //
-    ];
-
-    protected array $urlParameters = [
-        //
-    ];
-
+    protected array $decode = [];
+    
+    
     public function rules(): array
     {
         return [

@@ -25,5 +25,4 @@ Route::delete('users/devices/{device_id}', RevokeUserDeviceController::class)
     ->middleware([
         'auth:api',
         'request.signature',
-        'throttle:' . config('device.throttle.revoke_device', '20,1'),
     ]);

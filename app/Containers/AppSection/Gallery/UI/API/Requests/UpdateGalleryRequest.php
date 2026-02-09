@@ -11,7 +11,6 @@ final class UpdateGalleryRequest extends ParentRequest
     protected array $decode = [
         'gallery_id',
     ];
-
     protected function prepareForValidation(): void
     {
         $gallery = $this->input('gallery');

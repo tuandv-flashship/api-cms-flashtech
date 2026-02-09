@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 /**
  * @mixin \Illuminate\Database\Eloquent\Model|SoftDeletes
@@ -114,7 +113,7 @@ trait RevisionableTrait
                     }
                 }
 
-                DB::table((new Revision())->getTable())->insert($revisions);
+                Revision::query()->insert($revisions);
                 event('revisionable.saved', ['model' => $this, 'revisions' => $revisions]);
             }
         }
@@ -190,7 +189,7 @@ trait RevisionableTrait
                 'updated_at' => new DateTime(),
             ];
 
-            DB::table((new Revision())->getTable())->insert($revisions);
+            Revision::query()->insert($revisions);
             event('revisionable.created', ['model' => $this, 'revisions' => $revisions]);
         }
 
@@ -216,7 +215,7 @@ trait RevisionableTrait
                 'updated_at' => new DateTime(),
             ];
 
-            DB::table((new Revision())->getTable())->insert($revisions);
+            Revision::query()->insert($revisions);
             event('revisionable.deleted', ['model' => $this, 'revisions' => $revisions]);
         }
     }

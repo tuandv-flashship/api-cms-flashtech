@@ -11,7 +11,6 @@ final class UpdateFieldGroupRequest extends ParentRequest
     protected array $decode = [
         'field_group_id',
     ];
-
     protected function prepareForValidation(): void
     {
         foreach (['rules', 'group_items', 'deleted_items'] as $key) {

@@ -2,9 +2,11 @@
 
 namespace App\Containers\AppSection\Member\Actions;
 
+use App\Containers\AppSection\Member\Enums\MemberActivityAction;
 use App\Containers\AppSection\Member\Enums\MemberStatus;
 use App\Containers\AppSection\Member\Events\MemberRegistered;
 use App\Containers\AppSection\Member\Models\Member;
+use App\Containers\AppSection\Member\Tasks\CreateMemberActivityLogTask;
 use App\Containers\AppSection\Member\Tasks\CreateMemberTask;
 use App\Containers\AppSection\Member\UI\API\Requests\RegisterMemberRequest;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -15,6 +17,7 @@ final class RegisterMemberAction extends ParentAction
 {
     public function __construct(
         private readonly CreateMemberTask $createMemberTask,
+        private readonly CreateMemberActivityLogTask $createMemberActivityLogTask,
     ) {
     }
 
@@ -39,6 +42,11 @@ final class RegisterMemberAction extends ParentAction
         }
 
         $member = $this->createMemberTask->run($data);
+
+        $this->createMemberActivityLogTask->run([
+            'member_id' => $member->id,
+            'action' => MemberActivityAction::REGISTER->value,
+        ]);
 
         MemberRegistered::dispatch($member);
 

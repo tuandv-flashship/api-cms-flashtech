@@ -27,5 +27,11 @@ final class ResetPasswordTest extends ApiTestCase
         $response = $this->postJson(action(ResetPasswordController::class), $data);
 
         $response->assertOk();
+        $this->assertDatabaseHas('audit_histories', [
+            'module' => 'authentication',
+            'action' => 'changed password',
+            'reference_id' => (string) $user->getKey(),
+            'type' => 'danger',
+        ]);
     }
 }

@@ -10,7 +10,6 @@ final class UpdatePostTranslationRequest extends ParentRequest
     protected array $decode = [
         'post_id',
     ];
-
     protected function prepareForValidation(): void
     {
         $langCode = $this->input('lang_code') ?? $this->input('language');

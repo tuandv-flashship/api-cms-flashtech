@@ -3,23 +3,13 @@
 namespace App\Containers\AppSection\Gallery\Supports;
 
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
+use App\Ship\Supports\RequestIncludes;
 
 final class GalleryOptions
 {
     public static function shouldIncludeOptions(?string $include): bool
     {
-        if ($include === null) {
-            return false;
-        }
-
-        $include = trim($include);
-        if ($include === '') {
-            return false;
-        }
-
-        $includes = array_map('trim', explode(',', $include));
-
-        return in_array('options', $includes, true);
+        return RequestIncludes::has($include, 'options');
     }
 
     public static function galleryOptions(): array

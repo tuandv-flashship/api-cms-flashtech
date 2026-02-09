@@ -27,13 +27,14 @@ Auth notes:
 - `app/Containers/AppSection/User/Configs/appSection-user.php`
 
 Operational config notes:
-- User container mostly relies on global auth/repository defaults.
+- No container-specific runtime keys are required.
 
 ### Operational Notes
 
 - IDs in API responses are transformed/hashed via transformers.
 - Keep route model ID constraints centralized in `_user.v1.private.php`.
 - Update password flow should remain isolated from profile update flow.
+- Route middleware contract is `auth:api` for all endpoints.
 
 ### Tests
 

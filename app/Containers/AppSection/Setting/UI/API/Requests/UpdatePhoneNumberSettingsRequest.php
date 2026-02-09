@@ -4,10 +4,12 @@ namespace App\Containers\AppSection\Setting\UI\API\Requests;
 
 use App\Containers\AppSection\Setting\Models\Setting;
 use App\Ship\Parents\Requests\Request as ParentRequest;
+
 final class UpdatePhoneNumberSettingsRequest extends ParentRequest
 {
     protected array $decode = [];
-
+    
+    
     public function rules(): array
     {
         return [

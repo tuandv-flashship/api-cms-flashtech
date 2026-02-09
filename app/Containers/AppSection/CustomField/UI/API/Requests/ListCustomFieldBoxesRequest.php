@@ -11,7 +11,6 @@ final class ListCustomFieldBoxesRequest extends ParentRequest
     protected array $decode = [
         'reference_id',
     ];
-
     protected function prepareForValidation(): void
     {
         $rules = $this->input('rules');

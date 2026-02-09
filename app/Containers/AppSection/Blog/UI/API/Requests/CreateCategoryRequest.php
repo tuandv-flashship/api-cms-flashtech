@@ -11,7 +11,8 @@ final class CreateCategoryRequest extends ParentRequest
     protected array $decode = [
         'parent_id',
     ];
-
+    
+    
     public function rules(): array
     {
         $parentRules = ['nullable', 'integer', 'min:0'];

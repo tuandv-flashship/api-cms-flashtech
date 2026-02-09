@@ -85,7 +85,7 @@ final class ListMediaAction extends ParentAction
         $files = $fileQuery->paginate($perPage, ['*'], 'page', $page);
         $folders = $folderQuery->get();
 
-        $fileTransformer = new MediaFileTransformer($includeSignedUrl);
+        $fileTransformer = new MediaFileTransformer($this->mediaService, $includeSignedUrl);
         $folderTransformer = new MediaFolderTransformer();
 
         return [

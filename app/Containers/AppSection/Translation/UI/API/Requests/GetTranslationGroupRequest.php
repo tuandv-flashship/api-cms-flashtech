@@ -7,7 +7,6 @@ use App\Ship\Parents\Requests\Request as ParentRequest;
 final class GetTranslationGroupRequest extends ParentRequest
 {
     protected array $decode = [];
-
     protected function prepareForValidation(): void
     {
         $payload = [];

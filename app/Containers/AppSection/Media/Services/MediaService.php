@@ -8,6 +8,7 @@ use App\Containers\AppSection\Media\Models\MediaSetting;
 use App\Containers\AppSection\Media\Supports\MediaSettingsStore;
 use App\Containers\AppSection\User\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
@@ -17,6 +18,14 @@ use RuntimeException;
 
 final class MediaService
 {
+    private const USER_ITEMS_CACHE_PREFIX = 'media:user-items';
+
+    public function __construct(
+        private readonly MediaSettingsStore $settingsStore,
+        private readonly ThumbnailService $thumbnailService,
+    ) {
+    }
+
     public function getDisk(): string
     {
         $settings = $this->settings();
@@ -329,7 +338,7 @@ final class MediaService
             return;
         }
 
-        app(ThumbnailService::class)->generate($file);
+        $this->thumbnailService->generate($file);
     }
 
     private function maybeApplyWatermark(MediaFile $file): void
@@ -428,7 +437,7 @@ final class MediaService
 
     public function cropImage(MediaFile $file, int $x, int $y, int $width, int $height): bool
     {
-        $result = app(ThumbnailService::class)->crop($file, $x, $y, $width, $height);
+        $result = $this->thumbnailService->crop($file, $x, $y, $width, $height);
 
         if ($result) {
             $this->maybeGenerateThumbnails($file);
@@ -439,22 +448,18 @@ final class MediaService
 
     public function getRecentItems(int $userId): array
     {
-        $value = MediaSetting::query()
-            ->where('key', 'recent_items')
-            ->where('user_id', $userId)
-            ->value('value');
-
-        return is_array($value) ? $value : [];
+        return $this->getUserItemsFromCache('recent_items', $userId);
     }
 
     public function getFavoriteItems(int $userId): array
     {
-        $value = MediaSetting::query()
-            ->where('key', 'favorites')
-            ->where('user_id', $userId)
-            ->value('value');
+        return $this->getUserItemsFromCache('favorites', $userId);
+    }
 
-        return is_array($value) ? $value : [];
+    public function forgetUserItemsCache(int $userId): void
+    {
+        Cache::forget($this->getUserItemsCacheKey('recent_items', $userId));
+        Cache::forget($this->getUserItemsCacheKey('favorites', $userId));
     }
 
     private function getUploadFolderPath(int $folderId): string
@@ -936,7 +941,7 @@ final class MediaService
 
     private function settings(): MediaSettingsStore
     {
-        return app(MediaSettingsStore::class);
+        return $this->settingsStore;
     }
 
     private function resolveAccessMode(?string $visibility, ?string $accessMode): ?string
@@ -968,6 +973,35 @@ final class MediaService
         $ttl = (int) config('media.signed_url_ttl_minutes', 30);
 
         return $ttl > 0 ? $ttl : 30;
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    private function getUserItemsFromCache(string $key, int $userId): array
+    {
+        $cacheTtl = (int) config('media.cache.user_item_ttl_seconds', 300);
+        $cacheKey = $this->getUserItemsCacheKey($key, $userId);
+
+        $resolver = function () use ($key, $userId): array {
+            $value = MediaSetting::query()
+                ->where('key', $key)
+                ->where('user_id', $userId)
+                ->value('value');
+
+            return is_array($value) ? $value : [];
+        };
+
+        if ($cacheTtl <= 0) {
+            return Cache::rememberForever($cacheKey, $resolver);
+        }
+
+        return Cache::remember($cacheKey, now()->addSeconds($cacheTtl), $resolver);
+    }
+
+    private function getUserItemsCacheKey(string $key, int $userId): string
+    {
+        return sprintf('%s:%s:%d', self::USER_ITEMS_CACHE_PREFIX, $key, $userId);
     }
 
     private function isGdEnabled(): bool

@@ -31,10 +31,18 @@ Notes:
 
 - Audit payload filtering must stay aligned with privacy requirements.
 - Bulk delete should be restricted to privileged roles.
+- Route middleware contract is `auth:api` for all endpoints.
 
 ### Tests
 
-No dedicated container test suite yet.
+Available tests:
+- `app/Containers/AppSection/AuditLog/Tests`
+
+Run:
+
+```bash
+php artisan test app/Containers/AppSection/AuditLog/Tests
+```
 
 ### Change Log
 

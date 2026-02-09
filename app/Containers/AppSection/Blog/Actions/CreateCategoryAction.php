@@ -7,6 +7,7 @@ use App\Containers\AppSection\Blog\Events\CategoryCreated;
 use App\Containers\AppSection\Blog\Models\Category;
 use App\Containers\AppSection\Blog\Supports\CategorySupport;
 use App\Containers\AppSection\Blog\Tasks\CreateCategoryTask;
+use App\Containers\AppSection\Blog\UI\API\Transporters\CreateCategoryTransporter;
 use App\Containers\AppSection\CustomField\Supports\CustomFieldService;
 use App\Containers\AppSection\Slug\Supports\SlugHelper;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -22,21 +23,22 @@ final class CreateCategoryAction extends ParentAction
     }
 
     /**
-     * @param array<string, mixed> $data
-     * @param array<string, mixed>|null $seoMeta
-     * @param array<int, mixed>|string|null $customFields
+     * Create a new category with all related data
      */
-    public function run(array $data, ?string $slug = null, ?array $seoMeta = null, array|string|null $customFields = null): Category
+    public function run(CreateCategoryTransporter $data): Category
     {
-        return DB::transaction(function () use ($data, $slug, $seoMeta, $customFields) {
-            CategorySupport::resetDefaultCategoryIfRequested($data);
+        return DB::transaction(function () use ($data) {
+            $categoryData = $data->getCategoryData();
+            
+            CategorySupport::resetDefaultCategoryIfRequested($categoryData);
 
-            if (! array_key_exists('parent_id', $data) || $data['parent_id'] === null) {
-                $data['parent_id'] = 0;
+            if (! array_key_exists('parent_id', $categoryData) || $categoryData['parent_id'] === null) {
+                $categoryData['parent_id'] = 0;
             }
 
-            $category = $this->createCategoryTask->run($data);
+            $category = $this->createCategoryTask->run($categoryData);
 
+            $slug = $data->getSlug();
             if ($slug !== null) {
                 $slug = trim($slug);
                 $this->slugHelper->createSlug($category, $slug === '' ? null : $slug);
@@ -44,10 +46,12 @@ final class CreateCategoryAction extends ParentAction
                 $this->slugHelper->createSlug($category);
             }
 
+            $seoMeta = $data->getSeoMeta();
             if ($seoMeta !== null) {
                 $category->setMeta('seo_meta', $seoMeta);
             }
 
+            $customFields = $data->getCustomFields();
             if ($customFields !== null) {
                 $this->customFieldService->saveCustomFieldsForModel($category, $customFields);
             }

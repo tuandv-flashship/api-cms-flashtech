@@ -8,7 +8,6 @@ use Illuminate\Validation\Rule;
 final class UploadMediaFileRequest extends ParentRequest
 {
     protected array $decode = ['folder_id'];
-
     /**
      * @return array{
      *  folder_id:int,

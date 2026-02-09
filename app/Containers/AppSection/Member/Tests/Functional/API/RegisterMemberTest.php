@@ -2,7 +2,9 @@
 
 namespace App\Containers\AppSection\Member\Tests\Functional\API;
 
+use App\Containers\AppSection\Member\Enums\MemberActivityAction;
 use App\Containers\AppSection\Member\Enums\MemberStatus;
+use App\Containers\AppSection\Member\Models\Member;
 use App\Containers\AppSection\Member\Tests\Functional\ApiTestCase;
 use Illuminate\Support\Facades\Config;
 
@@ -39,6 +41,11 @@ class RegisterMemberTest extends ApiTestCase
             'email' => 'john@test.com',
             'name' => 'John Doe',
             'phone' => '+84123456789',
+        ]);
+        $member = Member::query()->where('email', 'john@test.com')->firstOrFail();
+        $this->assertDatabaseHas('member_activity_logs', [
+            'member_id' => $member->id,
+            'action' => MemberActivityAction::REGISTER->value,
         ]);
     }
 

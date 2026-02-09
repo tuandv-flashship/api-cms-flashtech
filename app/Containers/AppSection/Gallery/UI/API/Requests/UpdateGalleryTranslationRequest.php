@@ -10,7 +10,6 @@ final class UpdateGalleryTranslationRequest extends ParentRequest
     protected array $decode = [
         'gallery_id',
     ];
-
     protected function prepareForValidation(): void
     {
         $langCode = $this->input('lang_code') ?? $this->input('language');

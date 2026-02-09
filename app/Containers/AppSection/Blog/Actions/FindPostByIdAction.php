@@ -13,8 +13,14 @@ final class FindPostByIdAction extends ParentAction
     ) {
     }
 
-    public function run(int $id): Post
+    public function run(int $id, bool $includeAuthor = false): Post
     {
-        return $this->findPostTask->run($id, ['categories', 'tags', 'slugable', 'author', 'galleryMeta']);
+        $with = ['categories', 'tags', 'slugable', 'galleryMeta'];
+
+        if ($includeAuthor) {
+            $with[] = 'author';
+        }
+
+        return $this->findPostTask->run($id, $with);
     }
 }

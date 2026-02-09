@@ -2,10 +2,7 @@
 
 return [
     'throttle' => [
-        'list_devices' => env('DEVICE_LIST_DEVICES_THROTTLE', '30,1'),
-        'list_device_keys' => env('DEVICE_LIST_DEVICE_KEYS_THROTTLE', '30,1'),
         'register' => env('DEVICE_REGISTER_THROTTLE', '20,1'),
-        'update' => env('DEVICE_UPDATE_THROTTLE', '30,1'),
         'rotate_key' => env('DEVICE_ROTATE_KEY_THROTTLE', '20,1'),
         'revoke_device' => env('DEVICE_REVOKE_DEVICE_THROTTLE', '20,1'),
         'revoke_key' => env('DEVICE_REVOKE_KEY_THROTTLE', '20,1'),
@@ -15,6 +12,8 @@ return [
         'enabled' => env('DEVICE_SIGNATURE_ENABLED', false),
         // Require signature headers on every request that uses the middleware.
         'enforce' => env('DEVICE_SIGNATURE_ENFORCE', false),
+        // Require an authenticated owner guard to match the signature key owner.
+        'require_authenticated_owner' => env('DEVICE_SIGNATURE_REQUIRE_AUTHENTICATED_OWNER', true),
         // Algorithm used for device key signatures.
         'algorithm' => env('DEVICE_SIGNATURE_ALGORITHM', 'ed25519'),
         // Cache key prefix and optional dedicated cache store for signature state.

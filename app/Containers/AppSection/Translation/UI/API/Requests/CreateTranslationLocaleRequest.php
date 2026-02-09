@@ -9,7 +9,8 @@ use Illuminate\Validation\Rule;
 final class CreateTranslationLocaleRequest extends ParentRequest
 {
     protected array $decode = [];
-
+    
+    
     public function rules(): array
     {
         $allowed = Language::getLocaleKeys();

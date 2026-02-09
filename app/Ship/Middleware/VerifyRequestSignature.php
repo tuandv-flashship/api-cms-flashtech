@@ -3,10 +3,11 @@
 namespace App\Ship\Middleware;
 
 use App\Containers\AppSection\Device\Enums\DeviceOwnerType;
-use App\Containers\AppSection\Device\Enums\DeviceStatus;
 use App\Containers\AppSection\Device\Jobs\UpdateDeviceSignatureActivityJob;
-use App\Containers\AppSection\Device\Models\DeviceKey;
+use App\Containers\AppSection\Device\Tasks\FindActiveDeviceKeyContextTask;
+use App\Containers\AppSection\Device\Tasks\IsActiveDeviceKeyContextTask;
 use App\Containers\AppSection\Device\Supports\DeviceSignatureCacheKey;
+use App\Containers\AppSection\Device\Values\ActiveDeviceKeyContext;
 use App\Ship\Supports\Base64Url;
 use App\Ship\Values\ApiError;
 use Closure;
@@ -16,7 +17,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -33,6 +33,12 @@ final class VerifyRequestSignature
     private CacheRepository|null $signatureFailureThrottleCacheRepository = null;
     private CacheRepository|null $signatureMetricsCacheRepository = null;
     private CacheRateLimiter|null $signatureFailureRateLimiter = null;
+
+    public function __construct(
+        private readonly FindActiveDeviceKeyContextTask $findActiveDeviceKeyContextTask,
+        private readonly IsActiveDeviceKeyContextTask $isActiveDeviceKeyContextTask,
+    ) {
+    }
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -89,51 +95,40 @@ final class VerifyRequestSignature
 
         if (!$this->matchesAuthenticatedOwner(
             $request,
-            (string) $deviceKey->owner_type,
-            (int) $deviceKey->owner_id,
+            $deviceKey->ownerType,
+            $deviceKey->ownerId,
         )) {
             return $this->reject('Signature key does not match owner.', 'signature_owner_mismatch');
         }
 
-        if (!$this->storeNonce((int) $deviceKey->device_key_id, (string) $nonce)) {
+        if (!$this->storeNonce($deviceKey->deviceKeyId, (string) $nonce)) {
             return $this->reject('Signature nonce already used.', 'signature_nonce_reused');
         }
 
         $payload = $this->canonicalPayload($request, $timestampInt, (string) $nonce);
 
-        if (!$this->verifySignature((string) $signature, $payload, (string) $deviceKey->public_key)) {
+        if (!$this->verifySignature((string) $signature, $payload, $deviceKey->publicKey)) {
             return $this->reject('Invalid request signature.', 'signature_invalid');
         }
 
         $this->dispatchSignatureActivityUpdate(
-            (int) $deviceKey->device_key_id,
-            (int) $deviceKey->device_id,
+            $deviceKey->deviceKeyId,
+            $deviceKey->deviceId,
         );
-        $request->attributes->set('device_key_id', (int) $deviceKey->device_key_id);
+        $request->attributes->set('device_key_id', $deviceKey->deviceKeyId);
 
         return $next($request);
     }
 
-    private function findActiveDeviceKeyContext(string $keyId): object|null
+    private function findActiveDeviceKeyContext(string $keyId): ActiveDeviceKeyContext|null
     {
         if (!$this->shouldCacheKeyContext()) {
-            return $this->queryActiveDeviceKeyContext($keyId);
+            return $this->findActiveDeviceKeyContextTask->run($keyId);
         }
 
         $cacheKey = DeviceSignatureCacheKey::keyContext($keyId);
-        $cachedContext = $this->signatureCache()->get($cacheKey);
-        if (is_array($cachedContext)) {
-            $cachedObject = (object) $cachedContext;
-            if ($this->isCachedContextStale($cachedObject, $keyId)) {
-                $this->signatureCache()->forget($cacheKey);
-
-                return null;
-            }
-
-            return $cachedObject;
-        }
-
-        if (is_object($cachedContext)) {
+        $cachedContext = $this->cachedContextFrom($this->signatureCache()->get($cacheKey));
+        if ($cachedContext !== null) {
             if ($this->isCachedContextStale($cachedContext, $keyId)) {
                 $this->signatureCache()->forget($cacheKey);
 
@@ -143,36 +138,42 @@ final class VerifyRequestSignature
             return $cachedContext;
         }
 
-        $context = $this->queryActiveDeviceKeyContext($keyId);
+        $context = $this->findActiveDeviceKeyContextTask->run($keyId);
         if ($context === null) {
             return null;
         }
 
         $ttlSeconds = max(1, (int) config('device.signature.key_context_cache_ttl', 60));
 
-        $this->signatureCache()->put($cacheKey, (array) $context, now()->addSeconds($ttlSeconds));
+        $this->signatureCache()->put($cacheKey, $context->toArray(), now()->addSeconds($ttlSeconds));
 
         return $context;
     }
 
-    private function isCachedContextStale(object $context, string $keyId): bool
+    private function cachedContextFrom(mixed $cachedValue): ActiveDeviceKeyContext|null
+    {
+        if ($cachedValue instanceof ActiveDeviceKeyContext) {
+            return $cachedValue;
+        }
+
+        if (is_array($cachedValue)) {
+            return ActiveDeviceKeyContext::createFromArray($cachedValue);
+        }
+
+        if (is_object($cachedValue)) {
+            return ActiveDeviceKeyContext::createFromArray(get_object_vars($cachedValue));
+        }
+
+        return null;
+    }
+
+    private function isCachedContextStale(ActiveDeviceKeyContext $context, string $keyId): bool
     {
         if (!$this->shouldConsistencyCheckCachedContext()) {
             return false;
         }
 
-        if (!isset($context->device_key_id, $context->device_id)) {
-            return true;
-        }
-
-        return !DB::table('device_keys')
-            ->join('devices', 'devices.id', '=', 'device_keys.device_id')
-            ->where('device_keys.id', (int) $context->device_key_id)
-            ->where('device_keys.device_id', (int) $context->device_id)
-            ->where('device_keys.key_id', $keyId)
-            ->where('device_keys.status', DeviceKey::STATUS_ACTIVE)
-            ->where('devices.status', DeviceStatus::ACTIVE->value)
-            ->exists();
+        return !$this->isActiveDeviceKeyContextTask->run($keyId, $context->deviceKeyId, $context->deviceId);
     }
 
     private function shouldCacheKeyContext(): bool
@@ -183,23 +184,6 @@ final class VerifyRequestSignature
     private function shouldConsistencyCheckCachedContext(): bool
     {
         return (bool) config('device.signature.key_context_consistency_check', true);
-    }
-
-    private function queryActiveDeviceKeyContext(string $keyId): object|null
-    {
-        return DB::table('device_keys')
-            ->join('devices', 'devices.id', '=', 'device_keys.device_id')
-            ->where('device_keys.key_id', $keyId)
-            ->where('device_keys.status', DeviceKey::STATUS_ACTIVE)
-            ->where('devices.status', DeviceStatus::ACTIVE->value)
-            ->select([
-                'device_keys.id as device_key_id',
-                'device_keys.device_id',
-                'device_keys.public_key',
-                'devices.owner_type',
-                'devices.owner_id',
-            ])
-            ->first();
     }
 
     private function headerName(string $configKey): string
@@ -338,7 +322,7 @@ final class VerifyRequestSignature
                 && $ownerId === (int) auth('api')->id();
         }
 
-        return true;
+        return !(bool) config('device.signature.require_authenticated_owner', true);
     }
 
     private function reject(string $message, string $errorCode = 'invalid_signature'): JsonResponse

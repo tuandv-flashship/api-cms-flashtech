@@ -1,4 +1,4 @@
-.PHONY: docs docs-fix docs-index docs-paths docs-schema
+.PHONY: docs docs-fix docs-index docs-paths docs-schema hooks-install refactor-audit p0-baseline
 
 docs:
 	@bash scripts/check-docs.sh
@@ -15,3 +15,12 @@ docs-paths:
 
 docs-schema:
 	@bash scripts/check-container-readmes-schema.sh
+
+hooks-install:
+	@bash scripts/install-git-hooks.sh
+
+refactor-audit:
+	@bash scripts/audit-refactor-checklist.sh
+
+p0-baseline:
+	@bash scripts/run-p0-baseline-tests.sh

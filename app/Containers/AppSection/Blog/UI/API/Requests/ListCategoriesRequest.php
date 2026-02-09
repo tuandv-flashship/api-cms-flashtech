@@ -8,6 +8,7 @@ use Illuminate\Validation\Rule;
 
 final class ListCategoriesRequest extends ParentRequest
 {
+    protected array $decode = [];
     protected function prepareForValidation(): void
     {
         $parentId = $this->input('parent_id');
@@ -46,6 +47,7 @@ final class ListCategoriesRequest extends ParentRequest
             'search' => ['nullable', 'string', 'max:255'],
             'order_by' => ['nullable', Rule::in(['id', 'name', 'order', 'created_at', 'updated_at'])],
             'order' => ['nullable', Rule::in(['asc', 'desc'])],
+            'include' => ['nullable', 'string', 'max:255'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:200'],
             'page' => ['nullable', 'integer', 'min:1'],
         ];

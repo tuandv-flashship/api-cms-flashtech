@@ -19,9 +19,11 @@ final class ListRevisionsAction extends ParentAction
     public function run(
         string $type,
         int $revisionableId,
-        ?string $order = null
+        ?string $order = null,
+        ?int $limit = null,
+        ?int $page = null,
     ): LengthAwarePaginator {
-        $revisionableType = $this->revisionableResolver->resolve($type);
+        $revisionableType = $this->revisionableResolver->resolveType($type);
         if (! $revisionableType) {
             throw ValidationException::withMessages([
                 'type' => ['Unsupported revisionable type.'],
@@ -30,6 +32,6 @@ final class ListRevisionsAction extends ParentAction
 
         $order = strtolower((string) $order) === 'asc' ? 'asc' : 'desc';
 
-        return $this->listRevisionsTask->run($revisionableType, $revisionableId, $order);
+        return $this->listRevisionsTask->run($revisionableType, $revisionableId, $order, $limit, $page);
     }
 }

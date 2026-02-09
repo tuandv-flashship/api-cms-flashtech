@@ -54,7 +54,6 @@ return [
         'password_reset' => env('MEMBER_PASSWORD_RESET_THROTTLE', '6,1'),
         'refresh' => env('MEMBER_REFRESH_THROTTLE', '12,1'),
         'logout' => env('MEMBER_LOGOUT_THROTTLE', '20,1'),
-        'profile_read' => env('MEMBER_PROFILE_READ_THROTTLE', '60,1'),
         'profile_update' => env('MEMBER_PROFILE_UPDATE_THROTTLE', '20,1'),
         'change_password' => env('MEMBER_CHANGE_PASSWORD_THROTTLE', '10,1'),
         'verify_email' => env('MEMBER_VERIFY_EMAIL_THROTTLE', '20,1'),

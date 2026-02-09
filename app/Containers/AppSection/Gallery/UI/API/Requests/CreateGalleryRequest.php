@@ -8,6 +8,7 @@ use Illuminate\Validation\Rule;
 
 final class CreateGalleryRequest extends ParentRequest
 {
+    protected array $decode = [];
     protected function prepareForValidation(): void
     {
         $gallery = $this->input('gallery');

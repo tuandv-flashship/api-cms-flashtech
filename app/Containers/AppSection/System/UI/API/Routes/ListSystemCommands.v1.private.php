@@ -34,4 +34,4 @@ use App\Containers\AppSection\System\UI\API\Controllers\ListSystemCommandsContro
 use Illuminate\Support\Facades\Route;
 
 Route::get('system/commands', ListSystemCommandsController::class)
-    ->middleware(['auth:api', 'throttle:' . config('system-commands.throttle', '3,1')]);
+    ->middleware(['auth:api']);

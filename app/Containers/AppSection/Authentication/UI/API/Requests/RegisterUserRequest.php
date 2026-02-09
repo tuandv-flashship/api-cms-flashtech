@@ -10,7 +10,8 @@ use Illuminate\Validation\Rules\Password;
 final class RegisterUserRequest extends ParentRequest
 {
     protected array $decode = [];
-
+    
+    
     public function rules(): array
     {
         return [

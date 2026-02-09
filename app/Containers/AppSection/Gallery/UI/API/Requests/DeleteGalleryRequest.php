@@ -9,7 +9,7 @@ final class DeleteGalleryRequest extends ParentRequest
     protected array $decode = [
         'gallery_id',
     ];
-
+    
     public function rules(): array
     {
         return [];

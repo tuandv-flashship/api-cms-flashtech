@@ -8,7 +8,6 @@ use Illuminate\Validation\Rule;
 final class DownloadMediaFileRequest extends ParentRequest
 {
     protected array $decode = ['folder_id'];
-
     /**
      * @return array{
      *  url:string,

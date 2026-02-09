@@ -9,10 +9,12 @@ final class FindPostByIdRequest extends ParentRequest
     protected array $decode = [
         'post_id',
     ];
-
+    
     public function rules(): array
     {
-        return [];
+        return [
+            'include' => ['nullable', 'string', 'max:255'],
+        ];
     }
 
     public function authorize(): bool

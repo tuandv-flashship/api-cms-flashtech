@@ -12,7 +12,7 @@ final class UpdatePageRequest extends ParentRequest
     protected array $decode = [
         'page_id',
     ];
-
+    
     public function rules(): array
     {
         $templateKeys = PageOptions::templateKeys();

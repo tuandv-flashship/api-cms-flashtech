@@ -42,6 +42,12 @@ Common env keys:
 - `CLIENT_MEMBER_ID`, `CLIENT_MEMBER_SECRET`
 - `CLIENT_MOBILE_ID`, `CLIENT_MOBILE_SECRET`
 - `API_TOKEN_EXPIRES`, `API_REFRESH_TOKEN_EXPIRES`
+- `AUTH_REGISTER_THROTTLE`, `AUTH_WEB_LOGIN_THROTTLE`
+- `AUTH_WEB_REFRESH_THROTTLE`
+- `AUTH_WELCOME_THROTTLE`
+- `AUTH_FORGOT_PASSWORD_THROTTLE`, `AUTH_RESET_PASSWORD_THROTTLE`
+- `AUTH_SEND_VERIFICATION_THROTTLE`
+- `AUTH_VERIFY_EMAIL_THROTTLE`
 - `PASSPORT_PRIVATE_KEY`, `PASSPORT_PUBLIC_KEY`, `PASSPORT_CONNECTION`
 
 ### Operational Notes
@@ -49,6 +55,10 @@ Common env keys:
 - OAuth token TTL and refresh TTL are controlled centrally in auth config.
 - Passport keys must exist before issuing tokens.
 - Use separate OAuth client IDs/secrets per channel to keep revocation/rotation isolated.
+- Public auth routes (`register`, `clients/web/login`, `clients/web/refresh`) are rate-limited via `appSection-authentication.throttle`.
+- Password reset routes (`forgot-password`, `reset-password`) are also rate-limited via the same throttle config group.
+- Sensitive authenticated routes (`email/verify`, `email/verification-notification`) are also rate-limited via the same throttle config group.
+- Sensitive flows also emit audit trail entries in `audit_histories` (web client login, logout/revoke token, password reset success, email verification success).
 
 ### Tests
 

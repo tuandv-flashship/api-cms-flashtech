@@ -6,7 +6,7 @@ use App\Containers\AppSection\Blog\Models\Post;
 use App\Containers\AppSection\CustomField\Supports\CustomFieldService;
 use App\Containers\AppSection\CustomField\UI\API\Transformers\CustomFieldBoxTransformer;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
-use App\Containers\AppSection\Media\Services\MediaService;
+use App\Containers\AppSection\Media\Supports\MediaRuntimeServices;
 use App\Containers\AppSection\User\UI\API\Transformers\UserTransformer;
 use App\Ship\Parents\Transformers\Traits\HasOriginLang;
 use App\Ship\Parents\Transformers\Transformer as ParentTransformer;
@@ -27,7 +27,7 @@ final class PostTransformer extends ParentTransformer
 
     public function transform(Post $post): array
     {
-        $mediaService = app(MediaService::class);
+        $mediaService = MediaRuntimeServices::mediaService();
 
         return [
             'type' => $post->getResourceKey(),
@@ -90,7 +90,7 @@ final class PostTransformer extends ParentTransformer
     public function includeCustomFields(Post $post): Collection
     {
         $langCode = $this->resolveLangCode();
-        $customFieldService = app(CustomFieldService::class);
+        $customFieldService = new CustomFieldService(MediaRuntimeServices::mediaService());
 
         $customFieldsData = $customFieldService->exportCustomFieldsData(
             Post::class,
@@ -114,19 +114,7 @@ final class PostTransformer extends ParentTransformer
         return $normalized ?? (string) $langCode;
     }
 
-    private function hashId(int|string|null $id): int|string|null
-    {
-        if ($id === null) {
-            return null;
-        }
 
-        $intId = (int) $id;
-        if ($intId <= 0) {
-            return $intId;
-        }
-
-        return config('apiato.hash-id') ? hashids()->encodeOrFail($intId) : $intId;
-    }
 
     private function resolveGallery(Post $post): array
     {

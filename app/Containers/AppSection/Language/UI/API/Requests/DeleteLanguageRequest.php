@@ -10,7 +10,7 @@ final class DeleteLanguageRequest extends ParentRequest
     protected array $decode = [
         'language_id',
     ];
-
+    
     public function rules(): array
     {
         return [];

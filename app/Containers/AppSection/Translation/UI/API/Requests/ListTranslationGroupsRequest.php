@@ -7,7 +7,6 @@ use App\Ship\Parents\Requests\Request as ParentRequest;
 final class ListTranslationGroupsRequest extends ParentRequest
 {
     protected array $decode = [];
-
     protected function prepareForValidation(): void
     {
         $locale = $this->route('locale');

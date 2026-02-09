@@ -19,4 +19,5 @@ use App\Containers\AppSection\Media\UI\API\Controllers\ListMediaFolderTreeContro
 use Illuminate\Support\Facades\Route;
 
 Route::get('media/folders/tree', ListMediaFolderTreeController::class)
+    ->name('api_media_list_media_folder_tree')
     ->middleware(['auth:api']);

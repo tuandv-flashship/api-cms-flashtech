@@ -18,7 +18,7 @@ final class VerifyTest extends ApiTestCase
     public function testVerifyEmail(): void
     {
         $this->freezeTime();
-        Event::fake();
+        Event::fake([Verified::class]);
         $user = User::factory()->unverified()->createOne();
         $this->actingAs($user, 'api');
         $url = (new GenerateUrlAction())($user);
@@ -34,6 +34,12 @@ final class VerifyTest extends ApiTestCase
         );
 
         $response->assertOk();
+        $this->assertDatabaseHas('audit_histories', [
+            'module' => 'authentication',
+            'action' => 'verified email',
+            'reference_id' => (string) $user->getKey(),
+            'type' => 'info',
+        ]);
         Event::assertDispatched(Verified::class, static function (Verified $event) use ($user) {
             return $event->user->is($user);
         });

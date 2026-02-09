@@ -104,9 +104,11 @@ return [
             ],
         ],
     ],
+    'cache' => [
+        'user_item_ttl_seconds' => env('MEDIA_USER_ITEM_CACHE_TTL_SECONDS', 300),
+    ],
     'throttle' => [
-        'upload' => env('MEDIA_THROTTLE_UPLOAD', '30,1'),
-        'download_url' => env('MEDIA_THROTTLE_DOWNLOAD_URL', '20,1'),
+        'show_file' => env('MEDIA_SHOW_FILE_THROTTLE', '120,1'),
     ],
     'preview' => [
         'document' => [

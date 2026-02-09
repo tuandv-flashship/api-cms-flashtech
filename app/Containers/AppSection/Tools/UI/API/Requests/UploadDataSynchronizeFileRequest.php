@@ -6,6 +6,9 @@ use App\Ship\Parents\Requests\Request as ParentRequest;
 
 final class UploadDataSynchronizeFileRequest extends ParentRequest
 {
+    protected array $decode = [];
+    
+    
     public function rules(): array
     {
         $maxSize = (int) config('data-synchronize.max_file_size_kb', 1024);

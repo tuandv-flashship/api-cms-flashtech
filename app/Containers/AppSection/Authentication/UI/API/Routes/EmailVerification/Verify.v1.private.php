@@ -28,5 +28,9 @@ use App\Containers\AppSection\Authentication\UI\API\Controllers\EmailVerificatio
 use Illuminate\Support\Facades\Route;
 
 Route::post('email/verify/{id}/{hash}', VerifyController::class)
-    ->middleware(['auth:api', 'signed'])
+    ->middleware([
+        'auth:api',
+        'signed',
+        'throttle:' . config('appSection-authentication.throttle.verify_email', '20,1'),
+    ])
     ->name('verification.verify');

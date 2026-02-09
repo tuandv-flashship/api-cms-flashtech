@@ -9,7 +9,7 @@ final class FindRoleByIdRequest extends ParentRequest
     protected array $decode = [
         'role_id',
     ];
-
+    
     public function rules(): array
     {
         return [];

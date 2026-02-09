@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Member\Actions;
 
+use App\Containers\AppSection\Member\Enums\MemberActivityAction;
 use App\Containers\AppSection\Member\Models\Member;
 use App\Containers\AppSection\Member\Tasks\CreateMemberActivityLogTask;
 use App\Containers\AppSection\Member\Tasks\RevokeRefreshTokensByAccessTokenIdTask;
@@ -23,7 +24,7 @@ final class LogoutMemberAction extends ParentAction
         if ($member) {
             $this->createMemberActivityLogTask->run([
                 'member_id' => $member->id,
-                'action' => 'logout',
+                'action' => MemberActivityAction::LOGOUT->value,
             ]);
         }
 

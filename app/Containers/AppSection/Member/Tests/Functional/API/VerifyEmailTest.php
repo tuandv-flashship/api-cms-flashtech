@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Member\Tests\Functional\API;
 
+use App\Containers\AppSection\Member\Enums\MemberActivityAction;
 use App\Containers\AppSection\Member\Enums\MemberStatus;
 use App\Containers\AppSection\Member\Models\Member;
 use App\Containers\AppSection\Member\Tests\Functional\ApiTestCase;
@@ -35,6 +36,10 @@ class VerifyEmailTest extends ApiTestCase
         $member->refresh();
         $this->assertNotNull($member->email_verified_at);
         $this->assertEquals(MemberStatus::ACTIVE->value, $member->status->value);
+        $this->assertDatabaseHas('member_activity_logs', [
+            'member_id' => $member->id,
+            'action' => MemberActivityAction::VERIFY_EMAIL->value,
+        ]);
     }
 
     public function testVerifyEmailDisabledReturnsForbidden(): void

@@ -186,6 +186,7 @@ final class MediaGlobalActionAction extends ParentAction
 
         $meta->value = array_values(array_merge($current, $selected));
         $meta->save();
+        $this->mediaService->forgetUserItemsCache($userId);
 
         return ['message' => 'Added to favorites.'];
     }
@@ -217,6 +218,7 @@ final class MediaGlobalActionAction extends ParentAction
         }));
 
         $meta->save();
+        $this->mediaService->forgetUserItemsCache($userId);
 
         return ['message' => 'Removed from favorites.'];
     }
@@ -256,6 +258,7 @@ final class MediaGlobalActionAction extends ParentAction
 
         $meta->value = $value;
         $meta->save();
+        $this->mediaService->forgetUserItemsCache($userId);
 
         return ['message' => 'Added to recent.'];
     }

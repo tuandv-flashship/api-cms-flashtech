@@ -99,6 +99,18 @@
         ],
         "fixer": [
             "php-cs-fixer fix"
+        ],
+        "docs": [
+            "make docs"
+        ],
+        "docs-fix": [
+            "make docs-fix"
+        ],
+        "refactor-audit": [
+            "make refactor-audit"
+        ],
+        "p0-baseline": [
+            "make p0-baseline"
         ]
     },
     "extra": {

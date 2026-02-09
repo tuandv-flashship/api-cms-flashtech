@@ -6,13 +6,14 @@ use App\Containers\AppSection\Device\Contracts\TouchDeviceSignatureActivity;
 use Carbon\CarbonImmutable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Queue\ShouldBeUniqueUntilProcessing;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-final class UpdateDeviceSignatureActivityJob implements ShouldQueue
+final class UpdateDeviceSignatureActivityJob implements ShouldQueue, ShouldBeUniqueUntilProcessing
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -23,6 +24,7 @@ final class UpdateDeviceSignatureActivityJob implements ShouldQueue
     public int $timeout = 15;
     public int $maxExceptions = 1;
     public bool $failOnTimeout = true;
+    public int $uniqueFor = 60;
 
     public function __construct(
         public readonly int $deviceKeyId,
@@ -34,6 +36,7 @@ final class UpdateDeviceSignatureActivityJob implements ShouldQueue
         $this->timeout = max(1, (int) config('device.signature.activity_job_timeout', 15));
         $this->maxExceptions = max(1, (int) config('device.signature.activity_job_max_exceptions', 1));
         $this->failOnTimeout = (bool) config('device.signature.activity_job_fail_on_timeout', true);
+        $this->uniqueFor = max(1, (int) config('device.signature.activity_touch_debounce_seconds', 60));
 
         $connection = (string) config('device.signature.activity_queue_connection', '');
         if ($connection !== '') {
@@ -44,6 +47,11 @@ final class UpdateDeviceSignatureActivityJob implements ShouldQueue
         if ($queue !== '') {
             $this->onQueue($queue);
         }
+    }
+
+    public function uniqueId(): string
+    {
+        return sprintf('device.signature.activity:%d:%d', $this->deviceKeyId, $this->deviceId);
     }
 
     public function handle(TouchDeviceSignatureActivity $touchDeviceSignatureActivityTask): void

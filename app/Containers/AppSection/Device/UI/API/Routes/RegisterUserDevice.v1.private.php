@@ -32,5 +32,4 @@ Route::post('users/devices', RegisterUserDeviceController::class)
     ->middleware([
         'auth:api',
         'request.signature',
-        'throttle:' . config('device.throttle.register', '20,1'),
     ]);

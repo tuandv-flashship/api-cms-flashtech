@@ -26,5 +26,8 @@ use App\Containers\AppSection\Authentication\UI\API\Controllers\PasswordReset\Fo
 use Illuminate\Support\Facades\Route;
 
 Route::post('forgot-password', ForgotPasswordController::class)
-    ->middleware('guest')
+    ->middleware([
+        'guest',
+        'throttle:' . config('appSection-authentication.throttle.forgot_password', '6,1'),
+    ])
     ->name('password.email');

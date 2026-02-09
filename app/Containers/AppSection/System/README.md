@@ -23,7 +23,6 @@ Route files:
 - `app/Containers/AppSection/System/UI/API/Routes/GetSystemCommandStatus.v1.private.php`
 
 All System API endpoints currently use `auth:api`.
-System command routes also apply throttle from `system-commands.throttle`.
 
 ### Main Config
 
@@ -34,7 +33,6 @@ System command routes also apply throttle from `system-commands.throttle`.
 Common env keys:
 - `SYSTEM_PACKAGES_CACHE_SECONDS`, `SYSTEM_APP_SIZE_CACHE_SECONDS`
 - `SYSTEM_COMMANDS_ENABLED`
-- `SYSTEM_COMMANDS_THROTTLE`
 - `SYSTEM_COMMANDS_RESULT_TTL`
 
 ### Operational Notes

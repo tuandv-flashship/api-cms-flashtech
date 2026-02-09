@@ -13,7 +13,7 @@ final class GetSystemPackagesController extends ApiController
 {
     public function __invoke(GetSystemPackagesRequest $request, GetSystemPackagesAction $action): JsonResponse
     {
-        $packages = $action->run();
+        $packages = $action->run($request->validated(), $request->query());
 
         return Response::create($packages, SystemPackageTransformer::class)->ok();
     }

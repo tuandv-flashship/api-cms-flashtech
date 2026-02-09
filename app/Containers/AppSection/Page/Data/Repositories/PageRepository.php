@@ -15,6 +15,7 @@ final class PageRepository extends ParentRepository
     protected $fieldSearchable = [
         'id' => '=',
         'name' => 'like',
+        'description' => 'like',
         'status' => '=',
         'user_id' => '=',
         'template' => '=',

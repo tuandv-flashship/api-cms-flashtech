@@ -4,21 +4,9 @@ namespace App\Containers\AppSection\Member\UI\API\Requests;
 
 use App\Ship\Parents\Requests\Request as ParentRequest;
 
-class LoginMemberRequest extends ParentRequest
+final class LoginMemberRequest extends ParentRequest
 {
-    protected array $access = [
-        'permissions' => '',
-        'roles' => '',
-    ];
-
-    protected array $decode = [
-        //
-    ];
-
-    protected array $urlParameters = [
-        //
-    ];
-
+    protected array $decode = [];
     protected function prepareForValidation(): void
     {
         if ($this->has('email') && !$this->has('login')) {

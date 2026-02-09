@@ -6,21 +6,11 @@ use App\Containers\AppSection\Member\Values\MemberRefreshToken;
 use App\Ship\Parents\Requests\Request as ParentRequest;
 use Illuminate\Validation\Rule;
 
-class RefreshMemberTokenRequest extends ParentRequest
+final class RefreshMemberTokenRequest extends ParentRequest
 {
-    protected array $access = [
-        'permissions' => '',
-        'roles' => '',
-    ];
-
-    protected array $decode = [
-        //
-    ];
-
-    protected array $urlParameters = [
-        //
-    ];
-
+    protected array $decode = [];
+    
+    
     public function rules(): array
     {
         $cookieName = MemberRefreshToken::cookieName();

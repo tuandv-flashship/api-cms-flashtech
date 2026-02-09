@@ -8,6 +8,8 @@ final class LoginRequest extends ParentRequest
 {
     protected array $decode = [];
 
+    
+    
     public function rules(): array
     {
         return [

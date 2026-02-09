@@ -9,7 +9,7 @@ final class DeletePageRequest extends ParentRequest
     protected array $decode = [
         'page_id',
     ];
-
+    
     public function rules(): array
     {
         return [];

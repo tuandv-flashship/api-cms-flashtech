@@ -30,4 +30,6 @@
 use App\Containers\AppSection\Authentication\UI\API\Controllers\WebClient\RefreshTokenController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('clients/web/refresh', RefreshTokenController::class);
+Route::post('clients/web/refresh', RefreshTokenController::class)
+    ->middleware(['throttle:' . config('appSection-authentication.throttle.web_refresh', '20,1')])
+    ->name('api_auth_web_refresh_token');

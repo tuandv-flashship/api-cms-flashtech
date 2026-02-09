@@ -10,7 +10,6 @@ final class UpdatePageTranslationRequest extends ParentRequest
     protected array $decode = [
         'page_id',
     ];
-
     protected function prepareForValidation(): void
     {
         $langCode = $this->input('lang_code') ?? $this->input('language');

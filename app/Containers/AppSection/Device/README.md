@@ -83,6 +83,7 @@ Container config:
 
 Main toggles:
 - `DEVICE_SIGNATURE_ENABLED`, `DEVICE_SIGNATURE_ENFORCE`
+- `DEVICE_SIGNATURE_REQUIRE_AUTHENTICATED_OWNER`
 - `DEVICE_SIGNATURE_CACHE_KEY_PREFIX`, `DEVICE_SIGNATURE_CACHE_STORE`
 - `DEVICE_SIGNATURE_NONCE_TTL`, `DEVICE_SIGNATURE_TIMESTAMP_TTL`
 - `DEVICE_SIGNATURE_KEY_CONTEXT_CACHE_ENABLED`, `DEVICE_SIGNATURE_KEY_CONTEXT_CACHE_TTL`
@@ -99,6 +100,7 @@ Main toggles:
 ```env
 DEVICE_SIGNATURE_ENABLED=true
 DEVICE_SIGNATURE_ENFORCE=true
+DEVICE_SIGNATURE_REQUIRE_AUTHENTICATED_OWNER=true
 DEVICE_SIGNATURE_CACHE_KEY_PREFIX=sig
 DEVICE_SIGNATURE_CACHE_STORE=redis
 DEVICE_SIGNATURE_NONCE_TTL=300
@@ -134,6 +136,7 @@ DEVICE_SIGNATURE_METRICS_TTL_SECONDS=7200
 - Max page size: repository `maxPaginationLimit`.
 - `include_public_key=1` only exposes `public_key` on admin route (`/v1/users/...`).
 - `include=keys` can embed device keys in device list responses.
+- Signature activity update uses both debounce cache and unique queued jobs to limit duplicate writes.
 
 ### Tests
 

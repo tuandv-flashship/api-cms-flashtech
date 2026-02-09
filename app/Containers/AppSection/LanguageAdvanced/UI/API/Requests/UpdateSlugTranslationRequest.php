@@ -9,7 +9,6 @@ final class UpdateSlugTranslationRequest extends ParentRequest
     protected array $decode = [
         'slug_id',
     ];
-
     protected function prepareForValidation(): void
     {
         $payload = [];

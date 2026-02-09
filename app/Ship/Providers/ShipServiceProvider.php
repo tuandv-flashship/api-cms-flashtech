@@ -24,8 +24,8 @@ final class ShipServiceProvider extends ParentServiceProvider
         $this->registerMacros();
         RequestException::dontTruncate();
         Date::use(CarbonImmutable::class);
-        Model::shouldBeStrict(!app()->isProduction());
-        UserModel::shouldBeStrict(!app()->isProduction());
+        Model::shouldBeStrict(! $this->app->isProduction());
+        UserModel::shouldBeStrict(! $this->app->isProduction());
     }
 
     private function registerRoutePatterns(): void

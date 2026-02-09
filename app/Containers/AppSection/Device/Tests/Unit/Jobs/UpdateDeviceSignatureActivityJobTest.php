@@ -87,4 +87,20 @@ final class UpdateDeviceSignatureActivityJobTest extends UnitTestCase
 
         $this->assertSame([2, 10], $job->backoff());
     }
+
+    public function testUniqueIdAndUniqueForFollowDebounceConfig(): void
+    {
+        config([
+            'device.signature.activity_touch_debounce_seconds' => 90,
+        ]);
+
+        $job = new UpdateDeviceSignatureActivityJob(
+            deviceKeyId: 77,
+            deviceId: 88,
+            occurredAtUnix: time(),
+        );
+
+        $this->assertSame('device.signature.activity:77:88', $job->uniqueId());
+        $this->assertSame(90, $job->uniqueFor);
+    }
 }

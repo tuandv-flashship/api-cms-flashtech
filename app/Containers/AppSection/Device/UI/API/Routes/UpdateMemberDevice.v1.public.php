@@ -31,5 +31,4 @@ Route::patch('member/devices/{device_id}', UpdateMemberDeviceController::class)
     ->middleware([
         'auth:member',
         'request.signature',
-        'throttle:' . config('device.throttle.update', '30,1'),
     ]);

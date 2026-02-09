@@ -28,5 +28,4 @@ Route::post('users/devices/{device_id}/keys/rotate', RotateUserDeviceKeyControll
     ->middleware([
         'auth:api',
         'request.signature',
-        'throttle:' . config('device.throttle.rotate_key', '20,1'),
     ]);

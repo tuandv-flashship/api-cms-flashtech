@@ -13,7 +13,8 @@ final class ListPostsRequest extends ParentRequest
         'tag_ids.*',
         'author_id',
     ];
-
+    
+    
     public function rules(): array
     {
         return [
@@ -27,6 +28,7 @@ final class ListPostsRequest extends ParentRequest
             'search' => ['nullable', 'string', 'max:255'],
             'order_by' => ['nullable', Rule::in(['id', 'name', 'created_at', 'updated_at', 'views'])],
             'order' => ['nullable', Rule::in(['asc', 'desc'])],
+            'include' => ['nullable', 'string', 'max:255'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:200'],
             'page' => ['nullable', 'integer', 'min:1'],
         ];

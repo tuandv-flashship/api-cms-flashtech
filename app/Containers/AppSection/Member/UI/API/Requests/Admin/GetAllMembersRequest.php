@@ -4,21 +4,11 @@ namespace App\Containers\AppSection\Member\UI\API\Requests\Admin;
 
 use App\Ship\Parents\Requests\Request as ParentRequest;
 
-class GetAllMembersRequest extends ParentRequest
+final class GetAllMembersRequest extends ParentRequest
 {
-    protected array $access = [
-        'permissions' => 'members.index',
-        'roles' => '',
-    ];
-
-    protected array $decode = [
-        //
-    ];
-
-    protected array $urlParameters = [
-        //
-    ];
-
+    protected array $decode = [];
+    
+    
     public function rules(): array
     {
         return [

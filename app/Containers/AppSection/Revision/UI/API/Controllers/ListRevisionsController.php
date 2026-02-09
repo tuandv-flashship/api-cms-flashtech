@@ -16,7 +16,9 @@ final class ListRevisionsController extends ApiController
         $revisions = $action->run(
             (string) $request->input('type'),
             (int) $request->input('revisionable_id'),
-            $request->input('order')
+            $request->input('order'),
+            $request->integer('limit'),
+            $request->integer('page'),
         );
 
         return Response::create($revisions, RevisionTransformer::class)->ok();

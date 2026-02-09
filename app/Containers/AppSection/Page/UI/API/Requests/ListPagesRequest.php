@@ -9,6 +9,9 @@ use Illuminate\Validation\Rule;
 
 final class ListPagesRequest extends ParentRequest
 {
+    protected array $decode = [];
+    
+    
     public function rules(): array
     {
         $templateKeys = PageOptions::templateKeys();
@@ -19,8 +22,10 @@ final class ListPagesRequest extends ParentRequest
                 ? [Rule::in($templateKeys)]
                 : []),
             'search' => ['nullable', 'string', 'max:255'],
-            'order_by' => ['nullable', Rule::in(['id', 'name', 'created_at', 'updated_at'])],
-            'order' => ['nullable', Rule::in(['asc', 'desc'])],
+            'searchFields' => ['nullable', 'string', 'max:255'],
+            'orderBy' => ['nullable', Rule::in(['id', 'name', 'created_at', 'updated_at'])],
+            'sortedBy' => ['nullable', Rule::in(['asc', 'desc'])],
+            'include' => ['nullable', 'string', 'max:255'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:200'],
             'page' => ['nullable', 'integer', 'min:1'],
         ];

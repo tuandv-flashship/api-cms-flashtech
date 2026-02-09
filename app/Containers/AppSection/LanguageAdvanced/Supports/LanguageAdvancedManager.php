@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\App;
 
 final class LanguageAdvancedManager
 {
@@ -207,22 +208,20 @@ final class LanguageAdvancedManager
             return false;
         }
 
-        $table = self::getTranslationTable($model);
+        if (! method_exists($model, 'translations')) {
+            return false;
+        }
+
         $foreignKey = self::getTranslationForeignKey($model);
 
         $payload = Arr::only($data, $columns);
         $payload = self::normalizeTranslationPayload($payload);
-        $payload = array_merge($payload, [
-            'lang_code' => $langCode,
-            $foreignKey => $model->getKey(),
-        ]);
+        $translation = $model->translations()->updateOrCreate(
+            ['lang_code' => $langCode],
+            array_merge($payload, [$foreignKey => $model->getKey()]),
+        );
 
-        $condition = [
-            'lang_code' => $langCode,
-            $foreignKey => $model->getKey(),
-        ];
-
-        return (bool) \DB::table($table)->updateOrInsert($condition, $payload);
+        return $translation->exists;
     }
 
     /**
@@ -271,6 +270,6 @@ final class LanguageAdvancedManager
 
     private static function resolveLocaleFromRequest(Request $request): ?string
     {
-        return $request->header('X-Locale') ?: app()->getLocale();
+        return $request->header('X-Locale') ?: App::getLocale();
     }
 }

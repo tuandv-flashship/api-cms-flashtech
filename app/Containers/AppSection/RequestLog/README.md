@@ -22,16 +22,25 @@ All RequestLog API endpoints currently use `auth:api`.
 
 ### Main Config
 
+- `app/Containers/AppSection/RequestLog/Configs/request-log.php`
 - `app/Containers/AppSection/RequestLog/Configs/permissions.php`
 
 ### Operational Notes
 
 - Request logs can grow quickly, keep retention/cleanup strategy in place.
 - Redact sensitive fields before persisting payload/body data.
+- Route middleware contract is `auth:api` for all endpoints.
 
 ### Tests
 
-No dedicated container test suite yet.
+Available tests:
+- `app/Containers/AppSection/RequestLog/Tests`
+
+Run:
+
+```bash
+php artisan test app/Containers/AppSection/RequestLog/Tests
+```
 
 ### Change Log
 

@@ -38,4 +38,6 @@
 use App\Containers\AppSection\Authentication\UI\API\Controllers\RegisterUserController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/register', RegisterUserController::class);
+Route::post('/register', RegisterUserController::class)
+    ->middleware(['throttle:' . config('appSection-authentication.throttle.register', '6,1')])
+    ->name('api_auth_register_user');

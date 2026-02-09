@@ -8,7 +8,8 @@ use Illuminate\Validation\Rule;
 final class ClearSystemCacheRequest extends ParentRequest
 {
     protected array $decode = [];
-
+    
+    
     public function rules(): array
     {
         return [

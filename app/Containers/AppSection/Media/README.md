@@ -23,7 +23,9 @@ Route files:
 - `app/Containers/AppSection/Media/UI/API/Routes/DownloadMediaFile.v1.private.php`
 - `app/Containers/AppSection/Media/UI/API/Routes/MediaGlobalAction.v1.private.php`
 
-All Media API endpoints currently use `auth:api`.
+Media API auth model:
+- Most endpoints use `auth:api`.
+- `ShowMediaFile` (`media.indirect.url`) is public-by-design and protected by route throttle.
 
 ### Main Config
 
@@ -34,15 +36,15 @@ Common env keys:
 - `MEDIA_DISK`, `MEDIA_DRIVER`, `MEDIA_PRIVATE_DISK`, `MEDIA_PRIVATE_ACCESS_MODE`
 - `MEDIA_SIGNED_URL_TTL_MINUTES`
 - `MEDIA_CHUNK_ENABLED`, `MEDIA_CHUNK_SIZE`, `MEDIA_MAX_FILE_SIZE`
-- `MEDIA_THROTTLE_UPLOAD`, `MEDIA_THROTTLE_DOWNLOAD_URL`
+- `MEDIA_USER_ITEM_CACHE_TTL_SECONDS`
+- `MEDIA_SHOW_FILE_THROTTLE`
 - `MEDIA_ALLOWED_MIME_TYPES`
 - `MEDIA_USE_STORAGE_SYMLINK`
 
 ### Operational Notes
 
-- Upload route throttle is configured by `media.throttle.upload`.
-- Download-url route throttle is configured by `media.throttle.download_url`.
 - Chunk cleanup scheduling config is under `media.chunk.clear`.
+- Recent/favorites metadata cache TTL is configured by `media.cache.user_item_ttl_seconds`.
 
 ### Tests
 

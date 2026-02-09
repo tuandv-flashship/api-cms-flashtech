@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Member\Tests\Functional\API\Admin;
 
+use App\Containers\AppSection\Member\Enums\MemberActivityAction;
 use App\Containers\AppSection\Authorization\Models\Permission;
 use App\Containers\AppSection\Member\Enums\MemberStatus;
 use App\Containers\AppSection\Member\Models\Member;
@@ -64,6 +65,11 @@ class AdminMemberCrudTest extends ApiTestCase
         $this->assertDatabaseHas('members', [
             'email' => 'admin-created@test.com',
             'name' => 'New Member',
+        ]);
+        $member = Member::query()->where('email', 'admin-created@test.com')->firstOrFail();
+        $this->assertDatabaseHas('member_activity_logs', [
+            'member_id' => $member->id,
+            'action' => MemberActivityAction::ADMIN_CREATE->value,
         ]);
     }
 
@@ -246,12 +252,12 @@ class AdminMemberCrudTest extends ApiTestCase
 
         $this->assertDatabaseHas('member_activity_logs', [
             'member_id' => $member->id,
-            'action' => 'admin_update_email',
+            'action' => MemberActivityAction::ADMIN_UPDATE_EMAIL->value,
         ]);
 
         $this->assertDatabaseHas('member_activity_logs', [
             'member_id' => $member->id,
-            'action' => 'admin_update_username',
+            'action' => MemberActivityAction::ADMIN_UPDATE_USERNAME->value,
         ]);
     }
 
@@ -336,7 +342,7 @@ class AdminMemberCrudTest extends ApiTestCase
 
         $this->assertDatabaseHas('member_activity_logs', [
             'member_id' => $member->id,
-            'action' => 'delete',
+            'action' => MemberActivityAction::DELETE->value,
         ]);
     }
 }

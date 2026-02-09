@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Member\Actions;
 
+use App\Containers\AppSection\Member\Enums\MemberActivityAction;
 use App\Containers\AppSection\Member\Enums\MemberStatus;
 use App\Containers\AppSection\Member\Events\MemberRegistered;
 use App\Containers\AppSection\Member\Models\Member;
@@ -24,46 +25,48 @@ final class UpdateMemberProfileAction extends ParentAction
     ) {
     }
 
-    public function run(UpdateMemberProfileRequest $request): Member
+    public function run(\App\Containers\AppSection\Member\UI\API\Transporters\UpdateMemberProfileTransporter $data): Member
     {
-        $data = $request->validated();
         $member = Auth::guard('member')->user();
         $statusBefore = $member->status;
 
-        if (array_key_exists('username', $data)) {
-            $newUsername = $data['username'];
+        // Clone data to modify
+        $updateData = $data->toArray();
+
+        if ($data->has('username')) {
+            $newUsername = $data->username;
 
             if (is_null($newUsername) || $newUsername === '') {
-                unset($data['username']);
+                unset($updateData['username']);
             } else {
                 $currentUsername = $member->username;
                 $normalizedNew = strtolower($newUsername);
                 $normalizedCurrent = strtolower((string) $currentUsername);
 
                 if ($normalizedNew === $normalizedCurrent) {
-                    unset($data['username']);
+                    unset($updateData['username']);
                 } elseif (!empty($currentUsername)) {
                     throw ValidationException::withMessages([
                         'username' => 'Username cannot be changed once set.',
                     ]);
                 } else {
-                    $data['username_changed_at'] = now();
+                    $updateData['username_changed_at'] = now();
                 }
             }
         }
 
-        if (array_key_exists('email', $data)) {
-            $newEmail = $data['email'];
+        if ($data->has('email')) {
+            $newEmail = $data->email;
 
             if (is_null($newEmail) || $newEmail === '') {
-                unset($data['email']);
+                unset($updateData['email']);
             } else {
                 $currentEmail = $member->email;
                 $normalizedNew = strtolower($newEmail);
                 $normalizedCurrent = strtolower((string) $currentEmail);
 
                 if ($normalizedNew === $normalizedCurrent) {
-                    unset($data['email']);
+                    unset($updateData['email']);
                 } elseif (!empty($currentEmail)) {
                     throw ValidationException::withMessages([
                         'email' => 'Email cannot be changed once set.',
@@ -72,33 +75,33 @@ final class UpdateMemberProfileAction extends ParentAction
             }
         }
 
-        $hasPasswordChange = array_key_exists('password', $data);
+        $hasPasswordChange = $data->has('password');
 
         if ($hasPasswordChange) {
-            $currentPassword = (string) ($data['current_password'] ?? '');
+            $currentPassword = (string) ($updateData['current_password'] ?? '');
             if (!Hash::check($currentPassword, $member->password)) {
                 throw new IncorrectPasswordException();
             }
 
-            unset($data['current_password']);
+            unset($updateData['current_password']);
         } else {
-            unset($data['current_password']);
+            unset($updateData['current_password']);
         }
 
-        $emailChanged = array_key_exists('email', $data) && $data['email'] !== $member->email;
+        $emailChanged = $data->has('email') && $data->email !== $member->email;
         $isEmailVerificationEnabled = config('member.email_verification.enabled');
 
         if ($emailChanged) {
             if ($isEmailVerificationEnabled) {
-                $data['email_verified_at'] = null;
-                $data['status'] = MemberStatus::PENDING;
+                $updateData['email_verified_at'] = null;
+                $updateData['status'] = MemberStatus::PENDING;
             } else {
-                $data['email_verified_at'] = now();
+                $updateData['email_verified_at'] = now();
             }
         }
 
-        $hasAvatarChange = array_key_exists('avatar_id', $data);
-        $hasProfileChanges = !empty(array_diff(array_keys($data), [
+        $hasAvatarChange = $data->has('avatar_id');
+        $hasProfileChanges = !empty(array_diff(array_keys($updateData), [
             'avatar_id',
             'password',
             'current_password',
@@ -107,11 +110,11 @@ final class UpdateMemberProfileAction extends ParentAction
             'status',
         ]));
 
-        if ($data === []) {
+        if ($updateData === []) {
             return $member;
         }
 
-        $member = $this->updateMemberTask->run($member->id, $data);
+        $member = $this->updateMemberTask->run($member->id, $updateData);
 
         if ($emailChanged && $isEmailVerificationEnabled) {
             // Dispatch after persisting the new email to ensure the queued listener uses the correct address.
@@ -128,21 +131,21 @@ final class UpdateMemberProfileAction extends ParentAction
         if ($hasProfileChanges) {
             $this->createMemberActivityLogTask->run([
                 'member_id' => $member->id,
-                'action' => 'update_setting',
+                'action' => MemberActivityAction::UPDATE_SETTING->value,
             ]);
         }
 
         if ($hasAvatarChange) {
             $this->createMemberActivityLogTask->run([
                 'member_id' => $member->id,
-                'action' => 'changed_avatar',
+                'action' => MemberActivityAction::CHANGED_AVATAR->value,
             ]);
         }
 
         if ($hasPasswordChange) {
             $this->createMemberActivityLogTask->run([
                 'member_id' => $member->id,
-                'action' => 'update_security',
+                'action' => MemberActivityAction::UPDATE_SECURITY->value,
             ]);
         }
 

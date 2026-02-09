@@ -19,7 +19,5 @@ use App\Containers\AppSection\Media\UI\API\Controllers\DownloadMediaFileControll
 use Illuminate\Support\Facades\Route;
 
 Route::post('media/files/download-url', DownloadMediaFileController::class)
-    ->middleware([
-        'auth:api',
-        'throttle:' . config('media.throttle.download_url', '20,1'),
-    ]);
+    ->name('api_media_download_media_file')
+    ->middleware(['auth:api']);

@@ -26,5 +26,4 @@ Route::delete('users/devices/{device_id}/keys/{key_id}', RevokeUserDeviceKeyCont
     ->middleware([
         'auth:api',
         'request.signature',
-        'throttle:' . config('device.throttle.revoke_key', '20,1'),
     ]);

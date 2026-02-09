@@ -36,6 +36,7 @@ Operational config notes:
 - Keep permission flags stable (`roles.*`, `users.*`) to avoid breaking role mappings.
 - When adding new secured endpoints, add matching permission flags and seed/migration path.
 - Route files `_role.v1.private.php` and `_permission.v1.private.php` are shared route param constraints.
+- Route middleware contract is `auth:api` for all endpoints.
 
 ### Tests
 

@@ -12,6 +12,8 @@ on:
       - "scripts/check-doc-paths.sh"
       - "scripts/check-container-readmes-schema.sh"
       - "scripts/check-docs.sh"
+      - "scripts/install-git-hooks.sh"
+      - ".githooks/pre-commit"
       - "Makefile"
   push:
     paths:
@@ -24,6 +26,8 @@ on:
       - "scripts/check-doc-paths.sh"
       - "scripts/check-container-readmes-schema.sh"
       - "scripts/check-docs.sh"
+      - "scripts/install-git-hooks.sh"
+      - ".githooks/pre-commit"
       - "Makefile"
 
 permissions:
@@ -34,10 +38,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Markdownlint
-        uses: DavidAnson/markdownlint-cli2-action@v20
+        uses: DavidAnson/markdownlint-cli2-action@992badcdf24e3b8eb7e87ff9287fe931bcb00c6e # v20
         with:
           globs: |
             README.md
@@ -48,10 +52,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Link check
-        uses: lycheeverse/lychee-action@v2
+        uses: lycheeverse/lychee-action@a8c4c7cb88f0c7386610c35eb25108e448569cb0 # v2
         with:
           args: >-
             --no-progress
@@ -66,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Verify docs local paths
         run: bash scripts/check-doc-paths.sh
@@ -75,7 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Verify container README schema
         run: bash scripts/check-container-readmes-schema.sh
@@ -84,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Verify containers index is generated
         run: |

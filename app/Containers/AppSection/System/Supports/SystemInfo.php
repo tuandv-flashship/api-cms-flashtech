@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\System\Supports;
 
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,11 @@ use Illuminate\Support\Facades\Session;
 
 final class SystemInfo
 {
+    public function __construct(
+        private readonly Application $app,
+    ) {
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -64,14 +70,12 @@ final class SystemInfo
      */
     public function getSystemEnv(): array
     {
-        $app = app();
-
         return [
-            'framework_version' => $app->version(),
-            'timezone' => $app['config']->get('app.timezone'),
-            'debug_mode' => $app->hasDebugModeEnabled(),
-            'storage_dir_writable' => File::isWritable($app->storagePath()),
-            'cache_dir_writable' => File::isReadable($app->bootstrapPath('cache')),
+            'framework_version' => $this->app->version(),
+            'timezone' => $this->app['config']->get('app.timezone'),
+            'debug_mode' => $this->app->hasDebugModeEnabled(),
+            'storage_dir_writable' => File::isWritable($this->app->storagePath()),
+            'cache_dir_writable' => File::isReadable($this->app->bootstrapPath('cache')),
             'app_size' => 'N/A',
         ];
     }
@@ -191,7 +195,7 @@ final class SystemInfo
 
     public function getAppSize(): int
     {
-        return $this->calculateDirectorySize(app()->basePath());
+        return $this->calculateDirectorySize($this->app->basePath());
     }
 
     public function formatBytes(int $bytes): string

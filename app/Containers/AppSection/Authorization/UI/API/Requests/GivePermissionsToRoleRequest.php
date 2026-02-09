@@ -10,7 +10,7 @@ final class GivePermissionsToRoleRequest extends ParentRequest
         'role_id',
         'permission_ids.*',
     ];
-
+    
     public function rules(): array
     {
         return [
