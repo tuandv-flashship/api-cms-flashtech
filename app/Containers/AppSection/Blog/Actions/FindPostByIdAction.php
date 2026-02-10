@@ -15,7 +15,7 @@ final class FindPostByIdAction extends ParentAction
 
     public function run(int $id, bool $includeAuthor = false): Post
     {
-        $with = ['categories', 'tags', 'slugable', 'galleryMeta'];
+        $with = ['categories.slugable', 'tags.slugable', 'slugable', 'galleryMeta'];
 
         if ($includeAuthor) {
             $with[] = 'author';
