@@ -272,6 +272,38 @@ final class PostCrudTest extends ApiTestCase
         ]);
     }
 
+    public function testUpdatePostWithEmptyTagIdsClearsTags(): void
+    {
+        $post = Post::factory()->createOne();
+        $tags = Tag::factory()->count(2)->create();
+        $post->tags()->sync($tags->pluck('id')->all());
+
+        $response = $this->actingAs($this->user, 'api')
+            ->patchJson(
+                URL::action(UpdatePostController::class, ['post_id' => $post->getHashedKey()]),
+                ['tag_ids' => []]
+            );
+
+        $response->assertOk();
+        $this->assertCount(0, $post->fresh()->tags);
+    }
+
+    public function testUpdatePostWithEmptyTagNamesClearsTags(): void
+    {
+        $post = Post::factory()->createOne();
+        $tags = Tag::factory()->count(2)->create();
+        $post->tags()->sync($tags->pluck('id')->all());
+
+        $response = $this->actingAs($this->user, 'api')
+            ->patchJson(
+                URL::action(UpdatePostController::class, ['post_id' => $post->getHashedKey()]),
+                ['tag_names' => []]
+            );
+
+        $response->assertOk();
+        $this->assertCount(0, $post->fresh()->tags);
+    }
+
     public function testDeletePost(): void
     {
         $post = Post::factory()->createOne();
