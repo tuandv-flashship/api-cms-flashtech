@@ -104,4 +104,12 @@ final class UpdatePostTransporter extends Transporter
     {
         return $this->custom_fields;
     }
+
+    /**
+     * Get explicit lang_code from request body (for translation context)
+     */
+    public function getLangCode(): ?string
+    {
+        return $this->lang_code;
+    }
 }

@@ -6,7 +6,6 @@ use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
 use App\Containers\AppSection\Blog\Events\PostCreated;
 use App\Containers\AppSection\Blog\Events\PostPublished;
-use App\Containers\AppSection\Blog\Models\Tag;
 use App\Containers\AppSection\Blog\Models\Post;
 use App\Containers\AppSection\Blog\Supports\GalleryNormalizer;
 use App\Containers\AppSection\Blog\Supports\TagResolver;
