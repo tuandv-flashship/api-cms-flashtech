@@ -16,6 +16,15 @@ final class UpdatePostRequest extends ParentRequest
     ];
     protected function prepareForValidation(): void
     {
+        // Clean up array fields: filter out empty/null values so FE can send [""] to clear
+        foreach (['category_ids', 'tag_ids', 'tag_names'] as $field) {
+            if ($this->has($field) && is_array($this->input($field))) {
+                $this->merge([
+                    $field => array_values(array_filter($this->input($field), static fn ($v) => $v !== null && $v !== '')),
+                ]);
+            }
+        }
+
         $gallery = $this->input('gallery');
         if (is_string($gallery)) {
             $decoded = json_decode($gallery, true);
@@ -47,6 +56,7 @@ final class UpdatePostRequest extends ParentRequest
             'gallery.*.img' => ['required', 'string'],
             'gallery.*.description' => ['nullable', 'string'],
             'custom_fields' => ['sometimes'],
+            'lang_code' => ['sometimes', 'nullable', 'string', 'max:20'],
         ];
     }
 

@@ -7,7 +7,6 @@ use App\Containers\AppSection\Blog\Enums\ContentStatus;
 use App\Containers\AppSection\Blog\Events\PostPublished;
 use App\Containers\AppSection\Blog\Events\PostUpdated;
 use App\Containers\AppSection\Blog\Models\Post;
-use App\Containers\AppSection\Blog\Models\Tag;
 use App\Containers\AppSection\Blog\Supports\GalleryNormalizer;
 use App\Containers\AppSection\Blog\Supports\TagResolver;
 use App\Containers\AppSection\Blog\Tasks\FindPostTask;
@@ -79,7 +78,7 @@ final class UpdatePostAction extends ParentAction
 
             $customFields = $data->getCustomFields();
             if ($customFields !== null) {
-                $this->customFieldService->saveCustomFieldsForModel($post, $customFields);
+                $this->customFieldService->saveCustomFieldsForModel($post, $customFields, $data->getLangCode());
             }
 
             AuditLogRecorder::recordModel('updated', $post);
