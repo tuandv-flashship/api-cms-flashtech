@@ -5,6 +5,10 @@ namespace App\Containers\AppSection\Blog\Listeners;
 use App\Containers\AppSection\Blog\Events\CategoryCreated;
 use App\Containers\AppSection\Blog\Events\CategoryDeleted;
 use App\Containers\AppSection\Blog\Events\CategoryUpdated;
+use App\Containers\AppSection\Blog\Events\PostCreated;
+use App\Containers\AppSection\Blog\Events\PostDeleted;
+use App\Containers\AppSection\Blog\Events\PostPublished;
+use App\Containers\AppSection\Blog\Events\PostUpdated;
 use App\Containers\AppSection\Blog\Events\TagCreated;
 use App\Containers\AppSection\Blog\Events\TagDeleted;
 use App\Containers\AppSection\Blog\Events\TagUpdated;
@@ -43,5 +47,25 @@ final class CacheInvalidationListener
     public function handleTagDeleted(TagDeleted $event): void
     {
         BlogCache::forgetTag($event->tagId);
+    }
+
+    public function handlePostCreated(PostCreated $event): void
+    {
+        BlogCache::forgetReport();
+    }
+
+    public function handlePostUpdated(PostUpdated $event): void
+    {
+        BlogCache::forgetReport();
+    }
+
+    public function handlePostDeleted(PostDeleted $event): void
+    {
+        BlogCache::forgetReport();
+    }
+
+    public function handlePostPublished(PostPublished $event): void
+    {
+        BlogCache::forgetReport();
     }
 }

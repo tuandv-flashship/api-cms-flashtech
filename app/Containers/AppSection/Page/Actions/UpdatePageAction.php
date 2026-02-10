@@ -4,6 +4,7 @@ namespace App\Containers\AppSection\Page\Actions;
 
 use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\CustomField\Supports\CustomFieldService;
+use App\Containers\AppSection\Page\Events\PageUpdatedEvent;
 use App\Containers\AppSection\Page\Models\Page;
 use App\Containers\AppSection\Page\Tasks\FindPageTask;
 use App\Containers\AppSection\Page\Tasks\UpdatePageTask;
@@ -50,6 +51,8 @@ final class UpdatePageAction extends ParentAction
         }
 
         AuditLogRecorder::recordModel('updated', $page);
+
+        PageUpdatedEvent::dispatch($page);
 
         return $page->refresh()->load(['slugable', 'user']);
     }

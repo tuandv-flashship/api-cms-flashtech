@@ -5,6 +5,10 @@ namespace App\Containers\AppSection\Blog\Providers;
 use App\Containers\AppSection\Blog\Events\CategoryCreated;
 use App\Containers\AppSection\Blog\Events\CategoryDeleted;
 use App\Containers\AppSection\Blog\Events\CategoryUpdated;
+use App\Containers\AppSection\Blog\Events\PostCreated;
+use App\Containers\AppSection\Blog\Events\PostDeleted;
+use App\Containers\AppSection\Blog\Events\PostPublished;
+use App\Containers\AppSection\Blog\Events\PostUpdated;
 use App\Containers\AppSection\Blog\Events\TagCreated;
 use App\Containers\AppSection\Blog\Events\TagDeleted;
 use App\Containers\AppSection\Blog\Events\TagUpdated;
@@ -36,6 +40,12 @@ final class BlogServiceProvider extends ParentServiceProvider
         Event::listen(TagCreated::class, [CacheInvalidationListener::class, 'handleTagCreated']);
         Event::listen(TagUpdated::class, [CacheInvalidationListener::class, 'handleTagUpdated']);
         Event::listen(TagDeleted::class, [CacheInvalidationListener::class, 'handleTagDeleted']);
+
+        // Post cache invalidation
+        Event::listen(PostCreated::class, [CacheInvalidationListener::class, 'handlePostCreated']);
+        Event::listen(PostUpdated::class, [CacheInvalidationListener::class, 'handlePostUpdated']);
+        Event::listen(PostDeleted::class, [CacheInvalidationListener::class, 'handlePostDeleted']);
+        Event::listen(PostPublished::class, [CacheInvalidationListener::class, 'handlePostPublished']);
     }
 }
 

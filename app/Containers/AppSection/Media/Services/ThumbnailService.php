@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
 
-final class ThumbnailService
+class ThumbnailService
 {
     public function __construct(
         private readonly MediaSettingsStore $settings

@@ -9,24 +9,46 @@ use App\Containers\AppSection\Blog\Models\Tag;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
 use App\Ship\Parents\Tasks\Task as ParentTask;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 final class GetBlogReportTask extends ParentTask
 {
+    private const CACHE_KEY = 'blog:report';
+    private const CACHE_TTL_SECONDS = 300; // 5 minutes
+
     /**
      * @return array<string, mixed>
      */
     public function run(): array
     {
-        $totalPosts = Post::query()->count();
-        $totalViews = (int) Post::query()->sum('views');
+        $langCode = LanguageAdvancedManager::getTranslationLocale();
+        $cacheKey = self::CACHE_KEY . ':' . $langCode;
+
+        return Cache::remember($cacheKey, self::CACHE_TTL_SECONDS, function () use ($langCode) {
+            return $this->buildReport($langCode);
+        });
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildReport(string $langCode): array
+    {
+        // Consolidate totals: 2 queries instead of 4
+        $postAggregates = Post::query()
+            ->selectRaw('COUNT(*) as total, COALESCE(SUM(views), 0) as total_views')
+            ->first();
+        $totalPosts = (int) $postAggregates->total;
+        $totalViews = (int) $postAggregates->total_views;
         $totalCategories = Category::query()->count();
         $totalTags = Tag::query()->count();
 
-        $publishedPosts = Post::query()->where('status', ContentStatus::PUBLISHED)->count();
-        $draftPosts = Post::query()->where('status', ContentStatus::DRAFT)->count();
-        $pendingPosts = Post::query()->where('status', ContentStatus::PENDING)->count();
+        // Consolidate status counts: 1 query instead of 3
+        $statusCounts = Post::query()
+            ->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
 
-        $langCode = LanguageAdvancedManager::getTranslationLocale();
         $categoryWith = LanguageAdvancedManager::withTranslations([], Category::class, $langCode);
         $postWith = LanguageAdvancedManager::withTranslations([
             'slugable',
@@ -67,9 +89,9 @@ final class GetBlogReportTask extends ParentTask
                 'tags' => $totalTags,
             ],
             'statuses' => [
-                'published' => $publishedPosts,
-                'draft' => $draftPosts,
-                'pending' => $pendingPosts,
+                'published' => (int) ($statusCounts[ContentStatus::PUBLISHED->value] ?? 0),
+                'draft' => (int) ($statusCounts[ContentStatus::DRAFT->value] ?? 0),
+                'pending' => (int) ($statusCounts[ContentStatus::PENDING->value] ?? 0),
             ],
             'top_viewed_posts' => $this->formatPosts($topViewedPosts),
             'recent_posts' => $this->formatPosts($recentPosts),
@@ -123,18 +145,5 @@ final class GetBlogReportTask extends ParentTask
             ];
         })->values()->all();
     }
-
-    private function hashId(int|string|null $id): int|string|null
-    {
-        if ($id === null) {
-            return null;
-        }
-
-        $intId = (int) $id;
-        if ($intId <= 0) {
-            return $intId;
-        }
-
-        return config('apiato.hash-id') ? hashids()->encodeOrFail($intId) : $intId;
-    }
 }
+

@@ -6,6 +6,7 @@ use App\Containers\AppSection\Blog\Models\Category;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
 use App\Ship\Parents\Tasks\Task as ParentTask;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
 
 final class ListCategoriesTreeTask extends ParentTask
 {
@@ -14,21 +15,26 @@ final class ListCategoriesTreeTask extends ParentTask
      */
     public function run(?string $status = null): array
     {
-        $with = LanguageAdvancedManager::withTranslations(
-            ['slugable'],
-            Category::class
-        );
+        $langCode = LanguageAdvancedManager::getTranslationLocale();
+        $cacheKey = "blog_categories_tree_{$status}_{$langCode}";
 
-        $categories = Category::query()
-            ->with($with)
-            ->when($status, fn ($query) => $query->where('status', $status))
-            ->orderBy('order')
-            ->orderBy('id')
-            ->get();
+        return Cache::rememberForever($cacheKey, function () use ($status) {
+            $with = LanguageAdvancedManager::withTranslations(
+                ['slugable'],
+                Category::class
+            );
 
-        $grouped = $categories->groupBy('parent_id');
+            $categories = Category::query()
+                ->with($with)
+                ->when($status, fn ($query) => $query->where('status', $status))
+                ->orderBy('order')
+                ->orderBy('id')
+                ->get();
 
-        return $this->buildTree((int) 0, $grouped);
+            $grouped = $categories->groupBy('parent_id');
+
+            return $this->buildTree((int) 0, $grouped);
+        });
     }
 
     /**
@@ -58,17 +64,5 @@ final class ListCategoriesTreeTask extends ParentTask
         return $items;
     }
 
-    private function hashId(int|string|null $id): int|string|null
-    {
-        if ($id === null) {
-            return null;
-        }
 
-        $intId = (int) $id;
-        if ($intId <= 0) {
-            return $intId;
-        }
-
-        return config('apiato.hash-id') ? hashids()->encodeOrFail($intId) : $intId;
-    }
 }

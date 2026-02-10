@@ -154,17 +154,5 @@ final class ListMediaAction extends ParentAction
         return array_merge($breadcrumbs, $path);
     }
 
-    private function hashId(int|string|null $id): int|string|null
-    {
-        if ($id === null) {
-            return null;
-        }
 
-        $intId = (int) $id;
-        if ($intId <= 0) {
-            return $intId;
-        }
-
-        return config('apiato.hash-id') ? hashids()->encodeOrFail($intId) : $intId;
-    }
 }

@@ -10,29 +10,11 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Throwable;
 
-final class AuditHandlerListener
+final class AuditHandlerListener implements \Illuminate\Contracts\Queue\ShouldQueue
 {
-    private const DEFAULT_EXCLUDED_KEYS = [
-        'username',
-        'password',
-        're_password',
-        'new_password',
-        'current_password',
-        'password_confirmation',
-        '_token',
-        'token',
-        'refresh_token',
-        'remember_token',
-        'client_secret',
-        'client_id',
-        'api_key',
-        'access_key',
-        'secret_key',
-        'otp',
-        'pin',
-    ];
+    use \Illuminate\Queue\InteractsWithQueue;
 
-    public function __construct(private readonly Request $request)
+    public function __construct()
     {
     }
 
@@ -40,30 +22,26 @@ final class AuditHandlerListener
     {
         try {
             $module = strtolower(Str::afterLast($event->module, '\\'));
-            $user = $this->request->user();
+            
+            $userId = (int) $event->referenceUser;
+            $userType = $event->userType;
 
             $data = [
-                'user_agent' => $this->request->userAgent(),
-                'ip_address' => $this->request->ip(),
+                'user_agent' => $event->userAgent,
+                'ip_address' => $event->ip,
                 'module' => $module,
                 'action' => $event->action,
-                'user_id' => $user ? (int) $user->getKey() : 0,
-                'user_type' => $user ? $user::class : null,
-                'actor_id' => (int) $event->referenceUser,
-                'actor_type' => $user ? $user::class : null,
+                'user_id' => $userId,
+                'user_type' => $userType,
+                'actor_id' => $userId, 
+                'actor_type' => $userType,
                 'reference_id' => $event->referenceId,
                 'reference_name' => $event->referenceName ?? '',
                 'type' => $event->type,
             ];
 
             if (! in_array($event->action, ['loggedin', 'password'], true)) {
-                $excluded = config('audit-log.excluded_request_keys', []);
-                if (! is_array($excluded)) {
-                    $excluded = [];
-                }
-
-                $excluded = array_values(array_unique(array_merge(self::DEFAULT_EXCLUDED_KEYS, $excluded)));
-                $data['request'] = json_encode($this->request->except($excluded));
+                $data['request'] = json_encode($event->input);
             }
 
             AuditHistory::query()->create($data);
