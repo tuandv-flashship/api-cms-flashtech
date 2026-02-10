@@ -9,7 +9,7 @@ final class DeleteCategoryRequest extends ParentRequest
     protected array $decode = [
         'category_id',
     ];
-
+    
     public function rules(): array
     {
         return [];

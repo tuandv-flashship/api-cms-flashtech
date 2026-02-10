@@ -23,4 +23,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('member/logout', LogoutController::class)
     ->name('api_member_logout')
-    ->middleware(['auth:member']);
+    ->middleware([
+        'auth:member',
+        'throttle:' . config('member.throttle.logout', '20,1'),
+    ]);

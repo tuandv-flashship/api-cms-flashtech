@@ -19,6 +19,7 @@ final class BlogCache
     private const TAGS_ALL = 'blog.tags.all';
     private const CATEGORY_PREFIX = 'blog.category.';
     private const TAG_PREFIX = 'blog.tag.';
+    private const REPORT_PREFIX = 'blog:report';
     private const TTL_SECONDS = 86400; // 1 day
 
     /**
@@ -102,6 +103,22 @@ final class BlogCache
     {
         Cache::forget(self::CATEGORIES_ALL);
         Cache::forget(self::CATEGORIES_TREE);
+
+        $languages = config('appSection-languages.available', []);
+        $locales = array_column($languages, 'lang_locale');
+
+        // Ensure default locales are included
+        foreach (['en', 'vi'] as $default) {
+            if (!in_array($default, $locales)) {
+                $locales[] = $default;
+            }
+        }
+
+        foreach ($locales as $locale) {
+            foreach ([null, '', 'published', 'draft', 'pending'] as $status) {
+                Cache::forget("blog_categories_tree_{$status}_{$locale}");
+            }
+        }
     }
 
     /**
@@ -131,12 +148,32 @@ final class BlogCache
     }
 
     /**
+     * Forget blog report caches.
+     */
+    public static function forgetReport(): void
+    {
+        $languages = config('appSection-languages.available', []);
+        $locales = array_column($languages, 'lang_locale');
+
+        foreach (['en', 'vi'] as $default) {
+            if (! in_array($default, $locales)) {
+                $locales[] = $default;
+            }
+        }
+
+        foreach ($locales as $locale) {
+            Cache::forget(self::REPORT_PREFIX . ':' . $locale);
+        }
+    }
+
+    /**
      * Forget all blog caches.
      */
     public static function forgetAll(): void
     {
         self::forgetCategories();
         self::forgetTags();
+        self::forgetReport();
     }
 
     /**

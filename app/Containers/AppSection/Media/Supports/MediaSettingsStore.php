@@ -5,7 +5,7 @@ namespace App\Containers\AppSection\Media\Supports;
 use App\Containers\AppSection\Setting\Models\Setting;
 use Illuminate\Support\Facades\Cache;
 
-final class MediaSettingsStore
+class MediaSettingsStore
 {
     private const CACHE_KEY = 'media.settings';
 

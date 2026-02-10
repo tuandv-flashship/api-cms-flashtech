@@ -8,6 +8,7 @@ use App\Containers\AppSection\Blog\Models\Category;
 use App\Containers\AppSection\Blog\Supports\CategorySupport;
 use App\Containers\AppSection\Blog\Tasks\FindCategoryTask;
 use App\Containers\AppSection\Blog\Tasks\UpdateCategoryTask;
+use App\Containers\AppSection\Blog\UI\API\Transporters\UpdateCategoryTransporter;
 use App\Containers\AppSection\CustomField\Supports\CustomFieldService;
 use App\Containers\AppSection\Slug\Supports\SlugHelper;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -24,38 +25,36 @@ final class UpdateCategoryAction extends ParentAction
     }
 
     /**
-     * @param array<string, mixed> $data
-     * @param array<string, mixed>|null $seoMeta
-     * @param array<int, mixed>|string|null $customFields
+     * Update an existing category with all related data
      */
-    public function run(
-        int $id,
-        array $data,
-        ?string $slug = null,
-        ?array $seoMeta = null,
-        array|string|null $customFields = null
-    ): Category
+    public function run(UpdateCategoryTransporter $data): Category
     {
-        return DB::transaction(function () use ($id, $data, $slug, $seoMeta, $customFields) {
-            CategorySupport::resetDefaultCategoryIfRequested($data);
+        return DB::transaction(function () use ($data) {
+            $id = $data->getCategoryId();
+            $categoryData = $data->getCategoryData();
 
-            if (array_key_exists('parent_id', $data) && $data['parent_id'] === null) {
-                $data['parent_id'] = 0;
+            CategorySupport::resetDefaultCategoryIfRequested($categoryData);
+
+            if (array_key_exists('parent_id', $categoryData) && $categoryData['parent_id'] === null) {
+                $categoryData['parent_id'] = 0;
             }
 
-            $category = $data === []
+            $category = $categoryData === []
                 ? $this->findCategoryTask->run($id)
-                : $this->updateCategoryTask->run($id, $data);
+                : $this->updateCategoryTask->run($id, $categoryData);
 
+            $slug = $data->getSlug();
             if ($slug !== null) {
                 $slug = trim($slug);
                 $this->slugHelper->createSlug($category, $slug === '' ? null : $slug);
             }
 
+            $seoMeta = $data->getSeoMeta();
             if ($seoMeta !== null) {
                 $category->setMeta('seo_meta', $seoMeta);
             }
 
+            $customFields = $data->getCustomFields();
             if ($customFields !== null) {
                 $this->customFieldService->saveCustomFieldsForModel($category, $customFields);
             }

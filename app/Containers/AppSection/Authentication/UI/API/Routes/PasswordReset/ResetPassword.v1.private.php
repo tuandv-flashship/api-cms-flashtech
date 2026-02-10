@@ -38,5 +38,8 @@ use App\Containers\AppSection\Authentication\UI\API\Controllers\PasswordReset\Re
 use Illuminate\Support\Facades\Route;
 
 Route::post('reset-password', ResetPasswordController::class)
-    ->middleware('guest')
+    ->middleware([
+        'guest',
+        'throttle:' . config('appSection-authentication.throttle.reset_password', '6,1'),
+    ])
     ->name('password.update');

@@ -9,7 +9,8 @@ final class CreateRoleRequest extends ParentRequest
     protected array $decode = [
         'permission_ids.*',
     ];
-
+    
+    
     public function rules(): array
     {
         return [

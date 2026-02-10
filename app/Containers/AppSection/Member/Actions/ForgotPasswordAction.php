@@ -2,6 +2,9 @@
 
 namespace App\Containers\AppSection\Member\Actions;
 
+use App\Containers\AppSection\Member\Enums\MemberActivityAction;
+use App\Containers\AppSection\Member\Tasks\CreateMemberActivityLogTask;
+use App\Containers\AppSection\Member\Tasks\FindMemberByEmailTask;
 use App\Ship\Parents\Actions\Action as ParentAction;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -11,16 +14,25 @@ use Illuminate\Validation\ValidationException;
 
 final class ForgotPasswordAction extends ParentAction
 {
+    public function __construct(
+        private readonly FindMemberByEmailTask $findMemberByEmailTask,
+        private readonly CreateMemberActivityLogTask $createMemberActivityLogTask,
+    ) {
+    }
+
     public function run(string $email): void
     {
         if (!config('member.password_reset.enabled')) {
             return;
         }
 
+        $normalizedEmail = Str::lower(trim($email));
+        $member = $this->findMemberByEmailTask->run($normalizedEmail);
+
         $this->recordAuditAttempt($email);
 
         $status = Password::broker('members')->sendResetLink([
-            'email' => $email,
+            'email' => $normalizedEmail,
         ]);
 
         if (in_array($status, [
@@ -28,6 +40,13 @@ final class ForgotPasswordAction extends ParentAction
             Password::INVALID_USER,
             Password::RESET_THROTTLED,
         ], true)) {
+            if ($member) {
+                $this->createMemberActivityLogTask->run([
+                    'member_id' => $member->id,
+                    'action' => MemberActivityAction::REQUEST_PASSWORD_RESET->value,
+                ]);
+            }
+
             return;
         }
 

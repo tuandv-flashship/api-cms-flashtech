@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Member\Tests\Functional\API;
 
+use App\Containers\AppSection\Member\Enums\MemberActivityAction;
 use App\Containers\AppSection\Member\Models\Member;
 use App\Containers\AppSection\Member\Tests\Functional\ApiTestCase;
 use Illuminate\Support\Facades\Hash;
@@ -27,6 +28,10 @@ class PasswordResetTest extends ApiTestCase
 
         $this->assertDatabaseHas('member_password_resets', [
             'email' => $member->email,
+        ]);
+        $this->assertDatabaseHas('member_activity_logs', [
+            'member_id' => $member->id,
+            'action' => MemberActivityAction::REQUEST_PASSWORD_RESET->value,
         ]);
     }
 
@@ -83,9 +88,13 @@ class PasswordResetTest extends ApiTestCase
 
         $member->refresh();
         $this->assertTrue(Hash::check('newPassword123!', $member->password));
-        
+
         $this->assertDatabaseMissing('member_password_resets', [
             'email' => $member->email,
+        ]);
+        $this->assertDatabaseHas('member_activity_logs', [
+            'member_id' => $member->id,
+            'action' => MemberActivityAction::RESET_PASSWORD->value,
         ]);
     }
 

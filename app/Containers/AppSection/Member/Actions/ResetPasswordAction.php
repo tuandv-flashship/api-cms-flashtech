@@ -2,7 +2,9 @@
 
 namespace App\Containers\AppSection\Member\Actions;
 
+use App\Containers\AppSection\Member\Enums\MemberActivityAction;
 use App\Containers\AppSection\Member\Models\Member;
+use App\Containers\AppSection\Member\Tasks\CreateMemberActivityLogTask;
 use App\Containers\AppSection\Member\Tasks\RevokeMemberTokensTask;
 use App\Ship\Parents\Actions\Action as ParentAction;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -13,6 +15,7 @@ final class ResetPasswordAction extends ParentAction
 {
     public function __construct(
         private readonly RevokeMemberTokensTask $revokeMemberTokensTask,
+        private readonly CreateMemberActivityLogTask $createMemberActivityLogTask,
     ) {
     }
 
@@ -32,6 +35,10 @@ final class ResetPasswordAction extends ParentAction
                 $member->save();
 
                 $this->revokeMemberTokensTask->run($member);
+                $this->createMemberActivityLogTask->run([
+                    'member_id' => $member->id,
+                    'action' => MemberActivityAction::RESET_PASSWORD->value,
+                ]);
             },
         );
 

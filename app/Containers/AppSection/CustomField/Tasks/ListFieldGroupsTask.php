@@ -2,26 +2,21 @@
 
 namespace App\Containers\AppSection\CustomField\Tasks;
 
-use App\Containers\AppSection\CustomField\Models\FieldGroup;
+use App\Containers\AppSection\CustomField\Data\Repositories\FieldGroupRepository;
 use App\Ship\Parents\Tasks\Task as ParentTask;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
 
 final class ListFieldGroupsTask extends ParentTask
 {
-    /**
-     * @param array<string, mixed> $filters
-     */
-    public function run(array $filters, int $perPage, int $page): LengthAwarePaginator
-    {
-        $orderBy = $filters['order_by'] ?? 'order';
-        $order = $filters['order'] ?? 'asc';
+    public function __construct(
+        private readonly FieldGroupRepository $repository,
+    ) {
+    }
 
-        return FieldGroup::query()
-            ->when(isset($filters['status']), function (Builder $query) use ($filters): void {
-                $query->where('status', $filters['status']);
-            })
-            ->orderBy($orderBy, $order)
-            ->paginate($perPage, ['*'], 'page', $page);
+    public function run(): LengthAwarePaginator
+    {
+        return $this->repository
+            ->addRequestCriteria()
+            ->paginate();
     }
 }

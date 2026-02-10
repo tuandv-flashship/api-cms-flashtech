@@ -21,6 +21,7 @@ return [
     'upload_path' => env('MEDIA_UPLOAD_PATH', 'storage'),
     'generate_thumbnails_enabled' => env('MEDIA_GENERATE_THUMBNAILS_ENABLED', false),
     'generate_thumbnails_chunk_limit' => env('MEDIA_GENERATE_THUMBNAILS_CHUNK_LIMIT', 50),
+    'queue_thumbnails' => env('MEDIA_QUEUE_THUMBNAILS', false),
     'enable_thumbnail_sizes' => env('MEDIA_ENABLE_THUMBNAIL_SIZES', true),
     'thumbnail_crop_position' => env('MEDIA_THUMBNAIL_CROP_POSITION', 'center'),
     'image_processing_library' => env('MEDIA_IMAGE_PROCESSING_LIBRARY', 'gd'),
@@ -103,6 +104,12 @@ return [
                 'cron' => '25 * * * *',
             ],
         ],
+    ],
+    'cache' => [
+        'user_item_ttl_seconds' => env('MEDIA_USER_ITEM_CACHE_TTL_SECONDS', 300),
+    ],
+    'throttle' => [
+        'show_file' => env('MEDIA_SHOW_FILE_THROTTLE', '120,1'),
     ],
     'preview' => [
         'document' => [

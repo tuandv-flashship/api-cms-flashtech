@@ -10,7 +10,8 @@ use Illuminate\Validation\Rule;
 final class UpdateAdminAppearanceSettingsRequest extends ParentRequest
 {
     protected array $decode = [];
-
+    
+    
     public function rules(): array
     {
         return [

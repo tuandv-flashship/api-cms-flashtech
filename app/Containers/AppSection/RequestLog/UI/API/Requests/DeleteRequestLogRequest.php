@@ -9,7 +9,7 @@ final class DeleteRequestLogRequest extends ParentRequest
     protected array $decode = [
         'request_log_id',
     ];
-
+    
     public function rules(): array
     {
         return [];

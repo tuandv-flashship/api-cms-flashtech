@@ -8,24 +8,26 @@ use App\Ship\Parents\Transformers\Transformer as ParentTransformer;
 
 final class MediaFileTransformer extends ParentTransformer
 {
-    public function __construct(private readonly bool $includeSignedUrl = false)
+    public function __construct(
+        private readonly MediaService $mediaService,
+        private readonly bool $includeSignedUrl = false,
+    )
     {
     }
 
     public function transform(MediaFile $file): array
     {
-        $service = app(MediaService::class);
-        $accessMode = $service->resolveAccessModeForFile($file);
+        $accessMode = $this->mediaService->resolveAccessModeForFile($file);
 
         $data = [
             'id' => $file->getHashedKey(),
             'name' => $file->name,
             'basename' => $file->basename,
             'url' => $file->url,
-            'full_url' => $file->visibility === 'public' ? $service->url($file->url) : null,
+            'full_url' => $file->visibility === 'public' ? $this->mediaService->url($file->url) : null,
             'type' => $file->type,
             'thumb' => $file->visibility === 'public' && $file->canGenerateThumbnails()
-                ? $service->getImageUrl($file->url, 'thumb')
+                ? $this->mediaService->getImageUrl($file->url, 'thumb')
                 : null,
             'size' => $file->human_size,
             'mime_type' => $file->mime_type,
@@ -42,23 +44,11 @@ final class MediaFileTransformer extends ParentTransformer
         ];
 
         if ($this->includeSignedUrl) {
-            $data['signed_url'] = $accessMode === 'signed' ? $service->getSignedUrl($file) : null;
+            $data['signed_url'] = $accessMode === 'signed' ? $this->mediaService->getSignedUrl($file) : null;
         }
 
         return $data;
     }
 
-    private function hashId(int|string|null $id): int|string|null
-    {
-        if ($id === null) {
-            return null;
-        }
 
-        $intId = (int) $id;
-        if ($intId <= 0) {
-            return $intId;
-        }
-
-        return config('apiato.hash-id') ? hashids()->encodeOrFail($intId) : $intId;
-    }
 }

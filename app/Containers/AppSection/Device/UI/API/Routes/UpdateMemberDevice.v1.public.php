@@ -28,4 +28,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::patch('member/devices/{device_id}', UpdateMemberDeviceController::class)
     ->name('api_member_update_device')
-    ->middleware(['auth:member']);
+    ->middleware([
+        'auth:member',
+        'request.signature',
+    ]);

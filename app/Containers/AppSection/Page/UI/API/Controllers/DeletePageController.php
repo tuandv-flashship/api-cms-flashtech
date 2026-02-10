@@ -13,7 +13,6 @@ final class DeletePageController extends ApiController
     public function __invoke(DeletePageRequest $request, DeletePageAction $action): JsonResponse
     {
         $action->run($request->page_id);
-
         return Response::noContent();
     }
 }

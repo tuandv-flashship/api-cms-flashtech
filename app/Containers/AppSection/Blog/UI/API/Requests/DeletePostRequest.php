@@ -9,7 +9,7 @@ final class DeletePostRequest extends ParentRequest
     protected array $decode = [
         'post_id',
     ];
-
+    
     public function rules(): array
     {
         return [];

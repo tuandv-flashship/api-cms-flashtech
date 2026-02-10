@@ -10,8 +10,6 @@
  * @apiHeader          {String} authorization=Bearer
  * @apiParam           {Number} [page]
  * @apiParam           {Number} [limit]
- * @apiParam           {Number} [per_page]
- * @apiParam           {Number} [paginate]
  * @apiUse             RequestLogResponse
  */
 

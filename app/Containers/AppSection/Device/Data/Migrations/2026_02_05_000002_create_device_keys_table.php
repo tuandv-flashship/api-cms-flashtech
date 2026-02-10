@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->timestamps();
 
             $table->index(['device_id', 'status']);
+            $table->index(['device_id', 'last_used_at', 'id'], 'device_keys_device_last_used_id_index');
         });
     }
 

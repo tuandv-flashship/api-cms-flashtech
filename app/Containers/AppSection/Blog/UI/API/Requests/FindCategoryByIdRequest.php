@@ -9,10 +9,12 @@ final class FindCategoryByIdRequest extends ParentRequest
     protected array $decode = [
         'category_id',
     ];
-
+    
     public function rules(): array
     {
-        return [];
+        return [
+            'include' => ['nullable', 'string', 'max:255'],
+        ];
     }
 
     public function authorize(): bool

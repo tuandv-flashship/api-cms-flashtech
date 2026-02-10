@@ -4,21 +4,9 @@ namespace App\Containers\AppSection\Device\UI\API\Requests;
 
 use App\Ship\Parents\Requests\Request as ParentRequest;
 
-class RevokeMemberDeviceRequest extends ParentRequest
+final class RevokeMemberDeviceRequest extends ParentRequest
 {
-    protected array $access = [
-        'permissions' => '',
-        'roles' => '',
-    ];
-
-    protected array $decode = [
-        //
-    ];
-
-    protected array $urlParameters = [
-        'device_id',
-    ];
-
+    protected array $decode = [];
     protected function prepareForValidation(): void
     {
         $this->merge([

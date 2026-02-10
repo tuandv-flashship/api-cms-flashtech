@@ -14,10 +14,10 @@ final class ListPostsAction extends ParentAction
     }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param array<string, mixed> $relationFilters Relationship-based filters (category_ids, tag_ids)
      */
-    public function run(array $filters, int $perPage, int $page): LengthAwarePaginator
+    public function run(array $relationFilters = []): LengthAwarePaginator
     {
-        return $this->listPostsTask->run($filters, $perPage, $page);
+        return $this->listPostsTask->run($relationFilters);
     }
 }

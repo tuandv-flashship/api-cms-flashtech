@@ -19,4 +19,5 @@ use App\Containers\AppSection\Media\UI\API\Controllers\CreateMediaFolderControll
 use Illuminate\Support\Facades\Route;
 
 Route::post('media/folders', CreateMediaFolderController::class)
+    ->name('api_media_create_media_folder')
     ->middleware(['auth:api']);

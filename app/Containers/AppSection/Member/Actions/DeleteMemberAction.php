@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Member\Actions;
 
+use App\Containers\AppSection\Member\Enums\MemberActivityAction;
 use App\Containers\AppSection\Member\Tasks\CreateMemberActivityLogTask;
 use App\Containers\AppSection\Member\Tasks\FindMemberByIdTask;
 use App\Containers\AppSection\Member\Tasks\DeleteMemberTask;
@@ -23,7 +24,7 @@ final class DeleteMemberAction extends ParentAction
 
         $this->createMemberActivityLogTask->run([
             'member_id' => $member->id,
-            'action' => 'delete',
+            'action' => MemberActivityAction::DELETE->value,
             'user_agent' => $request->userAgent(),
             'reference_url' => $request->fullUrl(),
             'reference_name' => $member->name,

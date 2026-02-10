@@ -10,7 +10,7 @@ final class DeleteUserRequest extends ParentRequest
     protected array $decode = [
         'user_id',
     ];
-
+    
     public function rules(): array
     {
         return [];

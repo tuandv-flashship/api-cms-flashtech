@@ -27,4 +27,5 @@ use App\Containers\AppSection\Authentication\UI\API\Controllers\RevokeTokenContr
 use Illuminate\Support\Facades\Route;
 
 Route::post('logout', RevokeTokenController::class)
-    ->middleware(['auth:api']);
+    ->middleware(['auth:api'])
+    ->name('api_auth_revoke_token');

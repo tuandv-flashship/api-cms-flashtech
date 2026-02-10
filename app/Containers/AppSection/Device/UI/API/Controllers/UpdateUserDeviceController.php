@@ -12,11 +12,16 @@ use App\Containers\AppSection\Device\Enums\DeviceOwnerType;
 
 final class UpdateUserDeviceController extends ApiController
 {
+    public function __construct(
+        private readonly UpdateDeviceAction $updateDeviceAction,
+    ) {
+    }
+
     public function __invoke(UpdateUserDeviceRequest $request): JsonResponse
     {
         $userId = (int) $request->user('api')->id;
 
-        $device = app(UpdateDeviceAction::class)->run(
+        $device = $this->updateDeviceAction->run(
             DeviceOwnerType::USER,
             $userId,
             (string) $request->route('device_id'),

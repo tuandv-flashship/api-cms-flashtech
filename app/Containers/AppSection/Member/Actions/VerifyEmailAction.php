@@ -2,7 +2,9 @@
 
 namespace App\Containers\AppSection\Member\Actions;
 
+use App\Containers\AppSection\Member\Enums\MemberActivityAction;
 use App\Containers\AppSection\Member\Enums\MemberStatus;
+use App\Containers\AppSection\Member\Tasks\CreateMemberActivityLogTask;
 use App\Containers\AppSection\Member\Tasks\FindMemberByIdTask;
 use App\Containers\AppSection\Member\Tasks\UpdateMemberTask;
 use App\Containers\AppSection\Member\UI\API\Requests\VerifyEmailRequest;
@@ -14,6 +16,7 @@ final class VerifyEmailAction extends ParentAction
     public function __construct(
         private readonly FindMemberByIdTask $findMemberByIdTask,
         private readonly UpdateMemberTask $updateMemberTask,
+        private readonly CreateMemberActivityLogTask $createMemberActivityLogTask,
     ) {
     }
 
@@ -40,6 +43,10 @@ final class VerifyEmailAction extends ParentAction
             $member->markEmailAsVerified();
             $this->updateMemberTask->run($member->id, [
                 'status' => MemberStatus::ACTIVE,
+            ]);
+            $this->createMemberActivityLogTask->run([
+                'member_id' => $member->id,
+                'action' => MemberActivityAction::VERIFY_EMAIL->value,
             ]);
         }
     }

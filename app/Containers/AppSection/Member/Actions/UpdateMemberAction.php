@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Member\Actions;
 
+use App\Containers\AppSection\Member\Enums\MemberActivityAction;
 use App\Containers\AppSection\Member\Events\MemberRegistered;
 use App\Containers\AppSection\Member\Models\Member;
 use App\Containers\AppSection\Member\Tasks\CreateMemberActivityLogTask;
@@ -78,7 +79,7 @@ final class UpdateMemberAction extends ParentAction
         if ($emailChanged) {
             $this->createMemberActivityLogTask->run([
                 'member_id' => $member->id,
-                'action' => 'admin_update_email',
+                'action' => MemberActivityAction::ADMIN_UPDATE_EMAIL->value,
                 'reference_name' => $referenceName,
             ]);
         }
@@ -86,7 +87,7 @@ final class UpdateMemberAction extends ParentAction
         if ($usernameChanged) {
             $this->createMemberActivityLogTask->run([
                 'member_id' => $member->id,
-                'action' => 'admin_update_username',
+                'action' => MemberActivityAction::ADMIN_UPDATE_USERNAME->value,
                 'reference_name' => $referenceName,
             ]);
         }

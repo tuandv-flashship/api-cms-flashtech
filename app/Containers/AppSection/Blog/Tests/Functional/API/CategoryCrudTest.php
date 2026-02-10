@@ -10,6 +10,7 @@ use App\Containers\AppSection\Blog\UI\API\Controllers\FindCategoryByIdController
 use App\Containers\AppSection\Blog\UI\API\Controllers\ListCategoriesController;
 use App\Containers\AppSection\Blog\UI\API\Controllers\UpdateCategoryController;
 use App\Containers\AppSection\User\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Testing\Fluent\AssertableJson;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -115,6 +116,34 @@ final class CategoryCrudTest extends ApiTestCase
                 ->where('data.name', 'Find Me')
                 ->etc(),
         );
+    }
+
+    public function testFindCategoryByIdWithParentIncludeDoesNotTriggerLazyLoading(): void
+    {
+        $parent = Category::factory()->createOne(['name' => 'Parent']);
+        $category = Category::factory()->withParent($parent)->createOne(['name' => 'Child']);
+
+        $wasPreventingLazyLoading = Model::preventsLazyLoading();
+        Model::preventLazyLoading();
+
+        try {
+            $response = $this->actingAs($this->user, 'api')
+                ->getJson(
+                    URL::action(FindCategoryByIdController::class, ['category_id' => $category->getHashedKey()])
+                    . '?include=parent'
+                );
+
+            $response->assertOk();
+            $response->assertJson(
+                static fn (AssertableJson $json): AssertableJson => $json
+                    ->has('data')
+                    ->has('data.parent')
+                    ->where('data.id', $category->getHashedKey())
+                    ->etc(),
+            );
+        } finally {
+            Model::preventLazyLoading($wasPreventingLazyLoading);
+        }
     }
 
     public function testUpdateCategory(): void

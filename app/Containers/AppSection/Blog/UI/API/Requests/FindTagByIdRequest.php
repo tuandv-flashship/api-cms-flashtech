@@ -9,10 +9,12 @@ final class FindTagByIdRequest extends ParentRequest
     protected array $decode = [
         'tag_id',
     ];
-
+    
     public function rules(): array
     {
-        return [];
+        return [
+            'include' => ['nullable', 'string', 'max:255'],
+        ];
     }
 
     public function authorize(): bool

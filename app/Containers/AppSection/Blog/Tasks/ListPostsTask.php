@@ -2,62 +2,50 @@
 
 namespace App\Containers\AppSection\Blog\Tasks;
 
+use App\Containers\AppSection\Blog\Data\Criteria\PostListFiltersCriteria;
+use App\Containers\AppSection\Blog\Data\Repositories\PostRepository;
 use App\Containers\AppSection\Blog\Models\Post;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
 use App\Ship\Parents\Tasks\Task as ParentTask;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
 
 final class ListPostsTask extends ParentTask
 {
+    public function __construct(
+        private readonly PostRepository $repository,
+    ) {
+    }
+
     /**
-     * @param array<string, mixed> $filters
+     * @param array<string, mixed> $relationFilters Relationship-based filters (category_ids, tag_ids)
      */
-    public function run(array $filters, int $perPage, int $page): LengthAwarePaginator
+    public function run(array $relationFilters = []): LengthAwarePaginator
     {
         $with = LanguageAdvancedManager::withTranslations(
-            ['categories', 'tags', 'slugable', 'author', 'galleryMeta'],
+            ['categories', 'tags', 'slugable', 'galleryMeta'],
             Post::class
         );
+
+        $include = request()?->input('include');
+        if ($include && str_contains($include, 'author')) {
+            $with[] = 'author';
+        }
 
         $langCode = LanguageAdvancedManager::getTranslationLocale();
         if ($langCode && ! LanguageAdvancedManager::isDefaultLocale($langCode)) {
             $with['galleryMeta.translations'] = static fn ($query) => $query->where('lang_code', $langCode);
         }
 
-        $query = Post::query()
-            ->with($with)
-            ->when(isset($filters['status']), function (Builder $query) use ($filters): void {
-                $query->where('status', $filters['status']);
-            })
-            ->when(isset($filters['is_featured']), function (Builder $query) use ($filters): void {
-                $query->where('is_featured', (bool) $filters['is_featured']);
-            })
-            ->when(isset($filters['author_id']), function (Builder $query) use ($filters): void {
-                $query->where('author_id', (int) $filters['author_id']);
-            })
-            ->when(! empty($filters['category_ids']), function (Builder $query) use ($filters): void {
-                $ids = array_filter((array) $filters['category_ids']);
-                $query->whereHas('categories', fn (Builder $q) => $q->whereIn('categories.id', $ids));
-            })
-            ->when(! empty($filters['tag_ids']), function (Builder $query) use ($filters): void {
-                $ids = array_filter((array) $filters['tag_ids']);
-                $query->whereHas('tags', fn (Builder $q) => $q->whereIn('tags.id', $ids));
-            })
-            ->when(! empty($filters['search']), function (Builder $query) use ($filters): void {
-                $search = (string) $filters['search'];
-                $query->where(function (Builder $query) use ($search): void {
-                    $query
-                        ->where('name', 'like', '%' . $search . '%')
-                        ->orWhere('description', 'like', '%' . $search . '%');
-                });
-            });
+        $repository = $this->repository;
 
-        $orderBy = $filters['order_by'] ?? 'updated_at';
-        $order = $filters['order'] ?? 'desc';
+        $repository->scope(static fn ($query) => $query->with($with));
 
-        return $query
-            ->orderBy($orderBy, $order)
-            ->paginate($perPage, ['*'], 'page', $page);
+        if (! empty($relationFilters)) {
+            $repository->pushCriteria(new PostListFiltersCriteria($relationFilters));
+        }
+
+        return $repository
+            ->addRequestCriteria()
+            ->paginate();
     }
 }

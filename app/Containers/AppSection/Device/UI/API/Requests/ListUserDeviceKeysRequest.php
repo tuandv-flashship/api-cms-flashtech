@@ -4,21 +4,10 @@ namespace App\Containers\AppSection\Device\UI\API\Requests;
 
 use App\Ship\Parents\Requests\Request as ParentRequest;
 
-class ListUserDeviceKeysRequest extends ParentRequest
+final class ListUserDeviceKeysRequest extends ParentRequest
 {
-    protected array $access = [
-        'permissions' => '',
-        'roles' => '',
-    ];
-
-    protected array $decode = [
-        //
-    ];
-
-    protected array $urlParameters = [
-        'device_id',
-    ];
-
+    protected array $decode = [];
+    
     public function rules(): array
     {
         return [

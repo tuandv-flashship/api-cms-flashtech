@@ -12,11 +12,16 @@ use App\Containers\AppSection\Device\Enums\DeviceOwnerType;
 
 final class RotateMemberDeviceKeyController extends ApiController
 {
+    public function __construct(
+        private readonly RotateDeviceKeyAction $rotateDeviceKeyAction,
+    ) {
+    }
+
     public function __invoke(RotateMemberDeviceKeyRequest $request): JsonResponse
     {
         $memberId = (int) $request->user('member')->id;
 
-        $key = app(RotateDeviceKeyAction::class)->run(
+        $key = $this->rotateDeviceKeyAction->run(
             DeviceOwnerType::MEMBER,
             $memberId,
             (string) $request->route('device_id'),

@@ -8,6 +8,8 @@ final class LogoutRequest extends ParentRequest
 {
     protected array $decode = [];
 
+    
+    
     public function rules(): array
     {
         return [];

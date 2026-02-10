@@ -8,10 +8,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
 
-final class ThumbnailService
+class ThumbnailService
 {
     public function __construct(
-        private readonly MediaService $mediaService,
         private readonly MediaSettingsStore $settings
     )
     {
@@ -149,8 +148,28 @@ final class ThumbnailService
     private function getDiskForFile(MediaFile $file): string
     {
         return $file->visibility === 'private'
-            ? $this->mediaService->getPrivateDisk()
-            : $this->mediaService->getDisk();
+            ? $this->getPrivateDisk()
+            : $this->getDisk();
+    }
+
+    private function getDisk(): string
+    {
+        $driver = (string) $this->settings->get(
+            'media_driver',
+            config('media.driver', config('media.disk', 'public'))
+        );
+
+        $allowed = ['public', 'local', 's3', 'r2', 'do_spaces', 'wasabi', 'bunnycdn', 'backblaze'];
+        if (! in_array($driver, $allowed, true)) {
+            return (string) config('media.disk', 'public');
+        }
+
+        return $driver;
+    }
+
+    private function getPrivateDisk(): string
+    {
+        return (string) config('media.private_disk', 'local');
     }
 
     private function getFileContents(MediaFile $file): ?string

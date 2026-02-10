@@ -37,5 +37,11 @@ final class RevokeTokenActionTest extends UnitTestCase
 
         $this->assertNull($user->fresh()->token());
         $this->assertTrue($result->isCleared());
+        $this->assertDatabaseHas('audit_histories', [
+            'module' => 'authentication',
+            'action' => 'logged out',
+            'reference_id' => (string) $user->getKey(),
+            'type' => 'info',
+        ]);
     }
 }

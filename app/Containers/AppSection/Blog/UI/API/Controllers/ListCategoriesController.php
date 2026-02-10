@@ -14,11 +14,7 @@ final class ListCategoriesController extends ApiController
 {
     public function __invoke(ListCategoriesRequest $request, ListCategoriesAction $action): JsonResponse
     {
-        $payload = $request->validated();
-        $perPage = (int) ($payload['limit'] ?? $payload['per_page'] ?? 15);
-        $page = (int) ($payload['page'] ?? 1);
-
-        $categories = $action->run($payload, $perPage, $page);
+        $categories = $action->run();
 
         $response = Response::create($categories, CategoryTransformer::class);
 

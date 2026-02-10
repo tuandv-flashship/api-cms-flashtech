@@ -7,7 +7,6 @@ use App\Ship\Parents\Requests\Request as ParentRequest;
 final class GetSystemCommandStatusRequest extends ParentRequest
 {
     protected array $decode = [];
-
     protected function prepareForValidation(): void
     {
         $this->merge([

@@ -12,8 +12,12 @@ final class GetSystemPackagesAction extends ParentAction
     {
     }
 
-    public function run(int $page = 1, int $perPage = 15): LengthAwarePaginator
+    /**
+     * @param array<string, mixed> $filters
+     * @param array<string, mixed> $query
+     */
+    public function run(array $filters = [], array $query = []): LengthAwarePaginator
     {
-        return $this->getSystemPackagesTask->run($page, $perPage);
+        return $this->getSystemPackagesTask->run($filters, $query);
     }
 }

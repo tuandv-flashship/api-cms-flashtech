@@ -31,4 +31,6 @@
 use App\Containers\AppSection\Authentication\UI\API\Controllers\WebClient\IssueTokenController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('clients/web/login', IssueTokenController::class);
+Route::post('clients/web/login', IssueTokenController::class)
+    ->middleware(['throttle:' . config('appSection-authentication.throttle.web_login', '10,1')])
+    ->name('api_auth_web_issue_token');

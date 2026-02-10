@@ -9,7 +9,7 @@ final class FindPermissionByIdRequest extends ParentRequest
     protected array $decode = [
         'permission_id',
     ];
-
+    
     public function rules(): array
     {
         return [];

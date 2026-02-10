@@ -4,7 +4,7 @@ namespace App\Containers\AppSection\Gallery\UI\API\Transformers;
 
 use App\Containers\AppSection\Gallery\Models\Gallery;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
-use App\Containers\AppSection\Media\Services\MediaService;
+use App\Containers\AppSection\Media\Supports\MediaRuntimeServices;
 use App\Ship\Parents\Transformers\Traits\HasOriginLang;
 use App\Ship\Parents\Transformers\Transformer as ParentTransformer;
 use League\Fractal\Resource\Collection;
@@ -20,7 +20,7 @@ final class GalleryTransformer extends ParentTransformer
     public function transform(Gallery $gallery): array
     {
         $meta = $gallery->relationLoaded('meta') ? $gallery->meta : null;
-        $mediaService = app(MediaService::class);
+        $mediaService = MediaRuntimeServices::mediaService();
 
         return [
             'type' => $gallery->getResourceKey(),
@@ -73,17 +73,5 @@ final class GalleryTransformer extends ParentTransformer
         return $normalized ?? (string) $langCode;
     }
 
-    private function hashId(int|string|null $id): int|string|null
-    {
-        if ($id === null) {
-            return null;
-        }
 
-        $intId = (int) $id;
-        if ($intId <= 0) {
-            return $intId;
-        }
-
-        return config('apiato.hash-id') ? hashids()->encodeOrFail($intId) : $intId;
-    }
 }

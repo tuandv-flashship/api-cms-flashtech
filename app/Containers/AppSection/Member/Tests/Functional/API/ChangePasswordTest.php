@@ -52,7 +52,8 @@ class ChangePasswordTest extends ApiTestCase
         $response = $this->actingAs($member, 'member')->postJson($this->endpoint, $data);
 
         $response->assertStatus(400);
-        // Ideally we should check for specific error message or status code if we handled exception properly
+        $response->assertJsonPath('message', 'Current password is incorrect.');
+        $response->assertJsonPath('error_code', 'incorrect_password');
     }
 
     public function testChangePasswordUnauthenticated(): void

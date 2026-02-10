@@ -28,5 +28,11 @@ final class IssueTokenActionTest extends UnitTestCase
         $result = $action->run(UserCredential::create($credentials['email'], $credentials['password']));
 
         $this->assertInstanceOf(PasswordToken::class, $result);
+        $this->assertDatabaseHas('audit_histories', [
+            'module' => 'authentication',
+            'action' => 'logged in',
+            'reference_id' => (string) $user->getKey(),
+            'type' => 'info',
+        ]);
     }
 }

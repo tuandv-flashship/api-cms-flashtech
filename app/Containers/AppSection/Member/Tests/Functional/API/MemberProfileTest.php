@@ -94,6 +94,31 @@ class MemberProfileTest extends ApiTestCase
         $this->assertTrue(\Illuminate\Support\Facades\Hash::check('Newpassword1!', $member->password));
     }
 
+    public function testUpdateProfilePasswordOnlyDoesNotCreateUpdateSettingLog(): void
+    {
+        $member = Member::factory()->create([
+            'password' => bcrypt('oldpassword'),
+        ])->refresh();
+
+        $response = $this->actingAs($member, 'member')->putJson($this->endpoint, [
+            'current_password' => 'oldpassword',
+            'password' => 'Newpassword1!',
+            'password_confirmation' => 'Newpassword1!',
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('member_activity_logs', [
+            'member_id' => $member->id,
+            'action' => 'update_security',
+        ]);
+
+        $this->assertDatabaseMissing('member_activity_logs', [
+            'member_id' => $member->id,
+            'action' => 'update_setting',
+        ]);
+    }
+
     public function testMemberCannotChangeUsernameWhenAlreadySet(): void
     {
         $member = Member::factory()->create([

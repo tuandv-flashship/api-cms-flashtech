@@ -2,11 +2,16 @@
 
 namespace App\Ship\Exceptions;
 
-use App\Ship\Parents\Exceptions\Exception;
 use Symfony\Component\HttpFoundation\Response;
 
-class CreateResourceFailedException extends Exception
+class CreateResourceFailedException extends ApiErrorException
 {
-    protected $code = Response::HTTP_INTERNAL_SERVER_ERROR;
-    protected $message = 'Failed to create Resource.';
+    public function __construct(string $message = 'Failed to create Resource.')
+    {
+        parent::__construct(
+            message: $message,
+            errorCode: 'resource_create_failed',
+            status: Response::HTTP_INTERNAL_SERVER_ERROR,
+        );
+    }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Containers\AppSection\Media\Models;
 
-use App\Containers\AppSection\Media\Services\MediaService;
+use App\Containers\AppSection\Media\Supports\MediaRuntimeServices;
 use App\Ship\Parents\Models\Model as ParentModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -30,7 +30,7 @@ final class MediaFolder extends ParentModel
             if ($folder->isForceDeleting()) {
                 $folder->files()->withTrashed()->each(fn (MediaFile $file) => $file->forceDelete());
 
-                $service = app(MediaService::class);
+                $service = MediaRuntimeServices::mediaService();
                 $path = $service->getFolderPath($folder->getKey());
                 if ($path && Storage::disk($service->getDisk())->directoryExists($path)) {
                     Storage::disk($service->getDisk())->deleteDirectory($path);
@@ -114,4 +114,5 @@ final class MediaFolder extends ParentModel
 
         return $newName;
     }
+
 }

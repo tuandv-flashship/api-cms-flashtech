@@ -10,7 +10,7 @@ final class RevokeUserPermissionsRequest extends ParentRequest
         'user_id',
         'permission_ids.*',
     ];
-
+    
     public function rules(): array
     {
         return [

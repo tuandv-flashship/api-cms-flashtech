@@ -12,6 +12,7 @@ use App\Containers\AppSection\Blog\UI\API\Controllers\FindPostByIdController;
 use App\Containers\AppSection\Blog\UI\API\Controllers\ListPostsController;
 use App\Containers\AppSection\Blog\UI\API\Controllers\UpdatePostController;
 use App\Containers\AppSection\User\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Testing\Fluent\AssertableJson;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -75,6 +76,30 @@ final class PostCrudTest extends ApiTestCase
                 ->where('meta.pagination.total', 15)
                 ->etc(),
         );
+    }
+
+    public function testListPostsWithAuthorIncludeDoesNotTriggerLazyLoading(): void
+    {
+        Post::factory()
+            ->count(3)
+            ->withAuthor($this->user)
+            ->create();
+
+        $wasPreventingLazyLoading = Model::preventsLazyLoading();
+        Model::preventLazyLoading();
+
+        try {
+            $response = $this->actingAs($this->user, 'api')
+                ->getJson(URL::action(ListPostsController::class) . '?include=author');
+
+            $response->assertOk();
+            $response->assertJson(static fn (AssertableJson $json): AssertableJson => $json
+                ->has('data', 3)
+                ->has('data.0.author')
+                ->etc());
+        } finally {
+            Model::preventLazyLoading($wasPreventingLazyLoading);
+        }
     }
 
     public function testCreatePost(): void
@@ -147,6 +172,60 @@ final class PostCrudTest extends ApiTestCase
                 ->where('data.id', $post->getHashedKey())
                 ->etc(),
         );
+    }
+
+    public function testFindPostByIdWithAuthorIncludeDoesNotTriggerLazyLoading(): void
+    {
+        $post = Post::factory()
+            ->withAuthor($this->user)
+            ->createOne(['name' => 'Find Post With Author']);
+
+        $wasPreventingLazyLoading = Model::preventsLazyLoading();
+        Model::preventLazyLoading();
+
+        try {
+            $response = $this->actingAs($this->user, 'api')
+                ->getJson(
+                    URL::action(FindPostByIdController::class, ['post_id' => $post->getHashedKey()])
+                    . '?include=author'
+                );
+
+            $response->assertOk();
+            $response->assertJson(
+                static fn (AssertableJson $json): AssertableJson => $json
+                    ->has('data')
+                    ->has('data.author')
+                    ->where('data.id', $post->getHashedKey())
+                    ->etc(),
+            );
+        } finally {
+            Model::preventLazyLoading($wasPreventingLazyLoading);
+        }
+    }
+
+    public function testFindPostByIdWithoutAuthorIncludeDoesNotTriggerLazyLoading(): void
+    {
+        $post = Post::factory()
+            ->withAuthor($this->user)
+            ->createOne(['name' => 'Find Post Without Author Include']);
+
+        $wasPreventingLazyLoading = Model::preventsLazyLoading();
+        Model::preventLazyLoading();
+
+        try {
+            $response = $this->actingAs($this->user, 'api')
+                ->getJson(URL::action(FindPostByIdController::class, ['post_id' => $post->getHashedKey()]));
+
+            $response->assertOk();
+            $response->assertJson(
+                static fn (AssertableJson $json): AssertableJson => $json
+                    ->has('data')
+                    ->where('data.id', $post->getHashedKey())
+                    ->etc(),
+            );
+        } finally {
+            Model::preventLazyLoading($wasPreventingLazyLoading);
+        }
     }
 
     public function testFindPostByIdNotFound(): void

@@ -3,7 +3,7 @@
 namespace App\Containers\AppSection\Slug\Traits;
 
 use App\Containers\AppSection\Slug\Models\Slug;
-use App\Containers\AppSection\Slug\Supports\SlugHelper;
+use App\Containers\AppSection\Slug\Supports\SlugRuntimeServices;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
@@ -48,7 +48,7 @@ trait HasSlug
             return '';
         }
 
-        $helper = app(SlugHelper::class);
+        $helper = SlugRuntimeServices::helper();
         $prefix = $helper->getTranslator()->compile($slug->prefix);
         $path = ltrim($prefix . '/' . $slug->key, '/');
 

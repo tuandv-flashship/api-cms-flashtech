@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 
 final class RevisionableResolver
 {
-    public function resolve(string $type): ?string
+    public function resolveType(string $type): ?string
     {
         $supported = config('revision.supported', []);
         if (! is_array($supported)) {

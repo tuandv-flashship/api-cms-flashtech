@@ -12,7 +12,7 @@ final class SystemCommandRegistry
     /**
      * @return array{command: string, options: array<string, mixed>}|null
      */
-    public static function resolve(string $action): ?array
+    public static function find(string $action): ?array
     {
         $normalized = strtolower(trim($action));
 

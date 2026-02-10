@@ -15,7 +15,7 @@ final class ListSystemCommandsAction extends ParentAction
         $items = [];
 
         foreach (SystemCommandRegistry::allowedActions() as $action) {
-            $definition = SystemCommandRegistry::resolve($action);
+            $definition = SystemCommandRegistry::find($action);
             if ($definition === null) {
                 continue;
             }

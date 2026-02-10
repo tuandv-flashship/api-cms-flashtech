@@ -43,7 +43,7 @@ final class User extends ParentUserModel
      */
     public function findForPassport(string $username): self|null
     {
-        return self::orWhereRaw('lower(email) = lower(?)', [$username])->first();
+        return self::query()->where('email', strtolower($username))->first();
     }
 
     public function isSuperAdmin(): bool
@@ -69,6 +69,7 @@ final class User extends ParentUserModel
     {
         return new Attribute(
             get: static fn (string|null $value): string|null => is_null($value) ? null : strtolower($value),
+            set: static fn (string|null $value): string|null => is_null($value) ? null : strtolower($value),
         );
     }
 }

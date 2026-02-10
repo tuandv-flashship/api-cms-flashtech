@@ -14,11 +14,7 @@ final class ListGalleriesController extends ApiController
 {
     public function __invoke(ListGalleriesRequest $request, ListGalleriesAction $action): JsonResponse
     {
-        $payload = $request->validated();
-        $perPage = (int) ($payload['limit'] ?? $payload['per_page'] ?? 15);
-        $page = (int) ($payload['page'] ?? 1);
-
-        $galleries = $action->run($payload, $perPage, $page);
+        $galleries = $action->run();
 
         $response = Response::create($galleries, GalleryTransformer::class);
 

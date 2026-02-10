@@ -4,21 +4,11 @@ namespace App\Containers\AppSection\Member\UI\API\Requests;
 
 use App\Ship\Parents\Requests\Request as ParentRequest;
 
-class LogoutMemberRequest extends ParentRequest
+final class LogoutMemberRequest extends ParentRequest
 {
-    protected array $access = [
-        'permissions' => '',
-        'roles' => '',
-    ];
-
-    protected array $decode = [
-        //
-    ];
-
-    protected array $urlParameters = [
-        //
-    ];
-
+    protected array $decode = [];
+    
+    
     public function rules(): array
     {
         return [];

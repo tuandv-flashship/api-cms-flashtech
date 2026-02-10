@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+bash scripts/check-container-readmes-schema.sh
+bash scripts/check-doc-paths.sh
+
+echo "pre-commit docs checks passed."

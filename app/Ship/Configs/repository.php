@@ -232,9 +232,9 @@ return [
     |
     */
     'generator' => [
-        'basePath' => env('SRC_PATH', app()->path()),
+        'basePath' => env('SRC_PATH', app_path()),
         'rootNamespace' => env('ROOT_NAMESPACE', 'App\\'),
-        'stubsOverridePath' => app()->path(),
+        'stubsOverridePath' => app_path(),
         'paths' => [
             'models' => 'Entities',
             'repositories' => 'Repositories',

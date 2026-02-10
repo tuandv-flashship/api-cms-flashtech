@@ -25,5 +25,8 @@ use App\Containers\AppSection\Authentication\UI\API\Controllers\EmailVerificatio
 use Illuminate\Support\Facades\Route;
 
 Route::post('/email/verification-notification', SendController::class)
-    ->middleware(['auth:api', 'throttle:6,1'])
+    ->middleware([
+        'auth:api',
+        'throttle:' . config('appSection-authentication.throttle.send_verification', '6,1'),
+    ])
     ->name('verification.send');

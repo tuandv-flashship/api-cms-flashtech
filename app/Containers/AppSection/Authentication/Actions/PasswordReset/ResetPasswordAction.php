@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Authentication\Actions\PasswordReset;
 
+use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\Authentication\UI\API\Requests\PasswordReset\ResetPasswordRequest;
 use App\Containers\AppSection\User\Models\User;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -31,6 +32,13 @@ final class ResetPasswordAction extends ParentAction
                 $user->save();
 
                 event(new PasswordReset($user));
+                AuditLogRecorder::record(
+                    module: 'authentication',
+                    action: 'changed password',
+                    referenceId: (string) $user->getKey(),
+                    referenceName: (string) $user->name,
+                    type: 'danger',
+                );
             },
         );
 

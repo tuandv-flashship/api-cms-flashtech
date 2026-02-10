@@ -4,15 +4,19 @@ namespace App\Containers\AppSection\Device\Actions;
 
 use App\Containers\AppSection\Device\Enums\DeviceOwnerType;
 use App\Containers\AppSection\Device\Enums\DeviceStatus;
+use App\Containers\AppSection\Device\Exceptions\DeviceOperationException;
 use App\Containers\AppSection\Device\Models\Device;
 use App\Containers\AppSection\Device\Models\DeviceKey;
-use App\Containers\AppSection\Device\Data\Repositories\DeviceRepository;
 use App\Containers\AppSection\Device\Tasks\FindDeviceKeyByKeyIdTask;
+use App\Containers\AppSection\Device\Tasks\NullifyDevicesByPushTokenHashTask;
 use App\Containers\AppSection\Device\Tasks\UpdateOrCreateDeviceKeyTask;
 use App\Containers\AppSection\Device\Tasks\UpdateOrCreateDeviceTask;
 use App\Ship\Parents\Actions\Action as ParentAction;
+use App\Containers\AppSection\Device\Supports\DeviceSignatureCacheKey;
+use App\Containers\AppSection\Device\Supports\PublicKeyValidator;
+use App\Containers\AppSection\Device\Supports\PushTokenHasher;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 final class RegisterDeviceAction extends ParentAction
 {
@@ -20,7 +24,7 @@ final class RegisterDeviceAction extends ParentAction
         private readonly UpdateOrCreateDeviceTask $updateOrCreateDeviceTask,
         private readonly UpdateOrCreateDeviceKeyTask $updateOrCreateDeviceKeyTask,
         private readonly FindDeviceKeyByKeyIdTask $findDeviceKeyByKeyIdTask,
-        private readonly DeviceRepository $deviceRepository,
+        private readonly NullifyDevicesByPushTokenHashTask $nullifyDevicesByPushTokenHashTask,
     ) {
     }
 
@@ -34,7 +38,7 @@ final class RegisterDeviceAction extends ParentAction
             $keyId = (string) $payload['key_id'];
             $publicKey = (string) $payload['public_key'];
 
-            $this->assertValidPublicKey($publicKey);
+            PublicKeyValidator::assertValidEd25519PublicKey($publicKey);
 
             $ownerTypeValue = $ownerType->value;
 
@@ -64,17 +68,14 @@ final class RegisterDeviceAction extends ParentAction
             }
 
             if (array_key_exists('push_token', $payload)) {
-                $deviceUpdates['push_token_hash'] = $this->hashPushToken($payload['push_token'] ?? null);
+                $deviceUpdates['push_token_hash'] = PushTokenHasher::hash($payload['push_token'] ?? null);
             }
 
             if (!empty($deviceUpdates['push_token_hash']) && !empty($deviceUpdates['push_provider'])) {
-                $this->deviceRepository->getModel()->newQuery()
-                    ->where('push_provider', $deviceUpdates['push_provider'])
-                    ->where('push_token_hash', $deviceUpdates['push_token_hash'])
-                    ->update([
-                        'push_token' => null,
-                        'push_token_hash' => null,
-                    ]);
+                $this->nullifyDevicesByPushTokenHashTask->run(
+                    (string) $deviceUpdates['push_provider'],
+                    (string) $deviceUpdates['push_token_hash'],
+                );
             }
 
             $device = $this->updateOrCreateDeviceTask->run($deviceAttributes, $deviceUpdates);
@@ -82,9 +83,7 @@ final class RegisterDeviceAction extends ParentAction
             $existingKey = $this->findDeviceKeyByKeyIdTask->run($keyId);
 
             if ($existingKey && $existingKey->device_id !== $device->id) {
-                throw ValidationException::withMessages([
-                    'key_id' => ['The key_id has already been taken.'],
-                ]);
+                throw DeviceOperationException::keyIdTaken();
             }
 
             $key = $this->updateOrCreateDeviceKeyTask->run(
@@ -97,52 +96,12 @@ final class RegisterDeviceAction extends ParentAction
                 ],
             );
 
+            Cache::forget(DeviceSignatureCacheKey::keyContext((string) $key->key_id));
+
             return [
                 'device' => $device,
                 'key' => $key,
             ];
         });
-    }
-
-    private function hashPushToken(string|null $token): string|null
-    {
-        if ($token === null || $token === '') {
-            return null;
-        }
-
-        return hash('sha256', $token);
-    }
-
-    private function assertValidPublicKey(string $publicKey): void
-    {
-        $decoded = $this->base64UrlDecode($publicKey);
-
-        if ($decoded === null) {
-            throw ValidationException::withMessages([
-                'public_key' => ['The public_key is invalid.'],
-            ]);
-        }
-
-        if (defined('SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES')) {
-            $expected = SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES;
-            if (strlen($decoded) !== $expected) {
-                throw ValidationException::withMessages([
-                    'public_key' => ['The public_key length is invalid.'],
-                ]);
-            }
-        }
-    }
-
-    private function base64UrlDecode(string $value): string|null
-    {
-        $padded = strtr($value, '-_', '+/');
-        $padLength = strlen($padded) % 4;
-        if ($padLength > 0) {
-            $padded .= str_repeat('=', 4 - $padLength);
-        }
-
-        $decoded = base64_decode($padded, true);
-
-        return $decoded === false ? null : $decoded;
     }
 }

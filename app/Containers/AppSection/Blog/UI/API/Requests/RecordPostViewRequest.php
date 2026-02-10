@@ -9,7 +9,6 @@ final class RecordPostViewRequest extends ParentRequest
     protected array $decode = [
         'post_id',
     ];
-
     protected function prepareForValidation(): void
     {
         $this->merge([

@@ -4,21 +4,11 @@ namespace App\Containers\AppSection\Member\UI\API\Requests;
 
 use App\Ship\Parents\Requests\Request as ParentRequest;
 
-class ForgotPasswordRequest extends ParentRequest
+final class ForgotPasswordRequest extends ParentRequest
 {
-    protected array $access = [
-        'permissions' => '',
-        'roles' => '',
-    ];
-
-    protected array $decode = [
-        //
-    ];
-
-    protected array $urlParameters = [
-        //
-    ];
-
+    protected array $decode = [];
+    
+    
     public function rules(): array
     {
         return [

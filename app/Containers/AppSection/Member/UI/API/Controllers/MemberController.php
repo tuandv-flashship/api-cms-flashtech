@@ -34,7 +34,8 @@ final class MemberController extends ApiController
 
     public function updateProfile(UpdateMemberProfileRequest $request): JsonResponse
     {
-        $member = $this->updateMemberProfileAction->run($request);
+        $transporter = \App\Containers\AppSection\Member\UI\API\Transporters\UpdateMemberProfileTransporter::fromRequest($request);
+        $member = $this->updateMemberProfileAction->run($transporter);
 
         return Response::create($member, MemberTransformer::class)->ok();
     }

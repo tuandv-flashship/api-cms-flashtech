@@ -6,36 +6,20 @@ use Apiato\Support\Facades\Response;
 use App\Containers\AppSection\Blog\Actions\UpdatePostAction;
 use App\Containers\AppSection\Blog\UI\API\Requests\UpdatePostRequest;
 use App\Containers\AppSection\Blog\UI\API\Transformers\PostTransformer;
+use App\Containers\AppSection\Blog\UI\API\Transporters\UpdatePostTransporter;
 use App\Ship\Parents\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Arr;
 
 final class UpdatePostController extends ApiController
 {
     public function __invoke(UpdatePostRequest $request, UpdatePostAction $action): JsonResponse
     {
-        $payload = $request->validated();
-        $data = Arr::only($payload, [
-            'name',
-            'description',
-            'content',
-            'status',
-            'is_featured',
-            'image',
-            'format_type',
+        $transporter = UpdatePostTransporter::fromArray([
+            'post_id' => $request->post_id,
+            ...$request->validated(),
         ]);
 
-        $post = $action->run(
-            $request->post_id,
-            $data,
-            $payload['category_ids'] ?? null,
-            $payload['tag_ids'] ?? null,
-            $payload['tag_names'] ?? null,
-            $payload['slug'] ?? null,
-            $payload['gallery'] ?? null,
-            $payload['seo_meta'] ?? null,
-            $payload['custom_fields'] ?? null,
-        );
+        $post = $action->run($transporter);
 
         return Response::create($post, PostTransformer::class)->ok();
     }

@@ -25,4 +25,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('member/devices/{device_id}/keys/rotate', RotateMemberDeviceKeyController::class)
     ->name('api_member_rotate_device_key')
-    ->middleware(['auth:member']);
+    ->middleware([
+        'auth:member',
+        'request.signature',
+        'throttle:' . config('device.throttle.rotate_key', '20,1'),
+    ]);

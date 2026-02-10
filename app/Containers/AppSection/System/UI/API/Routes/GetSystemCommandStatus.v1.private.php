@@ -25,4 +25,4 @@ use App\Containers\AppSection\System\UI\API\Controllers\GetSystemCommandStatusCo
 use Illuminate\Support\Facades\Route;
 
 Route::get('system/commands/{job_id}', GetSystemCommandStatusController::class)
-    ->middleware(['auth:api', 'throttle:' . config('system-commands.throttle', '3,1')]);
+    ->middleware(['auth:api']);

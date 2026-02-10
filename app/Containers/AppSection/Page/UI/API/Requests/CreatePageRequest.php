@@ -9,6 +9,9 @@ use Illuminate\Validation\Rule;
 
 final class CreatePageRequest extends ParentRequest
 {
+    protected array $decode = [];
+    
+    
     public function rules(): array
     {
         $templateKeys = PageOptions::templateKeys();

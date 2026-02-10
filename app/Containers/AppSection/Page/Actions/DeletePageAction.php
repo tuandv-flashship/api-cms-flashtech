@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Page\Actions;
 
 use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
+use App\Containers\AppSection\Page\Events\PageDeletedEvent;
 use App\Containers\AppSection\Page\Tasks\DeletePageTask;
 use App\Containers\AppSection\Page\Tasks\FindPageTask;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -22,6 +23,7 @@ final class DeletePageAction extends ParentAction
 
         if ($deleted) {
             AuditLogRecorder::recordModel('deleted', $page);
+            PageDeletedEvent::dispatch($page->toArray());
         }
 
         return $deleted;

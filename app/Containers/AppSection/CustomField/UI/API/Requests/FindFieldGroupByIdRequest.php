@@ -9,7 +9,7 @@ final class FindFieldGroupByIdRequest extends ParentRequest
     protected array $decode = [
         'field_group_id',
     ];
-
+    
     public function rules(): array
     {
         return [];

@@ -12,7 +12,8 @@ final class ExportPostsRequest extends BaseDataSynchronizeExportRequest
     protected array $decode = [
         'category_id',
     ];
-
+    
+    
     public function rules(): array
     {
         return array_merge(parent::rules(), [

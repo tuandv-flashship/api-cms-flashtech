@@ -2,8 +2,10 @@
 
 namespace App\Containers\AppSection\Device\Tests\Functional\API;
 
+use App\Containers\AppSection\Device\Supports\DeviceSignatureCacheKey;
 use App\Containers\AppSection\Device\Tests\Functional\ApiTestCase;
 use App\Containers\AppSection\Member\Models\Member;
+use Illuminate\Support\Facades\Cache;
 
 final class MemberDeviceEndpointsTest extends ApiTestCase
 {
@@ -112,6 +114,118 @@ final class MemberDeviceEndpointsTest extends ApiTestCase
         $this->assertSame($deviceId, $listResponse->json('data.0.device_id'));
         $this->assertSame($keyId, $listResponse->json('data.0.keys.data.0.key_id'));
         $this->assertNull($listResponse->json('data.0.keys.data.0.public_key'));
+    }
+
+    public function testMutatingKeyEndpointsInvalidateSignatureContextCache(): void
+    {
+        Cache::flush();
+
+        $member = Member::factory()->create();
+
+        $deviceId = 'device-cache-invalidate';
+        $oldKeyId = $this->randomKeyId();
+        $oldPublicKey = $this->randomPublicKey();
+        $newKeyId = $this->randomKeyId();
+        $newPublicKey = $this->randomPublicKey();
+
+        Cache::put(DeviceSignatureCacheKey::keyContext($oldKeyId), ['stale' => true], now()->addMinutes(5));
+
+        $registerResponse = $this->actingAs($member, 'member')->postJson(
+            route('api_member_register_device'),
+            [
+                'device_id' => $deviceId,
+                'key_id' => $oldKeyId,
+                'public_key' => $oldPublicKey,
+            ],
+        );
+        $registerResponse->assertOk();
+        $this->assertFalse(Cache::has(DeviceSignatureCacheKey::keyContext($oldKeyId)));
+
+        Cache::put(DeviceSignatureCacheKey::keyContext($oldKeyId), ['stale' => true], now()->addMinutes(5));
+        Cache::put(DeviceSignatureCacheKey::keyContext($newKeyId), ['stale' => true], now()->addMinutes(5));
+
+        $rotateResponse = $this->actingAs($member, 'member')->postJson(
+            route('api_member_rotate_device_key', ['device_id' => $deviceId]),
+            [
+                'key_id' => $newKeyId,
+                'public_key' => $newPublicKey,
+            ],
+        );
+        $rotateResponse->assertOk();
+        $this->assertFalse(Cache::has(DeviceSignatureCacheKey::keyContext($oldKeyId)));
+        $this->assertFalse(Cache::has(DeviceSignatureCacheKey::keyContext($newKeyId)));
+
+        Cache::put(DeviceSignatureCacheKey::keyContext($newKeyId), ['stale' => true], now()->addMinutes(5));
+
+        $revokeKeyResponse = $this->actingAs($member, 'member')->deleteJson(
+            route('api_member_revoke_device_key', [
+                'device_id' => $deviceId,
+                'key_id' => $newKeyId,
+            ]),
+        );
+        $revokeKeyResponse->assertOk();
+        $this->assertFalse(Cache::has(DeviceSignatureCacheKey::keyContext($newKeyId)));
+    }
+
+    public function testMemberRotateDeviceKeyReturnsErrorCodeWhenPublicKeyInvalid(): void
+    {
+        $member = Member::factory()->create();
+
+        $deviceId = 'member-invalid-key-device';
+        $keyId = $this->randomKeyId();
+        $publicKey = $this->randomPublicKey();
+
+        $registerResponse = $this->actingAs($member, 'member')->postJson(
+            route('api_member_register_device'),
+            [
+                'device_id' => $deviceId,
+                'key_id' => $keyId,
+                'public_key' => $publicKey,
+            ],
+        );
+        $registerResponse->assertOk();
+
+        $rotateResponse = $this->actingAs($member, 'member')->postJson(
+            route('api_member_rotate_device_key', ['device_id' => $deviceId]),
+            [
+                'key_id' => $this->randomKeyId(),
+                'public_key' => 'a',
+            ],
+        );
+
+        $rotateResponse->assertStatus(422);
+        $rotateResponse->assertJsonPath('message', 'The public_key is invalid.');
+        $rotateResponse->assertJsonPath('error_code', 'invalid_public_key');
+    }
+
+    public function testMemberRevokeDeviceKeyReturnsErrorCodeWhenKeyNotFound(): void
+    {
+        $member = Member::factory()->create();
+
+        $deviceId = 'member-revoke-missing-key';
+        $keyId = $this->randomKeyId();
+        $publicKey = $this->randomPublicKey();
+
+        $registerResponse = $this->actingAs($member, 'member')->postJson(
+            route('api_member_register_device'),
+            [
+                'device_id' => $deviceId,
+                'key_id' => $keyId,
+                'public_key' => $publicKey,
+            ],
+        );
+        $registerResponse->assertOk();
+
+        $response = $this->actingAs($member, 'member')->deleteJson(
+            route('api_member_revoke_device_key', [
+                'device_id' => $deviceId,
+                'key_id' => 'missing-key-id',
+            ]),
+        );
+
+        $response->assertStatus(404);
+        $response->assertJsonPath('message', 'Device key not found.');
+        $response->assertJsonPath('error_code', 'device_key_not_found');
     }
 
     private function randomKeyId(): string

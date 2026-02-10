@@ -26,8 +26,8 @@ final class ListMediaAction extends ParentAction
         $search = trim((string) ($filters['search'] ?? ''));
         $filter = (string) ($filters['filter'] ?? 'everything');
         $sortBy = (string) ($filters['sort_by'] ?? 'name-asc');
-        $perPage = (int) ($filters['limit'] ?? $filters['per_page'] ?? 30);
-        $page = (int) ($filters['page'] ?? 1);
+        $perPage = max(1, (int) ($filters['limit'] ?? config('repository.pagination.limit', 10)));
+        $page = max(1, (int) ($filters['page'] ?? 1));
         $includeSignedUrl = filter_var($filters['include_signed_url'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
         $folderQuery = MediaFolder::query();
@@ -85,7 +85,7 @@ final class ListMediaAction extends ParentAction
         $files = $fileQuery->paginate($perPage, ['*'], 'page', $page);
         $folders = $folderQuery->get();
 
-        $fileTransformer = new MediaFileTransformer($includeSignedUrl);
+        $fileTransformer = new MediaFileTransformer($this->mediaService, $includeSignedUrl);
         $folderTransformer = new MediaFolderTransformer();
 
         return [
@@ -154,17 +154,5 @@ final class ListMediaAction extends ParentAction
         return array_merge($breadcrumbs, $path);
     }
 
-    private function hashId(int|string|null $id): int|string|null
-    {
-        if ($id === null) {
-            return null;
-        }
 
-        $intId = (int) $id;
-        if ($intId <= 0) {
-            return $intId;
-        }
-
-        return config('apiato.hash-id') ? hashids()->encodeOrFail($intId) : $intId;
-    }
 }

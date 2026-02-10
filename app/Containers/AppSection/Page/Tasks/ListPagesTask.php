@@ -3,42 +3,36 @@
 namespace App\Containers\AppSection\Page\Tasks;
 
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
+use App\Containers\AppSection\Page\Data\Criteria\PageListFiltersCriteria;
+use App\Containers\AppSection\Page\Data\Repositories\PageRepository;
 use App\Containers\AppSection\Page\Models\Page;
+use App\Ship\Supports\RequestIncludes;
 use App\Ship\Parents\Tasks\Task as ParentTask;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
 
 final class ListPagesTask extends ParentTask
 {
+    public function __construct(
+        private readonly PageRepository $pageRepository,
+    ) {
+    }
+
     /**
      * @param array<string, mixed> $filters
      */
-    public function run(array $filters, int $perPage, int $page): LengthAwarePaginator
+    public function run(array $filters): LengthAwarePaginator
     {
-        $with = LanguageAdvancedManager::withTranslations(['slugable', 'user'], Page::class);
+        $with = LanguageAdvancedManager::withTranslations(['slugable'], Page::class);
+        if (RequestIncludes::has($filters['include'] ?? null, 'user')) {
+            $with[] = 'user';
+        }
 
-        $query = Page::query()
-            ->with($with)
-            ->when(isset($filters['status']), function (Builder $query) use ($filters): void {
-                $query->where('status', $filters['status']);
-            })
-            ->when(isset($filters['template']), function (Builder $query) use ($filters): void {
-                $query->where('template', $filters['template']);
-            })
-            ->when(! empty($filters['search']), function (Builder $query) use ($filters): void {
-                $search = (string) $filters['search'];
-                $query->where(function (Builder $query) use ($search): void {
-                    $query
-                        ->where('name', 'like', '%' . $search . '%')
-                        ->orWhere('description', 'like', '%' . $search . '%');
-                });
-            });
+        $repository = $this->pageRepository->resetCriteria()->resetScope();
 
-        $orderBy = $filters['order_by'] ?? 'updated_at';
-        $order = $filters['order'] ?? 'desc';
+        $repository->scope(static fn ($query) => $query->with($with));
+        $repository->pushCriteria(new PageListFiltersCriteria($filters));
+        $repository->addRequestCriteria(['id', 'user_id']);
 
-        return $query
-            ->orderBy($orderBy, $order)
-            ->paginate($perPage, ['*'], 'page', $page);
+        return $repository->paginate();
     }
 }

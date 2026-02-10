@@ -10,7 +10,6 @@ final class UpdateCategoryTranslationRequest extends ParentRequest
     protected array $decode = [
         'category_id',
     ];
-
     protected function prepareForValidation(): void
     {
         $langCode = $this->input('lang_code') ?? $this->input('language');

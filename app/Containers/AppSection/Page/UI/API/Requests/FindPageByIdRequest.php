@@ -9,10 +9,12 @@ final class FindPageByIdRequest extends ParentRequest
     protected array $decode = [
         'page_id',
     ];
-
+    
     public function rules(): array
     {
-        return [];
+        return [
+            'include' => ['nullable', 'string', 'max:255'],
+        ];
     }
 
     public function authorize(): bool

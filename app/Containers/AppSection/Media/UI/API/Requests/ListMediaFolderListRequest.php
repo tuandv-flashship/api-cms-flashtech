@@ -7,7 +7,8 @@ use App\Ship\Parents\Requests\Request as ParentRequest;
 final class ListMediaFolderListRequest extends ParentRequest
 {
     protected array $decode = ['parent_id', 'exclude_ids.*'];
-
+    
+    
     public function rules(): array
     {
         return [

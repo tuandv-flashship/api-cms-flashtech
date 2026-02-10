@@ -40,5 +40,11 @@ final class RevokeTokenTest extends ApiTestCase
         $response->assertAccepted();
         $this->assertNull($user->fresh()->token());
         $response->assertCookieExpired('refreshToken');
+        $this->assertDatabaseHas('audit_histories', [
+            'module' => 'authentication',
+            'action' => 'logged out',
+            'reference_id' => (string) $user->getKey(),
+            'type' => 'info',
+        ]);
     }
 }

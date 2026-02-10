@@ -1,0 +1,97 @@
+name: docs-quality
+
+on:
+  pull_request:
+    paths:
+      - "**/*.md"
+      - "app/Containers/AppSection/**"
+      - ".github/workflows/docs-quality.yml"
+      - ".markdownlint.json"
+      - ".lycheeignore"
+      - "scripts/generate-containers-index.sh"
+      - "scripts/check-doc-paths.sh"
+      - "scripts/check-container-readmes-schema.sh"
+      - "scripts/check-docs.sh"
+      - "scripts/install-git-hooks.sh"
+      - ".githooks/pre-commit"
+      - "Makefile"
+  push:
+    paths:
+      - "**/*.md"
+      - "app/Containers/AppSection/**"
+      - ".github/workflows/docs-quality.yml"
+      - ".markdownlint.json"
+      - ".lycheeignore"
+      - "scripts/generate-containers-index.sh"
+      - "scripts/check-doc-paths.sh"
+      - "scripts/check-container-readmes-schema.sh"
+      - "scripts/check-docs.sh"
+      - "scripts/install-git-hooks.sh"
+      - ".githooks/pre-commit"
+      - "Makefile"
+
+permissions:
+  contents: read
+
+jobs:
+  markdownlint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@992badcdf24e3b8eb7e87ff9287fe931bcb00c6e # v20
+        with:
+          globs: |
+            README.md
+            docs/**/*.md
+            app/Containers/**/*.md
+
+  link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Link check
+        uses: lycheeverse/lychee-action@a8c4c7cb88f0c7386610c35eb25108e448569cb0 # v2
+        with:
+          args: >-
+            --no-progress
+            --exclude-file .lycheeignore
+            --accept 200,206,429
+            --max-concurrency 8
+            README.md
+            docs/**/*.md
+            app/Containers/**/*.md
+
+  docs-paths:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Verify docs local paths
+        run: bash scripts/check-doc-paths.sh
+
+  docs-schema:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Verify container README schema
+        run: bash scripts/check-container-readmes-schema.sh
+
+  containers-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Verify containers index is generated
+        run: |
+          set -euo pipefail
+          bash scripts/generate-containers-index.sh docs/containers-index.md auto-generated
+          git diff --exit-code -- docs/containers-index.md

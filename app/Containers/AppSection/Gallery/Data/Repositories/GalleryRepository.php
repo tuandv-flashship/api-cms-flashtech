@@ -16,6 +16,8 @@ final class GalleryRepository extends ParentRepository
         'id' => '=',
         'name' => 'like',
         'status' => '=',
+        'is_featured' => '=',
+        'author_id' => '=',
     ];
 
     public function model(): string

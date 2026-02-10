@@ -13,17 +13,9 @@ final class ListRevisionsController extends ApiController
 {
     public function __invoke(ListRevisionsRequest $request, ListRevisionsAction $action): JsonResponse
     {
-        $limit = $request->input('limit');
-        $perPage = is_numeric($limit)
-            ? (int) $limit
-            : (int) $request->input('per_page', config('revision.default_per_page', 20));
-
         $revisions = $action->run(
             (string) $request->input('type'),
             (int) $request->input('revisionable_id'),
-            $perPage,
-            (int) $request->input('page', 1),
-            $request->input('order')
         );
 
         return Response::create($revisions, RevisionTransformer::class)->ok();

@@ -13,11 +13,8 @@ final class ListTagsAction extends ParentAction
     ) {
     }
 
-    /**
-     * @param array<string, mixed> $filters
-     */
-    public function run(array $filters, int $perPage, int $page): LengthAwarePaginator
+    public function run(): LengthAwarePaginator
     {
-        return $this->listTagsTask->run($filters, $perPage, $page);
+        return $this->listTagsTask->run();
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Member\Actions;
 
 use App\Containers\AppSection\Member\Events\MemberLoggedIn;
+use App\Containers\AppSection\Member\Enums\MemberActivityAction;
 use App\Containers\AppSection\Member\Enums\MemberStatus;
 use App\Containers\AppSection\Member\Tasks\CreateMemberActivityLogTask;
 use App\Containers\AppSection\Member\Tasks\FindMemberByLoginTask;
@@ -56,7 +57,7 @@ final class LoginMemberAction extends ParentAction
         MemberLoggedIn::dispatch($member);
         $this->createMemberActivityLogTask->run([
             'member_id' => $member->id,
-            'action' => 'login',
+            'action' => MemberActivityAction::LOGIN->value,
         ]);
 
         return [

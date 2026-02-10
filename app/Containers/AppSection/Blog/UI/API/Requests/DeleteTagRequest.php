@@ -9,7 +9,7 @@ final class DeleteTagRequest extends ParentRequest
     protected array $decode = [
         'tag_id',
     ];
-
+    
     public function rules(): array
     {
         return [];

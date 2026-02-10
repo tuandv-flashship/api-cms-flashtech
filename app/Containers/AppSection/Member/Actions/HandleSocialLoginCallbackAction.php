@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Member\Actions;
 
+use App\Containers\AppSection\Member\Enums\MemberActivityAction;
 use App\Containers\AppSection\Member\Enums\MemberStatus;
 use App\Containers\AppSection\Member\Models\Member;
 use App\Containers\AppSection\Authentication\Values\UserCredential;
@@ -100,7 +101,7 @@ final class HandleSocialLoginCallbackAction extends ParentAction
 
         $this->createMemberActivityLogTask->run([
             'member_id' => $member->id,
-            'action' => 'login',
+            'action' => MemberActivityAction::LOGIN->value,
         ]);
 
         return [

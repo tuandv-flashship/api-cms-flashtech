@@ -9,7 +9,8 @@ use Illuminate\Validation\Rule;
 final class RefreshTokenRequest extends ParentRequest
 {
     protected array $decode = [];
-
+    
+    
     public function rules(): array
     {
         $cookieName = RefreshToken::cookieName();

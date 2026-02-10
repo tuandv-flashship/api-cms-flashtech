@@ -10,7 +10,6 @@ final class UpdateTagTranslationRequest extends ParentRequest
     protected array $decode = [
         'tag_id',
     ];
-
     protected function prepareForValidation(): void
     {
         $langCode = $this->input('lang_code') ?? $this->input('language');

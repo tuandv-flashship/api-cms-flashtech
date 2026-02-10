@@ -13,11 +13,8 @@ final class FindPageByIdAction extends ParentAction
     ) {
     }
 
-    /**
-     * @param array<int, string> $with
-     */
-    public function run(int $id, array $with = []): Page
+    public function run(int $id, ?string $include = null): Page
     {
-        return $this->findPageTask->run($id, $with);
+        return $this->findPageTask->run($id, $include);
     }
 }

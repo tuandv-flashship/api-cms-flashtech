@@ -2,11 +2,16 @@
 
 namespace App\Ship\Exceptions;
 
-use App\Ship\Parents\Exceptions\Exception;
 use Symfony\Component\HttpFoundation\Response;
 
-class DeleteResourceFailedException extends Exception
+class DeleteResourceFailedException extends ApiErrorException
 {
-    protected $code = Response::HTTP_INTERNAL_SERVER_ERROR;
-    protected $message = 'Failed to delete Resource.';
+    public function __construct(string $message = 'Failed to delete Resource.')
+    {
+        parent::__construct(
+            message: $message,
+            errorCode: 'resource_delete_failed',
+            status: Response::HTTP_INTERNAL_SERVER_ERROR,
+        );
+    }
 }

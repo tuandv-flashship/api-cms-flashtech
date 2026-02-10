@@ -7,6 +7,7 @@ use Illuminate\Validation\Rule;
 
 abstract class BaseDataSynchronizeExportRequest extends ParentRequest
 {
+    protected array $decode = [];
     protected string $permission = '';
 
     public function rules(): array

@@ -13,7 +13,6 @@ final class CreatePostRequest extends ParentRequest
         'category_ids.*',
         'tag_ids.*',
     ];
-
     protected function prepareForValidation(): void
     {
         $gallery = $this->input('gallery');

@@ -8,6 +8,7 @@ use Illuminate\Validation\Rule;
 
 final class CreateFieldGroupRequest extends ParentRequest
 {
+    protected array $decode = [];
     protected function prepareForValidation(): void
     {
         foreach (['rules', 'group_items', 'deleted_items'] as $key) {

@@ -19,4 +19,5 @@ use App\Containers\AppSection\Media\UI\API\Controllers\MediaGlobalActionControll
 use Illuminate\Support\Facades\Route;
 
 Route::post('media/actions', MediaGlobalActionController::class)
+    ->name('api_media_global_action')
     ->middleware(['auth:api']);

@@ -3,23 +3,13 @@
 namespace App\Containers\AppSection\Page\Supports;
 
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
+use App\Ship\Supports\RequestIncludes;
 
 final class PageOptions
 {
     public static function shouldIncludeOptions(?string $include): bool
     {
-        if ($include === null) {
-            return false;
-        }
-
-        $include = trim($include);
-        if ($include === '') {
-            return false;
-        }
-
-        $includes = array_map('trim', explode(',', $include));
-
-        return in_array('options', $includes, true);
+        return RequestIncludes::has($include, 'options');
     }
 
     public static function pageOptions(): array

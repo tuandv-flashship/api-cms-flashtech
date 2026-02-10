@@ -6,6 +6,7 @@ use App\Ship\Parents\Requests\Request as ParentRequest;
 
 abstract class BaseDataSynchronizeImportRequest extends ParentRequest
 {
+    protected array $decode = [];
     protected string $permission = '';
 
     public function rules(): array

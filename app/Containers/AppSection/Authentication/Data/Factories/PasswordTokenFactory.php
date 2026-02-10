@@ -6,6 +6,7 @@ use App\Containers\AppSection\Authentication\Data\DTOs\PasswordToken;
 use App\Containers\AppSection\Authentication\Values\RequestProxies\PasswordGrant\AccessTokenProxy;
 use App\Containers\AppSection\Authentication\Values\RequestProxies\PasswordGrant\RefreshTokenProxy;
 use App\Containers\AppSection\User\Models\User;
+use Illuminate\Contracts\Container\Container;
 use Laravel\Passport\AccessToken;
 use League\OAuth2\Server\AuthorizationServer;
 use Psr\Http\Message\ResponseInterface;
@@ -20,6 +21,7 @@ final class PasswordTokenFactory
     public function __construct(
         private readonly AuthorizationServer $server,
         private readonly TokenAttributeFormatter $tokenFormatter,
+        private readonly Container $container,
     ) {
     }
 
@@ -43,7 +45,7 @@ final class PasswordTokenFactory
         return json_decode(
             (string) $this->server->respondToAccessTokenRequest(
                 $request,
-                app(ResponseInterface::class),
+                $this->container->make(ResponseInterface::class),
             )->getBody(),
             true,
             512,

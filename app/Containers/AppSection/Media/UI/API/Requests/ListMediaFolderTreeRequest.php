@@ -7,7 +7,8 @@ use App\Ship\Parents\Requests\Request as ParentRequest;
 final class ListMediaFolderTreeRequest extends ParentRequest
 {
     protected array $decode = ['exclude_ids.*'];
-
+    
+    
     public function rules(): array
     {
         return [

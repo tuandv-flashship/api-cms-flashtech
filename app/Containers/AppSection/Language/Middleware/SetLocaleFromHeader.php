@@ -5,6 +5,7 @@ namespace App\Containers\AppSection\Language\Middleware;
 use App\Containers\AppSection\Language\Models\Language;
 use App\Ship\Parents\Middleware\Middleware as ParentMiddleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 final class SetLocaleFromHeader extends ParentMiddleware
 {
@@ -22,7 +23,7 @@ final class SetLocaleFromHeader extends ParentMiddleware
                 ->first();
 
             if ($language) {
-                app()->setLocale($language->lang_locale);
+                App::setLocale($language->lang_locale);
             }
         }
 

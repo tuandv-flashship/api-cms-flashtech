@@ -17,7 +17,7 @@ final class RunSystemCommandAction extends ParentAction
      */
     public function run(string $action, array $context = []): array
     {
-        $definition = SystemCommandRegistry::resolve($action);
+        $definition = SystemCommandRegistry::find($action);
         if ($definition === null) {
             throw new InvalidArgumentException('Unsupported command action.');
         }

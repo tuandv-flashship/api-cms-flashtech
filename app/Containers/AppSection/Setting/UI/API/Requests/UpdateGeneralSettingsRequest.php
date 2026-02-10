@@ -11,7 +11,8 @@ use Illuminate\Validation\Rule;
 final class UpdateGeneralSettingsRequest extends ParentRequest
 {
     protected array $decode = [];
-
+    
+    
     public function rules(): array
     {
         return [

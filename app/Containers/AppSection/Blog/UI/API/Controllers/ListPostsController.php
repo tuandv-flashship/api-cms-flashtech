@@ -14,11 +14,8 @@ final class ListPostsController extends ApiController
 {
     public function __invoke(ListPostsRequest $request, ListPostsAction $action): JsonResponse
     {
-        $payload = $request->validated();
-        $perPage = (int) ($payload['limit'] ?? $payload['per_page'] ?? 15);
-        $page = (int) ($payload['page'] ?? 1);
-
-        $posts = $action->run($payload, $perPage, $page);
+        $relationFilters = $request->only(['category_ids', 'tag_ids']);
+        $posts = $action->run($relationFilters);
 
         $response = Response::create($posts, PostTransformer::class);
 

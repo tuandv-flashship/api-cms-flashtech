@@ -9,7 +9,7 @@ final class VerifyRequest extends ParentRequest
     protected array $decode = [
         'id',
     ];
-
+    
     public function rules(): array
     {
         return [];

@@ -14,7 +14,7 @@ final class TagResolver
      * @param string[]|null $tagNames
      * @return int[]|null
      */
-    public static function resolve(?array $tagIds, ?array $tagNames): ?array
+    public static function resolveTagIds(?array $tagIds, ?array $tagNames): ?array
     {
         $tagIds = $tagIds ?? [];
         $tagNames = $tagNames ?? [];

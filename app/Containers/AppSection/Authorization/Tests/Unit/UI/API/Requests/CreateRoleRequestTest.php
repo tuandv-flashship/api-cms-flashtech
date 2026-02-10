@@ -13,7 +13,9 @@ final class CreateRoleRequestTest extends UnitTestCase
 
     public function testDecode(): void
     {
-        $this->assertSame([], $this->request->getDecode());
+        $this->assertSame([
+            'permission_ids.*',
+        ], $this->request->getDecode());
     }
 
     public function testValidationRules(): void
@@ -24,6 +26,8 @@ final class CreateRoleRequestTest extends UnitTestCase
             'name' => 'required|unique:' . config('permission.table_names.roles') . ',name|min:2|max:20|alpha',
             'description' => 'max:255',
             'display_name' => 'max:100',
+            'permission_ids' => 'sometimes|array',
+            'permission_ids.*' => 'required|exists:permissions,id',
         ], $rules);
     }
 

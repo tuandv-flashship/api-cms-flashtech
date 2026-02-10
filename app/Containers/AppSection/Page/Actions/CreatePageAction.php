@@ -6,6 +6,7 @@ use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\CustomField\Supports\CustomFieldService;
 use App\Containers\AppSection\Page\Models\Page;
 use App\Containers\AppSection\Page\Tasks\CreatePageTask;
+use App\Containers\AppSection\Page\Events\PageCreatedEvent;
 use App\Containers\AppSection\Slug\Supports\SlugHelper;
 use App\Ship\Parents\Actions\Action as ParentAction;
 
@@ -47,6 +48,8 @@ final class CreatePageAction extends ParentAction
         }
 
         AuditLogRecorder::recordModel('created', $page);
+
+        PageCreatedEvent::dispatch($page);
 
         return $page->refresh()->load(['slugable', 'user']);
     }

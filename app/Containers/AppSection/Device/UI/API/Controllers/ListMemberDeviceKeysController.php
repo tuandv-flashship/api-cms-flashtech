@@ -12,11 +12,16 @@ use App\Containers\AppSection\Device\Enums\DeviceOwnerType;
 
 final class ListMemberDeviceKeysController extends ApiController
 {
+    public function __construct(
+        private readonly ListDeviceKeysAction $listDeviceKeysAction,
+    ) {
+    }
+
     public function __invoke(ListMemberDeviceKeysRequest $request): JsonResponse
     {
         $memberId = (int) $request->user('member')->id;
 
-        $keys = app(ListDeviceKeysAction::class)->run(
+        $keys = $this->listDeviceKeysAction->run(
             DeviceOwnerType::MEMBER,
             $memberId,
             (string) $request->route('device_id'),

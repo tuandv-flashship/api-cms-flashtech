@@ -4,24 +4,14 @@ namespace App\Containers\AppSection\CustomField\Supports;
 
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
 use App\Containers\AppSection\CustomField\Supports\CustomFieldRules;
+use App\Ship\Supports\RequestIncludes;
 use Illuminate\Support\Str;
 
 final class CustomFieldOptions
 {
     public static function shouldIncludeOptions(?string $include): bool
     {
-        if ($include === null) {
-            return false;
-        }
-
-        $include = trim($include);
-        if ($include === '') {
-            return false;
-        }
-
-        $includes = array_map('trim', explode(',', $include));
-
-        return in_array('options', $includes, true);
+        return RequestIncludes::has($include, 'options');
     }
 
     /**

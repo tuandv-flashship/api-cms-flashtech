@@ -9,7 +9,7 @@ final class ListUserPermissionsRequest extends ParentRequest
     protected array $decode = [
         'user_id',
     ];
-
+    
     public function rules(): array
     {
         return [];

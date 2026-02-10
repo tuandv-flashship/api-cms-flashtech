@@ -9,6 +9,8 @@ use App\Containers\AppSection\Member\Values\MemberClientType;
 use App\Containers\AppSection\Member\Values\MemberRefreshToken;
 use App\Containers\AppSection\Authentication\Values\RefreshToken;
 use App\Ship\Parents\Controllers\ApiController;
+use App\Ship\Responders\ApiErrorResponder;
+use App\Ship\Values\ApiError;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cookie as CookieFacade;
 use League\OAuth2\Server\Exception\OAuthServerException;
@@ -18,6 +20,7 @@ final class RefreshTokenController extends ApiController
     public function __construct(
         private readonly RefreshMemberTokenAction $refreshMemberTokenAction,
         private readonly MemberTokenResponder $memberTokenResponder,
+        private readonly ApiErrorResponder $apiErrorResponder,
     ) {
     }
 
@@ -45,11 +48,14 @@ final class RefreshTokenController extends ApiController
                 default => $errorType,
             };
 
-            $response = response()->json([
-                'message' => $payload['error_description'] ?? 'Unable to refresh token.',
-                'error' => $payload['error'] ?? $errorType,
-                'error_code' => $errorCode,
-            ], $status);
+            $response = $this->apiErrorResponder->respond(ApiError::create(
+                status: $status,
+                message: $payload['error_description'] ?? 'Unable to refresh token.',
+                errorCode: $errorCode,
+                extra: [
+                    'error' => $payload['error'] ?? $errorType,
+                ],
+            ));
 
             if ($errorType === 'invalid_grant') {
                 $response->withCookie(CookieFacade::forget(MemberRefreshToken::cookieName()));

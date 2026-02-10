@@ -2,8 +2,7 @@
 
 namespace App\Containers\AppSection\Media\Models;
 
-use App\Containers\AppSection\Media\Services\MediaService;
-use App\Containers\AppSection\Media\Supports\MediaSettingsStore;
+use App\Containers\AppSection\Media\Supports\MediaRuntimeServices;
 use App\Ship\Parents\Models\Model as ParentModel;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -38,11 +37,11 @@ final class MediaFile extends ParentModel
     protected static function booted(): void
     {
         static::forceDeleted(function (MediaFile $file): void {
-            app(MediaService::class)->deleteFileFromStorage($file);
+            MediaRuntimeServices::mediaService()->deleteFileFromStorage($file);
         });
 
         static::addGlobalScope('ownMedia', function ($query): void {
-            $settings = app(MediaSettingsStore::class);
+            $settings = MediaRuntimeServices::settingsStore();
             $onlyOwn = $settings->getBool(
                 'user_can_only_view_own_media',
                 (bool) config('media.only_view_own_media', false)
@@ -97,7 +96,7 @@ final class MediaFile extends ParentModel
     protected function previewUrl(): Attribute
     {
         return Attribute::get(function (): ?string {
-            $service = app(MediaService::class);
+            $service = MediaRuntimeServices::mediaService();
 
             if ($this->visibility !== 'public') {
                 return null;
@@ -159,7 +158,7 @@ final class MediaFile extends ParentModel
 
     public function canGenerateThumbnails(): bool
     {
-        $settings = app(MediaSettingsStore::class);
+        $settings = MediaRuntimeServices::settingsStore();
 
         if (! $settings->getBool('media_enable_thumbnail_sizes', (bool) config('media.enable_thumbnail_sizes', true))) {
             return false;
@@ -199,4 +198,5 @@ final class MediaFile extends ParentModel
 
         return number_format($value, 2) . ' ' . $units[$power];
     }
+
 }

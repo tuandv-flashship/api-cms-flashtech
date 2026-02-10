@@ -5,25 +5,13 @@ namespace App\Containers\AppSection\Member\UI\API\Requests;
 use App\Ship\Parents\Requests\Request as ParentRequest;
 use Illuminate\Validation\Rule;
 
-class SocialLoginRequest extends ParentRequest
+final class SocialLoginRequest extends ParentRequest
 {
-    protected array $access = [
-        'permissions' => '',
-        'roles' => '',
-    ];
-
-    protected array $decode = [
-        //
-    ];
-
-    protected array $urlParameters = [
-        'provider',
-    ];
-
+    protected array $decode = [];
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'provider' => $this->route('provider'),
+            'provider' => strtolower((string) $this->route('provider')),
         ]);
     }
 

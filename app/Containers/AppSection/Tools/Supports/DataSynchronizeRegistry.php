@@ -15,12 +15,22 @@ use InvalidArgumentException;
 
 final class DataSynchronizeRegistry
 {
+    public function __construct(
+        private readonly PostsImporter $postsImporter,
+        private readonly PostTranslationsImporter $postTranslationsImporter,
+        private readonly OtherTranslationsImporter $otherTranslationsImporter,
+        private readonly PostsExporter $postsExporter,
+        private readonly PostTranslationsExporter $postTranslationsExporter,
+        private readonly OtherTranslationsExporter $otherTranslationsExporter,
+    ) {
+    }
+
     public function makeImporter(string $type, ?string $class = null): Importer
     {
         return match ($type) {
-            'posts' => app(PostsImporter::class),
+            'posts' => $this->freshImporter($this->postsImporter),
             'post-translations' => $this->makePostTranslationsImporter($class),
-            'other-translations' => app(OtherTranslationsImporter::class),
+            'other-translations' => $this->freshImporter($this->otherTranslationsImporter),
             default => throw new InvalidArgumentException('Unsupported import type.'),
         };
     }
@@ -28,9 +38,9 @@ final class DataSynchronizeRegistry
     public function makeExporter(string $type, ?string $class = null): Exporter
     {
         return match ($type) {
-            'posts' => app(PostsExporter::class),
+            'posts' => $this->freshExporter($this->postsExporter),
             'post-translations' => $this->makePostTranslationsExporter($class),
-            'other-translations' => app(OtherTranslationsExporter::class),
+            'other-translations' => $this->freshExporter($this->otherTranslationsExporter),
             default => throw new InvalidArgumentException('Unsupported export type.'),
         };
     }
@@ -39,14 +49,14 @@ final class DataSynchronizeRegistry
     {
         $this->guardPostClass($class);
 
-        return app(PostTranslationsImporter::class);
+        return $this->freshImporter($this->postTranslationsImporter);
     }
 
     private function makePostTranslationsExporter(?string $class): Exporter
     {
         $this->guardPostClass($class);
 
-        return app(PostTranslationsExporter::class);
+        return $this->freshExporter($this->postTranslationsExporter);
     }
 
     private function guardPostClass(?string $class): void
@@ -58,5 +68,15 @@ final class DataSynchronizeRegistry
         if ($class !== Post::class) {
             throw new InvalidArgumentException('Unsupported translation class.');
         }
+    }
+
+    private function freshImporter(Importer $importer): Importer
+    {
+        return clone $importer;
+    }
+
+    private function freshExporter(Exporter $exporter): Exporter
+    {
+        return clone $exporter;
     }
 }

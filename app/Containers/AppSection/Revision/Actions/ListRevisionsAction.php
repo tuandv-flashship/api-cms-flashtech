@@ -16,28 +16,15 @@ final class ListRevisionsAction extends ParentAction
     ) {
     }
 
-    public function run(
-        string $type,
-        int $revisionableId,
-        ?int $perPage = null,
-        ?int $page = null,
-        ?string $order = null
-    ): LengthAwarePaginator {
-        $revisionableType = $this->revisionableResolver->resolve($type);
+    public function run(string $type, int $revisionableId): LengthAwarePaginator
+    {
+        $revisionableType = $this->revisionableResolver->resolveType($type);
         if (! $revisionableType) {
             throw ValidationException::withMessages([
                 'type' => ['Unsupported revisionable type.'],
             ]);
         }
 
-        $defaultPerPage = (int) config('revision.default_per_page', 20);
-        $maxPerPage = (int) config('revision.max_per_page', 200);
-
-        $perPage = $perPage ?: $defaultPerPage;
-        $perPage = max(1, min($perPage, $maxPerPage));
-        $page = $page && $page > 0 ? $page : 1;
-        $order = strtolower((string) $order) === 'asc' ? 'asc' : 'desc';
-
-        return $this->listRevisionsTask->run($revisionableType, $revisionableId, $perPage, $page, $order);
+        return $this->listRevisionsTask->run($revisionableType, $revisionableId);
     }
 }

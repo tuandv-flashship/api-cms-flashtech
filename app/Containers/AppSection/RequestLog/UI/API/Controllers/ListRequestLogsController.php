@@ -11,15 +11,14 @@ use Illuminate\Http\JsonResponse;
 
 final class ListRequestLogsController extends ApiController
 {
-    public function __invoke(ListRequestLogsRequest $request, ListRequestLogsAction $action): JsonResponse
-    {
-        $page = (int) $request->input('page', 1);
-        $limit = $request->input('limit');
-        $perPage = is_numeric($limit)
-            ? (int) $limit
-            : (int) $request->input('per_page', $request->input('paginate', 15));
+    public function __construct(
+        private readonly ListRequestLogsAction $listRequestLogsAction,
+    ) {
+    }
 
-        $logs = $action->run($page, $perPage);
+    public function __invoke(ListRequestLogsRequest $request): JsonResponse
+    {
+        $logs = $this->listRequestLogsAction->run();
 
         return Response::create($logs, RequestLogTransformer::class)->ok();
     }

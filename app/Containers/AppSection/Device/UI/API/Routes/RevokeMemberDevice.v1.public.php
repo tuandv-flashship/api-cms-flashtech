@@ -22,4 +22,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::delete('member/devices/{device_id}', RevokeMemberDeviceController::class)
     ->name('api_member_revoke_device')
-    ->middleware(['auth:member']);
+    ->middleware([
+        'auth:member',
+        'request.signature',
+        'throttle:' . config('device.throttle.revoke_device', '20,1'),
+    ]);

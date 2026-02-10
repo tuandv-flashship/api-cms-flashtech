@@ -8,14 +8,24 @@ use App\Containers\AppSection\Blog\Models\Post;
 use App\Containers\AppSection\Blog\Models\Tag;
 use App\Containers\AppSection\Blog\Supports\PostFormat;
 use App\Containers\AppSection\Slug\Supports\SlugHelper;
+use App\Containers\AppSection\Tools\Supports\DataSynchronizeStorage;
 use App\Containers\AppSection\Tools\Supports\Import\ImportColumn;
 use App\Containers\AppSection\Tools\Supports\Import\Importer;
+use App\Containers\AppSection\Tools\Supports\SpreadsheetReader;
 use App\Containers\AppSection\User\Models\User;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
 
 final class PostsImporter extends Importer
 {
+    public function __construct(
+        SpreadsheetReader $reader,
+        DataSynchronizeStorage $storage,
+        private readonly SlugHelper $slugHelper,
+    ) {
+        parent::__construct($reader, $storage);
+    }
+
     /**
      * @return array<int, ImportColumn>
      */
@@ -120,7 +130,6 @@ final class PostsImporter extends Importer
      */
     public function handle(array $rows): int
     {
-        $slugHelper = app(SlugHelper::class);
         $count = 0;
 
         foreach ($rows as $row) {
@@ -148,16 +157,16 @@ final class PostsImporter extends Importer
             );
 
             if ($post->wasRecentlyCreated) {
-                $slugHelper->createSlug($post, $slug);
+                $this->slugHelper->createSlug($post, $slug);
                 $count++;
             }
 
-            $categoryIds = $this->resolveCategories($row['categories'] ?? [], $slugHelper);
+            $categoryIds = $this->resolveCategories($row['categories'] ?? [], $this->slugHelper);
             if ($categoryIds !== []) {
                 $post->categories()->sync($categoryIds);
             }
 
-            $tagIds = $this->resolveTags($row['tags'] ?? [], $slugHelper);
+            $tagIds = $this->resolveTags($row['tags'] ?? [], $this->slugHelper);
             if ($tagIds !== []) {
                 $post->tags()->sync($tagIds);
             }

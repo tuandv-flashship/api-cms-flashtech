@@ -14,4 +14,5 @@ use App\Containers\AppSection\Media\UI\API\Controllers\ShowMediaFileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('media/files/{hash}/{id}', ShowMediaFileController::class)
+    ->middleware(['throttle:' . config('media.throttle.show_file', '120,1')])
     ->name('media.indirect.url');

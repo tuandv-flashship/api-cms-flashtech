@@ -2,39 +2,29 @@
 
 namespace App\Containers\AppSection\Blog\Tasks;
 
+use App\Containers\AppSection\Blog\Data\Repositories\TagRepository;
 use App\Containers\AppSection\Blog\Models\Tag;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
 use App\Ship\Parents\Tasks\Task as ParentTask;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
 
 final class ListTagsTask extends ParentTask
 {
-    /**
-     * @param array<string, mixed> $filters
-     */
-    public function run(array $filters, int $perPage, int $page): LengthAwarePaginator
+    public function __construct(
+        private readonly TagRepository $repository,
+    ) {
+    }
+
+    public function run(): LengthAwarePaginator
     {
         $with = LanguageAdvancedManager::withTranslations(
             ['slugable'],
             Tag::class
         );
 
-        $query = Tag::query()
-            ->with($with)
-            ->when(isset($filters['status']), function (Builder $query) use ($filters): void {
-                $query->where('status', $filters['status']);
-            })
-            ->when(! empty($filters['search']), function (Builder $query) use ($filters): void {
-                $search = (string) $filters['search'];
-                $query->where('name', 'like', '%' . $search . '%');
-            });
-
-        $orderBy = $filters['order_by'] ?? 'created_at';
-        $order = $filters['order'] ?? 'desc';
-
-        return $query
-            ->orderBy($orderBy, $order)
-            ->paginate($perPage, ['*'], 'page', $page);
+        return $this->repository
+            ->scope(static fn ($query) => $query->with($with))
+            ->addRequestCriteria()
+            ->paginate();
     }
 }

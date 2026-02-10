@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\System\Supports;
 
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -10,8 +11,10 @@ use Illuminate\Support\Str;
 
 final class SystemCache
 {
-    public function __construct(private readonly Filesystem $files)
-    {
+    public function __construct(
+        private readonly Filesystem $files,
+        private readonly Application $app,
+    ) {
     }
 
     public function clearCmsCache(): void
@@ -37,12 +40,12 @@ final class SystemCache
 
     public function clearConfigCache(): void
     {
-        $this->files->delete(app()->getCachedConfigPath());
+        $this->files->delete($this->app->getCachedConfigPath());
     }
 
     public function clearRouteCache(): void
     {
-        foreach ($this->files->glob(app()->bootstrapPath('cache/*')) as $cacheFile) {
+        foreach ($this->files->glob($this->app->bootstrapPath('cache/*')) as $cacheFile) {
             if (Str::contains($cacheFile, 'routes')) {
                 $this->files->delete($cacheFile);
             }
@@ -51,7 +54,7 @@ final class SystemCache
 
     public function clearEventCache(): void
     {
-        $this->files->delete(app()->bootstrapPath('cache/events.php'));
+        $this->files->delete($this->app->bootstrapPath('cache/events.php'));
     }
 
     public function clearLogs(): void
@@ -186,7 +189,7 @@ final class SystemCache
 
     private function clearBootstrapCache(): void
     {
-        foreach ($this->files->glob(app()->bootstrapPath('cache/*.php')) as $cacheFile) {
+        foreach ($this->files->glob($this->app->bootstrapPath('cache/*.php')) as $cacheFile) {
             $this->files->delete($cacheFile);
         }
     }
