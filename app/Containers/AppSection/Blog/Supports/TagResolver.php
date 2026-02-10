@@ -16,6 +16,10 @@ final class TagResolver
      */
     public static function resolveTagIds(?array $tagIds, ?array $tagNames): ?array
     {
+        // Keep information about whether tags were explicitly provided.
+        // If provided as empty arrays, we must return [] so caller can detach.
+        $tagsInputProvided = $tagIds !== null || $tagNames !== null;
+
         $tagIds = $tagIds ?? [];
         $tagNames = $tagNames ?? [];
 
@@ -35,6 +39,10 @@ final class TagResolver
 
         $tagIds = array_values(array_unique(array_filter($tagIds)));
 
-        return $tagIds !== [] ? $tagIds : null;
+        if (! $tagsInputProvided) {
+            return null;
+        }
+
+        return $tagIds;
     }
 }
