@@ -13,11 +13,8 @@ final class ListCategoriesAction extends ParentAction
     ) {
     }
 
-    /**
-     * @param array<string, mixed> $filters
-     */
-    public function run(array $filters): LengthAwarePaginator
+    public function run(): LengthAwarePaginator
     {
-        return $this->listCategoriesTask->run($filters);
+        return $this->listCategoriesTask->run();
     }
 }

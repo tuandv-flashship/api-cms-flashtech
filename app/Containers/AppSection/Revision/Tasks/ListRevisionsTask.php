@@ -2,29 +2,25 @@
 
 namespace App\Containers\AppSection\Revision\Tasks;
 
-use App\Containers\AppSection\Revision\Models\Revision;
+use App\Containers\AppSection\Revision\Data\Repositories\RevisionRepository;
 use App\Ship\Parents\Tasks\Task as ParentTask;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class ListRevisionsTask extends ParentTask
 {
-    public function run(
-        string $revisionableType,
-        int $revisionableId,
-        string $order = 'desc',
-        ?int $limit = null,
-        ?int $page = null,
-    ): LengthAwarePaginator {
-        $defaultPerPage = (int) config('repository.pagination.limit', 10);
-        $maxPerPage = (int) config('revision.max_per_page', 200);
-        $perPage = max(1, min((int) ($limit ?? $defaultPerPage), $maxPerPage));
-        $page = max(1, (int) ($page ?? 1));
+    public function __construct(
+        private readonly RevisionRepository $repository,
+    ) {
+    }
 
-        return Revision::query()
-            ->with('user')
-            ->where('revisionable_type', $revisionableType)
-            ->where('revisionable_id', $revisionableId)
-            ->orderBy('id', $order)
-            ->paginate($perPage, ['*'], 'page', $page);
+    public function run(string $revisionableType, int $revisionableId): LengthAwarePaginator
+    {
+        return $this->repository
+            ->scope(static fn ($query) => $query
+                ->with('user')
+                ->where('revisionable_type', $revisionableType)
+                ->where('revisionable_id', $revisionableId))
+            ->addRequestCriteria()
+            ->paginate();
     }
 }

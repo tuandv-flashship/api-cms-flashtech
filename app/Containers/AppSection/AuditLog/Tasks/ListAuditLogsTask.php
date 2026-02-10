@@ -17,6 +17,7 @@ final class ListAuditLogsTask extends ParentTask
     {
         return $this->repository
             ->scope(fn ($query) => $query->with(['user', 'actor'])->latest())
+            ->addRequestCriteria()
             ->paginate();
     }
 }

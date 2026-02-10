@@ -22,9 +22,11 @@ final class ListRevisionsRequest extends ParentRequest
         return [
             'type' => $typeRules,
             'revisionable_id' => ['required', 'integer', 'min:1'],
+            'search' => ['nullable', 'string', 'max:255'],
+            'orderBy' => ['nullable', Rule::in(['id', 'key', 'created_at', 'updated_at'])],
+            'sortedBy' => ['nullable', Rule::in(['asc', 'desc'])],
             'limit' => ['nullable', 'integer', 'min:1', 'max:200'],
             'page' => ['nullable', 'integer', 'min:1'],
-            'order' => ['nullable', 'string', Rule::in(['asc', 'desc'])],
         ];
     }
 

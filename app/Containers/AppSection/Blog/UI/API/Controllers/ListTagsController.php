@@ -14,8 +14,7 @@ final class ListTagsController extends ApiController
 {
     public function __invoke(ListTagsRequest $request, ListTagsAction $action): JsonResponse
     {
-        $payload = $request->validated();
-        $tags = $action->run($payload);
+        $tags = $action->run();
 
         $response = Response::create($tags, TagTransformer::class);
 

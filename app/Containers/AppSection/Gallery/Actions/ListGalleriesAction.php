@@ -13,11 +13,8 @@ final class ListGalleriesAction extends ParentAction
     ) {
     }
 
-    /**
-     * @param array<string, mixed> $filters
-     */
-    public function run(array $filters): LengthAwarePaginator
+    public function run(): LengthAwarePaginator
     {
-        return $this->listGalleriesTask->run($filters);
+        return $this->listGalleriesTask->run();
     }
 }

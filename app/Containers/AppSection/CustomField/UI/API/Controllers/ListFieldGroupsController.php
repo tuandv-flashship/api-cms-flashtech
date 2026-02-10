@@ -14,8 +14,7 @@ final class ListFieldGroupsController extends ApiController
 {
     public function __invoke(ListFieldGroupsRequest $request, ListFieldGroupsAction $action): JsonResponse
     {
-        $payload = $request->validated();
-        $groups = $action->run($payload);
+        $groups = $action->run();
 
         $response = Response::create($groups, FieldGroupTransformer::class);
 

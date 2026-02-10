@@ -13,11 +13,8 @@ final class ListFieldGroupsAction extends ParentAction
     ) {
     }
 
-    /**
-     * @param array<string, mixed> $filters
-     */
-    public function run(array $filters): LengthAwarePaginator
+    public function run(): LengthAwarePaginator
     {
-        return $this->listFieldGroupsTask->run($filters);
+        return $this->listFieldGroupsTask->run();
     }
 }

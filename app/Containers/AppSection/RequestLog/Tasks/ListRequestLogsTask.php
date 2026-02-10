@@ -17,6 +17,7 @@ final class ListRequestLogsTask extends ParentTask
     {
         return $this->repository
             ->scope(fn ($query) => $query->latest())
+            ->addRequestCriteria()
             ->paginate();
     }
 }
