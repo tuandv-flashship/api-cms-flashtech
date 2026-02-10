@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class GalleryMetaTranslation extends ParentModel
 {
     public $timestamps = false;
+    public $incrementing = false;
+    protected $primaryKey = null;
 
     protected $table = 'gallery_meta_translations';
 

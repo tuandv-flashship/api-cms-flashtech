@@ -41,3 +41,5 @@ yarn-error.log
 /.ai
 /.skills
 AGENTS.md
+/postman
+/.postman
