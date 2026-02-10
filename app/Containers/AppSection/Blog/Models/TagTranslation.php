@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class TagTranslation extends ParentModel
 {
     public $timestamps = false;
+    public $incrementing = false;
+    protected $primaryKey = null;
 
     protected $table = 'tags_translations';
 
