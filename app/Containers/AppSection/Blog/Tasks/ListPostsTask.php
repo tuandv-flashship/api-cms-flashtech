@@ -22,7 +22,7 @@ final class ListPostsTask extends ParentTask
     public function run(array $relationFilters = []): LengthAwarePaginator
     {
         $with = LanguageAdvancedManager::withTranslations(
-            ['categories', 'tags', 'slugable', 'galleryMeta'],
+            ['categories.slugable', 'tags.slugable', 'slugable', 'galleryMeta'],
             Post::class
         );
 
