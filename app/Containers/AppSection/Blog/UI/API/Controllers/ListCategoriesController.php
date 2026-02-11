@@ -4,7 +4,6 @@ namespace App\Containers\AppSection\Blog\UI\API\Controllers;
 
 use Apiato\Support\Facades\Response;
 use App\Containers\AppSection\Blog\Actions\ListCategoriesAction;
-use App\Containers\AppSection\Blog\Supports\BlogOptions;
 use App\Containers\AppSection\Blog\UI\API\Requests\ListCategoriesRequest;
 use App\Containers\AppSection\Blog\UI\API\Transformers\CategoryTransformer;
 use App\Ship\Parents\Controllers\ApiController;
@@ -16,14 +15,6 @@ final class ListCategoriesController extends ApiController
     {
         $categories = $action->run();
 
-        $response = Response::create($categories, CategoryTransformer::class);
-
-        if (BlogOptions::shouldIncludeOptions($request->query('include'))) {
-            $response->addMeta([
-                'options' => BlogOptions::categoryOptions(),
-            ]);
-        }
-
-        return $response->ok();
+        return Response::create($categories, CategoryTransformer::class)->ok();
     }
 }
