@@ -4,7 +4,6 @@ namespace App\Containers\AppSection\Page\UI\API\Controllers;
 
 use Apiato\Support\Facades\Response;
 use App\Containers\AppSection\Page\Actions\ListPagesAction;
-use App\Containers\AppSection\Page\Supports\PageOptions;
 use App\Containers\AppSection\Page\UI\API\Requests\ListPagesRequest;
 use App\Containers\AppSection\Page\UI\API\Transformers\PageTransformer;
 use App\Ship\Parents\Controllers\ApiController;
@@ -17,14 +16,7 @@ final class ListPagesController extends ApiController
         $payload = $request->validated();
         $pages = $action->run($payload);
 
-        $response = Response::create($pages, PageTransformer::class);
-
-        if (PageOptions::shouldIncludeOptions($request->query('include'))) {
-            $response->addMeta([
-                'options' => PageOptions::pageOptions(),
-            ]);
-        }
-
-        return $response->ok();
+        return Response::create($pages, PageTransformer::class)->ok();
     }
 }
+

@@ -4,7 +4,6 @@ namespace App\Containers\AppSection\Blog\UI\API\Controllers;
 
 use Apiato\Support\Facades\Response;
 use App\Containers\AppSection\Blog\Actions\ListTagsAction;
-use App\Containers\AppSection\Blog\Supports\BlogOptions;
 use App\Containers\AppSection\Blog\UI\API\Requests\ListTagsRequest;
 use App\Containers\AppSection\Blog\UI\API\Transformers\TagTransformer;
 use App\Ship\Parents\Controllers\ApiController;
@@ -16,14 +15,7 @@ final class ListTagsController extends ApiController
     {
         $tags = $action->run();
 
-        $response = Response::create($tags, TagTransformer::class);
-
-        if (BlogOptions::shouldIncludeOptions($request->query('include'))) {
-            $response->addMeta([
-                'options' => BlogOptions::tagOptions(),
-            ]);
-        }
-
-        return $response->ok();
+        return Response::create($tags, TagTransformer::class)->ok();
     }
 }
+

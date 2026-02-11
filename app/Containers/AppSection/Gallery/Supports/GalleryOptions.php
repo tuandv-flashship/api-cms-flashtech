@@ -3,14 +3,9 @@
 namespace App\Containers\AppSection\Gallery\Supports;
 
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
-use App\Ship\Supports\RequestIncludes;
 
 final class GalleryOptions
 {
-    public static function shouldIncludeOptions(?string $include): bool
-    {
-        return RequestIncludes::has($include, 'options');
-    }
 
     public static function galleryOptions(): array
     {

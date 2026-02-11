@@ -3,14 +3,9 @@
 namespace App\Containers\AppSection\Page\Supports;
 
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
-use App\Ship\Supports\RequestIncludes;
 
 final class PageOptions
 {
-    public static function shouldIncludeOptions(?string $include): bool
-    {
-        return RequestIncludes::has($include, 'options');
-    }
 
     public static function pageOptions(): array
     {
