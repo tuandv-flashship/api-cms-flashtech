@@ -21,6 +21,14 @@ final class SystemCommandRegistry
         return $definitions[$normalized] ?? null;
     }
 
+    /**
+     * @return array{command: string, options: array<string, mixed>}|null
+     */
+    public static function resolve(string $action): ?array
+    {
+        return self::find($action);
+    }
+
     private static function definitions(): array
     {
         $definitions = config('system-commands.commands', []);
