@@ -13,17 +13,46 @@ trait HashIdTrait
             return null;
         }
 
-        // If it's a numeric value (int or string representation of int)
-        if (is_numeric($id)) {
-            $intId = (int) $id;
-            if ($intId <= 0) {
-                return $intId;
-            }
-
-            return config('apiato.hash-id') ? hashids()->encodeOrFail($intId) : $intId;
+        $intId = $this->normalizeIntegerId($id);
+        if ($intId === null) {
+            return $id;
         }
 
-        // Return non-numeric IDs as is (e.g. UUIDs or already hashed strings)
-        return $id;
+        if ($intId <= 0 || ! config('apiato.hash-id')) {
+            return $intId;
+        }
+
+        return $this->encodeHashId($intId);
+    }
+
+    private function normalizeIntegerId(int|string $id): ?int
+    {
+        if (is_int($id)) {
+            return $id;
+        }
+
+        if ($id === '' || preg_match('/^-?\d+$/', $id) !== 1) {
+            return null;
+        }
+
+        return (int) $id;
+    }
+
+    private function encodeHashId(int $id): string
+    {
+        static $encoded = [];
+
+        if (isset($encoded[$id])) {
+            return $encoded[$id];
+        }
+
+        // Bound static memory growth for long-running workers.
+        if (count($encoded) >= 10000) {
+            $encoded = [];
+        }
+
+        $encoded[$id] = hashids()->encodeOrFail($id);
+
+        return $encoded[$id];
     }
 }

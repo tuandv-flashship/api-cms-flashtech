@@ -9,6 +9,7 @@ return [
         \App\Containers\AppSection\Gallery\Models\GalleryMeta::class => ['images'],
         \App\Containers\AppSection\Page\Models\Page::class => ['name', 'description', 'content'],
         \App\Containers\AppSection\CustomField\Models\CustomField::class => ['value'],
+        \App\Containers\AppSection\Menu\Models\MenuNode::class => ['title', 'url'],
     ],
     'translatable_meta_boxes' => [
         'seo_meta',

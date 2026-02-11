@@ -5,14 +5,23 @@ namespace App\Containers\AppSection\User\UI\API\Controllers;
 use Apiato\Support\Facades\Response;
 use App\Containers\AppSection\Language\Models\Language;
 use App\Ship\Parents\Controllers\ApiController;
+use App\Ship\Supports\AdminMenu;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 final class AdminBootstrapController extends ApiController
 {
+    public function __construct(
+        private readonly AdminMenu $adminMenu,
+    ) {
+    }
+
     public function __invoke(): JsonResponse
     {
         $user = Auth::user();
+        if ($user === null) {
+            abort(401);
+        }
 
         $permissions = $user->getAllPermissions()->pluck('name')->values()->all();
         $roles = $user->roles->pluck('name')->values()->all();
@@ -32,6 +41,7 @@ final class AdminBootstrapController extends ApiController
                 ],
                 'roles' => $roles,
                 'permissions' => $permissions,
+                'admin_menu' => $this->adminMenu->forUser($user),
                 'locale' => [
                     'current' => $currentLocale,
                     'available' => $languages->map(fn (Language $lang) => [
@@ -48,4 +58,3 @@ final class AdminBootstrapController extends ApiController
         ]);
     }
 }
-
