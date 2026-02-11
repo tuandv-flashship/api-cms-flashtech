@@ -13,5 +13,6 @@ final class TestingDataSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(\App\Containers\AppSection\Menu\Data\Seeders\MenuSeeder_1::class);
     }
 }

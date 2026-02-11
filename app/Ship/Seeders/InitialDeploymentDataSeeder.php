@@ -15,5 +15,6 @@ final class InitialDeploymentDataSeeder extends Seeder
     {
         $this->call(PermissionsSeeder::class);
         $this->call(\App\Containers\AppSection\Setting\Data\Seeders\SettingsSeeder_1::class);
+        $this->call(\App\Containers\AppSection\Menu\Data\Seeders\MenuSeeder_1::class);
     }
 }
