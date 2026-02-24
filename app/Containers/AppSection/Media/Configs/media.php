@@ -92,7 +92,7 @@ return [
     'chunk' => [
         'enabled' => env('MEDIA_CHUNK_ENABLED', false),
         'chunk_size' => env('MEDIA_CHUNK_SIZE', 1024 * 1024),
-        'max_file_size' => env('MEDIA_MAX_FILE_SIZE', 1024 * 1024),
+        'max_file_size' => env('MEDIA_MAX_FILE_SIZE', 50 * 1024 * 1024),
         'storage' => [
             'chunks' => 'chunks',
             'disk' => 'local',
@@ -212,7 +212,7 @@ return [
         'media_thumbnail_crop_position' => env('MEDIA_THUMBNAIL_CROP_POSITION', 'center'),
         'media_chunk_enabled' => env('MEDIA_CHUNK_ENABLED', false),
         'media_chunk_size' => env('MEDIA_CHUNK_SIZE', 1024 * 1024),
-        'media_max_file_size' => env('MEDIA_MAX_FILE_SIZE', 1024 * 1024),
+        'media_max_file_size' => env('MEDIA_MAX_FILE_SIZE', 50 * 1024 * 1024),
         'media_s3_path' => env('MEDIA_S3_PATH', ''),
     ],
 ];
