@@ -3,6 +3,7 @@
 namespace App\Ship\Commands;
 
 use Apiato\Core\Console\Command as ParentCommand;
+use App\Ship\Supports\AdminMenu;
 use App\Ship\Supports\PermissionSyncer;
 
 final class SyncPermissions extends ParentCommand
@@ -14,7 +15,7 @@ final class SyncPermissions extends ParentCommand
 
     protected $description = 'Sync permissions from container configs into the permissions table.';
 
-    public function handle(PermissionSyncer $syncer): void
+    public function handle(PermissionSyncer $syncer, AdminMenu $adminMenu): void
     {
         $guards = $this->option('guard');
         $includeWeb = (bool) $this->option('include-web');
@@ -26,6 +27,8 @@ final class SyncPermissions extends ParentCommand
             $this->warn('No permissions found in config.');
             return;
         }
+
+        $adminMenu->flush();
 
         $this->info('Permissions synced.');
         $this->line('Guards: ' . implode(', ', $result['guards']));

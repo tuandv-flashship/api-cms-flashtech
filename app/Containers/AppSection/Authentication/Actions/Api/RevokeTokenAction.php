@@ -6,16 +6,24 @@ use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\Authentication\Values\RefreshToken;
 use App\Containers\AppSection\User\Models\User;
 use App\Ship\Parents\Actions\Action as ParentAction;
+use App\Ship\Supports\AdminMenu;
 use Illuminate\Support\Facades\Cookie as CookieFacade;
 use Symfony\Component\HttpFoundation\Cookie;
 
 final class RevokeTokenAction extends ParentAction
 {
+    public function __construct(
+        private readonly AdminMenu $adminMenu,
+    ) {
+    }
+
     public function run(User|null $user): Cookie
     {
         $user?->token()?->revoke();
 
         if ($user) {
+            $this->adminMenu->forgetForUser((int) $user->getKey());
+
             AuditLogRecorder::record(
                 module: 'authentication',
                 action: 'logged out',
