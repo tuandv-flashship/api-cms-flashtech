@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Language\Actions;
 
 use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
+use App\Containers\AppSection\Language\Middleware\SetLocaleFromHeader;
 use App\Containers\AppSection\Language\Models\Language;
 use App\Containers\AppSection\Language\Tasks\UpdateLanguageTask;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -19,6 +20,8 @@ final class UpdateLanguageAction extends ParentAction
         $language = $this->updateLanguageTask->run($id, $data);
 
         AuditLogRecorder::recordModel('updated', $language);
+
+        SetLocaleFromHeader::clearCache();
 
         return $language;
     }

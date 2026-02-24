@@ -4,6 +4,7 @@ namespace App\Containers\AppSection\Language\Actions;
 
 use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\Language\Data\Repositories\LanguageRepository;
+use App\Containers\AppSection\Language\Middleware\SetLocaleFromHeader;
 use App\Containers\AppSection\Language\Tasks\DeleteLanguageTask;
 use App\Ship\Parents\Actions\Action as ParentAction;
 
@@ -22,6 +23,7 @@ final class DeleteLanguageAction extends ParentAction
 
         if ($deleted) {
             AuditLogRecorder::recordModel('deleted', $language);
+            SetLocaleFromHeader::clearCache();
         }
 
         return $deleted;

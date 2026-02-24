@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Language\Actions;
 
 use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
+use App\Containers\AppSection\Language\Middleware\SetLocaleFromHeader;
 use App\Containers\AppSection\Language\Models\Language;
 use App\Containers\AppSection\Language\Tasks\CreateLanguageTask;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -19,6 +20,8 @@ final class CreateLanguageAction extends ParentAction
         $language = $this->createLanguageTask->run($data);
 
         AuditLogRecorder::recordModel('created', $language);
+
+        SetLocaleFromHeader::clearCache();
 
         return $language;
     }
