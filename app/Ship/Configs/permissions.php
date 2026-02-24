@@ -10,6 +10,10 @@ return [
         'flag' => 'core.cms',
     ],
     [
+        'name' => 'Settings',
+        'flag' => 'settings.common',
+    ],
+    [
         'name' => 'Cronjob',
         'flag' => 'systems.cronjob',
         'parent_flag' => 'core.system',
