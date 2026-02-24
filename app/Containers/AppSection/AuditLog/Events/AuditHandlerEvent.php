@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\AuditLog\Events;
 
+use Illuminate\Http\UploadedFile;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
 
@@ -70,10 +71,38 @@ final class AuditHandlerEvent
                 }
 
                 $keys = array_values(array_unique(array_merge(self::DEFAULT_EXCLUDED_KEYS, $excluded)));
-                $this->input = $request->except($keys);
+                $this->input = $this->stripUnserializableValues($request->except($keys));
             }
         } catch (\Throwable) {
             // Fallback for CLI or errors
         }
+    }
+
+    /**
+     * Recursively remove UploadedFile instances and other unserializable values.
+     */
+    private function stripUnserializableValues(array $data): array
+    {
+        $clean = [];
+
+        foreach ($data as $key => $value) {
+            if ($value instanceof UploadedFile) {
+                $clean[$key] = '[file:' . $value->getClientOriginalName() . ']';
+                continue;
+            }
+
+            if (is_array($value)) {
+                $clean[$key] = $this->stripUnserializableValues($value);
+                continue;
+            }
+
+            if (is_object($value)) {
+                continue;
+            }
+
+            $clean[$key] = $value;
+        }
+
+        return $clean;
     }
 }
