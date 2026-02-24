@@ -40,7 +40,9 @@ yarn-error.log
 /.zed
 /.ai
 /.skills
+/.agents
 AGENTS.md
+CLAUDE.md
 /postman
 /.postman
 /.gemini
