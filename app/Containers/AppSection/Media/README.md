@@ -45,6 +45,31 @@ Common env keys:
 
 - Chunk cleanup scheduling config is under `media.chunk.clear`.
 - Recent/favorites metadata cache TTL is configured by `media.cache.user_item_ttl_seconds`.
+- **AuditLog & file uploads**: `AuditHandlerEvent` strips `UploadedFile` instances from request input before serialization to prevent queue failures. File names are preserved as `[file:filename.ext]` in audit logs.
+
+### Upload File Size Limits
+
+Default max upload file size: **50 MB** (`50 * 1024 * 1024 = 52428800 bytes`).
+
+Override via `.env`:
+
+```env
+# 50 MB (default)
+MEDIA_MAX_FILE_SIZE=52428800
+
+# 100 MB
+MEDIA_MAX_FILE_SIZE=104857600
+```
+
+**Important**: When changing the upload limit, also update server-level configs:
+
+| Layer | Setting | Example (50 MB) |
+|-------|---------|-----------------|
+| **PHP** | `upload_max_filesize` | `50M` |
+| **PHP** | `post_max_size` | `55M` (slightly larger) |
+| **Nginx** | `client_max_body_size` | `55m` |
+
+If any layer has a lower limit than `MEDIA_MAX_FILE_SIZE`, uploads will fail at that layer before reaching the app.
 
 ### Tests
 
@@ -60,4 +85,5 @@ php artisan test app/Containers/AppSection/Media/Tests
 
 ### Change Log
 
+- `2026-02-24`: Default max upload size changed from 1 MB to 50 MB. Added AuditLog serialization fix for file uploads.
 - `2026-02-07`: Added dedicated Media container documentation.
