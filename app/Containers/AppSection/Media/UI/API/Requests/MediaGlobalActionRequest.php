@@ -8,8 +8,18 @@ use Illuminate\Validation\Rule;
 final class MediaGlobalActionRequest extends ParentRequest
 {
     protected array $decode = ['selected.*.id', 'destination', 'item.id', 'imageId'];
-    
-    
+
+    protected function prepareForValidation(): void
+    {
+        // destination=0 means root folder, not a hashed ID
+        // hashids()->decode("0") returns [] which becomes null, causing "required" validation to fail
+        $destination = $this->input('destination');
+        if ($destination !== null && (int) $destination === 0) {
+            $this->merge(['destination' => 0]);
+            $this->decode = array_values(array_diff($this->decode, ['destination']));
+        }
+    }
+
     public function rules(): array
     {
         $rules = [
