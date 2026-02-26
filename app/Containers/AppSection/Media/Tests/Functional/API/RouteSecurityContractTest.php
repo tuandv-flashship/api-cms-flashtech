@@ -37,6 +37,10 @@ final class RouteSecurityContractTest extends ApiTestCase
             'auth:api',
         ]);
 
+        $this->assertRouteHasMiddleware('api_media_get_options', [
+            'auth:api',
+        ]);
+
         $this->assertRouteHasMiddleware('media.indirect.url', [
             'throttle:' . config('media.throttle.show_file', '120,1'),
         ]);
