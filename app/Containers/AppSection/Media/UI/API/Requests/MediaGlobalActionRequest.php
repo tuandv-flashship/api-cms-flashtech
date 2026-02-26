@@ -11,10 +11,11 @@ final class MediaGlobalActionRequest extends ParentRequest
 
     protected function prepareForValidation(): void
     {
-        // destination=0 means root folder, not a hashed ID
-        // hashids()->decode("0") returns [] which becomes null, causing "required" validation to fail
-        $destination = $this->input('destination');
-        if ($destination !== null && (int) $destination === 0) {
+        // destination=0 means root folder, not a hashed ID.
+        // Must use $this->get() (Symfony's ParameterBag) to bypass Apiato's input() override,
+        // because hashids()->decode("0") returns null, making $this->input('destination') = null.
+        $rawDestination = $this->get('destination');
+        if ($rawDestination !== null && (string) $rawDestination === '0') {
             $this->merge(['destination' => 0]);
             $this->decode = array_values(array_diff($this->decode, ['destination']));
         }
