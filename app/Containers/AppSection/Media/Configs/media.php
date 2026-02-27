@@ -55,6 +55,7 @@ return [
             'application/excel',
             'application/x-excel',
             'application/x-msexcel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'text/plain',
             'application/msword',
             'text/csv',
