@@ -44,6 +44,7 @@ final class PostTransformer extends ParentTransformer
             'slug' => $post->slug,
             'url' => $post->url,
             'seo_meta' => $post->getMeta('seo_meta'),
+            'banner_image' => $mediaService->getImageUrl($post->getMeta('banner_image')),
             'author_id' => $this->hashId($post->author_id),
             'author_type' => $post->author_type,
             'category_ids' => $post->categories->map(fn ($category) => $category->getHashedKey())->values()->all(),

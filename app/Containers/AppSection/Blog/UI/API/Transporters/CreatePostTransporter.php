@@ -13,6 +13,7 @@ use App\Ship\Parents\Transporters\Transporter;
  * @property string|null $status
  * @property bool|null $is_featured
  * @property string|null $image
+ * @property string|null $banner_image
  * @property string|null $format_type
  * @property array<int>|null $category_ids
  * @property array<int>|null $tag_ids
@@ -94,5 +95,13 @@ final class CreatePostTransporter extends Transporter
     public function getCustomFields(): array|string|null
     {
         return $this->custom_fields;
+    }
+
+    /**
+     * Get banner image path
+     */
+    public function getBannerImage(): ?string
+    {
+        return $this->banner_image;
     }
 }

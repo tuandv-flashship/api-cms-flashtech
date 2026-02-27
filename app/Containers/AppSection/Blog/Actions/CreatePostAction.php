@@ -68,6 +68,11 @@ final class CreatePostAction extends ParentAction
                 $post->setMeta('seo_meta', $seoMeta);
             }
 
+            $bannerImage = $data->getBannerImage();
+            if ($bannerImage !== null) {
+                $post->setMeta('banner_image', $bannerImage);
+            }
+
             $customFields = $data->getCustomFields();
             if ($customFields !== null) {
                 $this->customFieldService->saveCustomFieldsForModel($post, $customFields);

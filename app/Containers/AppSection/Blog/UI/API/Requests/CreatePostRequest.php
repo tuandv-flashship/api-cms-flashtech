@@ -42,6 +42,7 @@ final class CreatePostRequest extends ParentRequest
             'status' => ['nullable', Rule::enum(ContentStatus::class)],
             'is_featured' => ['nullable', 'boolean'],
             'image' => ['nullable', 'string', 'max:255'],
+            'banner_image' => ['nullable', 'string', 'max:255'],
             'format_type' => ['nullable', 'string', 'max:30', Rule::in(array_keys(PostFormat::all()))],
             'category_ids' => ['nullable', 'array'],
             'category_ids.*' => ['integer', 'exists:categories,id'],
