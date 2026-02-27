@@ -43,6 +43,7 @@ final class UpdatePostRequest extends ParentRequest
             'status' => ['sometimes', Rule::enum(ContentStatus::class)],
             'is_featured' => ['sometimes', 'boolean'],
             'image' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'banner_image' => ['sometimes', 'nullable', 'string', 'max:255'],
             'format_type' => ['sometimes', 'nullable', 'string', 'max:30', Rule::in(array_keys(PostFormat::all()))],
             'category_ids' => ['sometimes', 'array'],
             'category_ids.*' => ['integer', 'exists:categories,id'],
