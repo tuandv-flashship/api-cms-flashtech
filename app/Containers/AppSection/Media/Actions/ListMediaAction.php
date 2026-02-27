@@ -85,8 +85,20 @@ final class ListMediaAction extends ParentAction
         $files = $fileQuery->paginate($perPage, ['*'], 'page', $page);
         $folders = $folderQuery->get();
 
-        $fileTransformer = new MediaFileTransformer($this->mediaService, $includeSignedUrl);
-        $folderTransformer = new MediaFolderTransformer();
+        $favoriteItems = collect($this->mediaService->getFavoriteItems($userId));
+        $favoriteFileIds = $favoriteItems
+            ->filter(fn (array $item) => ! filter_var($item['is_folder'] ?? false, FILTER_VALIDATE_BOOLEAN))
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+        $favoriteFolderIds = $favoriteItems
+            ->filter(fn (array $item) => filter_var($item['is_folder'] ?? false, FILTER_VALIDATE_BOOLEAN))
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $fileTransformer = new MediaFileTransformer($this->mediaService, $includeSignedUrl, $favoriteFileIds);
+        $folderTransformer = new MediaFolderTransformer($favoriteFolderIds);
 
         return [
             'files' => $files->getCollection()->map(fn (MediaFile $file) => $fileTransformer->transform($file))->values(),

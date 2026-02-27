@@ -8,9 +8,13 @@ use App\Ship\Parents\Transformers\Transformer as ParentTransformer;
 
 final class MediaFileTransformer extends ParentTransformer
 {
+    /**
+     * @param array<int, int> $favoriteFileIds
+     */
     public function __construct(
         private readonly MediaService $mediaService,
         private readonly bool $includeSignedUrl = false,
+        private readonly array $favoriteFileIds = [],
     )
     {
     }
@@ -21,6 +25,7 @@ final class MediaFileTransformer extends ParentTransformer
 
         $data = [
             'id' => $file->getHashedKey(),
+            'is_favorite' => in_array((int) $file->getKey(), $this->favoriteFileIds, true),
             'name' => $file->name,
             'basename' => $file->basename,
             'url' => $file->url,
