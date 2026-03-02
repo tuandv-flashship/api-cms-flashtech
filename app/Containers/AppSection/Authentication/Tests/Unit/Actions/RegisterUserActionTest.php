@@ -31,6 +31,7 @@ final class RegisterUserActionTest extends UnitTestCase
         $this->assertSame(strtolower($data['email']), $user->email);
         $this->assertTrue(Hash::check($data['password'], $user->password));
         $this->assertNull($user->email_verified_at);
+        $this->assertSame('pending', $user->status->value);
         Event::assertDispatched(Registered::class, static fn (Registered $event) => $event->user->is($user));
     }
 }

@@ -4,6 +4,7 @@ namespace App\Containers\AppSection\User\Tests\Functional\API;
 
 use App\Containers\AppSection\User\Tests\Functional\ApiTestCase;
 use App\Containers\AppSection\User\UI\API\Controllers\AdminBootstrapController;
+use App\Containers\AppSection\User\UI\API\Controllers\CreateUserController;
 use App\Containers\AppSection\User\UI\API\Controllers\DeleteUserController;
 use App\Containers\AppSection\User\UI\API\Controllers\FindUserByIdController;
 use App\Containers\AppSection\User\UI\API\Controllers\GetUserProfileController;
@@ -19,6 +20,7 @@ final class RouteSecurityContractTest extends ApiTestCase
     {
         $authOnlyControllers = [
             AdminBootstrapController::class,
+            CreateUserController::class,
             DeleteUserController::class,
             FindUserByIdController::class,
             GetUserProfileController::class,
