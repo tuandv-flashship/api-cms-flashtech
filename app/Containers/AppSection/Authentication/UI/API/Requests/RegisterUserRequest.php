@@ -23,6 +23,8 @@ final class RegisterUserRequest extends ParentRequest
             'name' => 'min:2|max:50',
             'gender' => Rule::enum(Gender::class),
             'birth' => 'date',
+            'phone' => ['string', 'max:20', 'nullable'],
+            'description' => ['string', 'max:500', 'nullable'],
         ];
     }
 }

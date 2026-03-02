@@ -7,7 +7,8 @@
  *
  * @api                {post} /v1/register Register User
  *
- * @apiDescription     Register a new user
+ * @apiDescription     Register a new user. New self-registered users are created with
+ *                     default status `pending` and require admin activation.
  *
  * @apiVersion         1.0.0
  *
@@ -31,6 +32,8 @@
  * @apiParam           {String} [name] min:2|max:50
  * @apiParam           {String="male","female","unspecified"} [gender]
  * @apiParam           {Date} [birth] format: Y-m-d / e.g. 2015-10-15
+ * @apiParam           {String} [phone] max:20
+ * @apiParam           {String} [description] max:500
  *
  * @apiUse             UserSuccessSingleResponse
  */

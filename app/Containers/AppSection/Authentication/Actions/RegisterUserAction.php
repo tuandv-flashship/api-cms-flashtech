@@ -2,6 +2,7 @@
 
 namespace App\Containers\AppSection\Authentication\Actions;
 
+use App\Containers\AppSection\User\Enums\UserStatus;
 use App\Containers\AppSection\User\Models\User;
 use App\Containers\AppSection\User\Tasks\CreateUserTask;
 use App\Ship\Parents\Actions\Action as ParentAction;
@@ -16,6 +17,8 @@ final class RegisterUserAction extends ParentAction
 
     public function run(array $data): User
     {
+        $data['status'] = UserStatus::PENDING->value;
+
         $user = $this->createUserTask->run($data);
 
         event(new Registered($user));

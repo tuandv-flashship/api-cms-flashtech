@@ -19,6 +19,8 @@ final class RegisterUserController extends ApiController
             'name',
             'gender',
             'birth',
+            'phone',
+            'description',
         ]));
 
         return Response::create($user, UserTransformer::class)->ok();

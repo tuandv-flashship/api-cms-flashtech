@@ -22,6 +22,8 @@ final class RegisterUserTest extends ApiTestCase
         $data = [
             'email' => 'ganldalf@the.grey',
             'password' => 's3cr3tPa$$',
+            'phone' => '+84901234567',
+            'description' => 'Self registered user',
         ];
 
         $response = $this->postJson(URL::action(RegisterUserController::class), $data);
@@ -30,6 +32,9 @@ final class RegisterUserTest extends ApiTestCase
         $response->assertJson(
             static fn (AssertableJson $json): AssertableJson => $json->has('data')
                 ->where('data.email', $data['email'])
+                ->where('data.status', 'pending')
+                ->where('data.phone', $data['phone'])
+                ->where('data.description', $data['description'])
                 ->etc(),
         );
         $user = User::find(hashids()->decodeOrFail($response->json('data.id')));
