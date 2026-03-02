@@ -12,6 +12,9 @@ final class GetUserProfileController extends ApiController
 {
     public function __invoke(): JsonResponse
     {
-        return Response::create(Auth::user(), UserTransformer::class)->ok();
+        $user = Auth::user();
+        $user->load('avatar');
+
+        return Response::create($user, UserTransformer::class)->ok();
     }
 }

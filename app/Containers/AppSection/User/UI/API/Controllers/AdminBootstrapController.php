@@ -4,6 +4,8 @@ namespace App\Containers\AppSection\User\UI\API\Controllers;
 
 use Apiato\Support\Facades\Response;
 use App\Containers\AppSection\Language\Models\Language;
+use App\Containers\AppSection\User\Models\User;
+use App\Containers\AppSection\User\UI\API\Transformers\UserTransformer;
 use App\Ship\Parents\Controllers\ApiController;
 use App\Ship\Supports\AdminMenu;
 use Illuminate\Http\JsonResponse;
@@ -18,11 +20,16 @@ final class AdminBootstrapController extends ApiController
 
     public function __invoke(): JsonResponse
     {
-        $user = Auth::user();
-        if ($user === null) {
+        $authenticatedUser = Auth::user();
+        if ($authenticatedUser === null) {
             abort(401);
         }
 
+        $user = User::query()
+            ->findOrFail($authenticatedUser->getAuthIdentifier())
+            ->load('avatar');
+
+        $profileData = (new UserTransformer())->transform($user);
         $permissions = $user->getAllPermissions()->pluck('name')->values()->all();
         $roles = $user->roles->pluck('name')->values()->all();
 
@@ -34,11 +41,7 @@ final class AdminBootstrapController extends ApiController
 
         return Response::create()->ok([
             'data' => [
-                'user' => [
-                    'id' => $user->getHashedKey(),
-                    'name' => $user->name,
-                    'email' => $user->email,
-                ],
+                'user' => $profileData,
                 'roles' => $roles,
                 'permissions' => $permissions,
                 'admin_menu' => $this->adminMenu->forUser($user),

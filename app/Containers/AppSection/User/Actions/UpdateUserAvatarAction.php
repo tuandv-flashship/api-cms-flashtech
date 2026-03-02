@@ -24,14 +24,14 @@ final class UpdateUserAvatarAction extends ParentAction
     {
         $folder = MediaFolder::query()
             ->where('name', self::AVATAR_FOLDER_NAME)
-            ->whereNull('parent_id')
+            ->where('parent_id', 0)
             ->first();
 
         if (!$folder) {
             $folder = MediaFolder::query()->create([
                 'name' => self::AVATAR_FOLDER_NAME,
                 'slug' => self::AVATAR_FOLDER_NAME,
-                'parent_id' => null,
+                'parent_id' => 0,
                 'user_id' => 0,
             ]);
         }

@@ -4,6 +4,7 @@ namespace App\Containers\AppSection\User\UI\API\Requests;
 
 use App\Containers\AppSection\Authorization\Enums\Role as RoleEnum;
 use App\Containers\AppSection\User\Enums\Gender;
+use App\Containers\AppSection\User\Enums\UserStatus;
 use App\Containers\AppSection\User\Models\User;
 use App\Ship\Parents\Requests\Request as ParentRequest;
 use Illuminate\Validation\Rule;
@@ -25,6 +26,10 @@ final class UpdateUserRequest extends ParentRequest
             'birth' => ['date', 'nullable'],
             'phone' => ['string', 'max:20', 'nullable'],
             'description' => ['string', 'max:500', 'nullable'],
+            'status' => [
+                Rule::excludeIf(!$isAdmin),
+                Rule::enum(UserStatus::class),
+            ],
             'current_password' => [
                 Rule::requiredIf(fn (): bool => !$isAdmin && !is_null($this->user()->password) && $this->filled('new_password')),
                 'current_password:api',
