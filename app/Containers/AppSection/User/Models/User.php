@@ -5,10 +5,13 @@ namespace App\Containers\AppSection\User\Models;
 use App\Containers\AppSection\Authorization\Enums\Role as RoleEnum;
 use App\Containers\AppSection\Device\Enums\DeviceOwnerType;
 use App\Containers\AppSection\Device\Models\Device;
+use App\Containers\AppSection\Media\Models\MediaFile;
 use App\Containers\AppSection\User\Data\Collections\UserCollection;
 use App\Containers\AppSection\User\Enums\Gender;
+use App\Containers\AppSection\User\Enums\UserStatus;
 use App\Ship\Parents\Models\UserModel as ParentUserModel;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class User extends ParentUserModel
@@ -19,6 +22,10 @@ final class User extends ParentUserModel
         'password',
         'gender',
         'birth',
+        'avatar_id',
+        'phone',
+        'description',
+        'status',
     ];
 
     protected $hidden = [
@@ -31,7 +38,13 @@ final class User extends ParentUserModel
         'password' => 'hashed',
         'gender' => Gender::class,
         'birth' => 'immutable_date',
+        'status' => UserStatus::class,
     ];
+
+    public function avatar(): BelongsTo
+    {
+        return $this->belongsTo(MediaFile::class, 'avatar_id');
+    }
 
     public function newCollection(array $models = []): UserCollection
     {
