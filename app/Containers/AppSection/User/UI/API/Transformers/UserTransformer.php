@@ -27,6 +27,12 @@ class UserTransformer extends ParentTransformer
             'email_verified_at' => $user->email_verified_at,
             'gender' => $user->gender,
             'birth' => $user->birth,
+            'phone' => $user->phone,
+            'description' => $user->description,
+            'status' => $user->status,
+            'avatar_url' => $user->relationLoaded('avatar') && $user->avatar
+                ? $user->avatar->preview_url
+                : null,
         ];
     }
 

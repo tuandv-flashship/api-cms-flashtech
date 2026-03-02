@@ -15,6 +15,6 @@ final class FindUserByIdAction extends ParentAction
 
     public function run(int $id): User
     {
-        return $this->findUserByIdTask->run($id);
+        return $this->findUserByIdTask->run($id)->load('avatar');
     }
 }

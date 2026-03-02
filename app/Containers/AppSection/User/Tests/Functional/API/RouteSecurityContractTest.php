@@ -3,11 +3,13 @@
 namespace App\Containers\AppSection\User\Tests\Functional\API;
 
 use App\Containers\AppSection\User\Tests\Functional\ApiTestCase;
+use App\Containers\AppSection\User\UI\API\Controllers\AdminBootstrapController;
 use App\Containers\AppSection\User\UI\API\Controllers\DeleteUserController;
 use App\Containers\AppSection\User\UI\API\Controllers\FindUserByIdController;
 use App\Containers\AppSection\User\UI\API\Controllers\GetUserProfileController;
 use App\Containers\AppSection\User\UI\API\Controllers\ListUsersController;
 use App\Containers\AppSection\User\UI\API\Controllers\UpdatePasswordController;
+use App\Containers\AppSection\User\UI\API\Controllers\UpdateUserAvatarController;
 use App\Containers\AppSection\User\UI\API\Controllers\UpdateUserController;
 use Illuminate\Routing\Route;
 
@@ -16,11 +18,13 @@ final class RouteSecurityContractTest extends ApiTestCase
     public function testUserRoutesKeepAuthMiddlewareContract(): void
     {
         $authOnlyControllers = [
+            AdminBootstrapController::class,
             DeleteUserController::class,
             FindUserByIdController::class,
             GetUserProfileController::class,
             ListUsersController::class,
             UpdatePasswordController::class,
+            UpdateUserAvatarController::class,
             UpdateUserController::class,
         ];
 
