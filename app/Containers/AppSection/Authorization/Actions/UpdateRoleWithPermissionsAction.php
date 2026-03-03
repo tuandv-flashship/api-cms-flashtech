@@ -3,16 +3,19 @@
 namespace App\Containers\AppSection\Authorization\Actions;
 
 use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
+use App\Containers\AppSection\Authorization\Data\Repositories\RoleRepository;
 use App\Containers\AppSection\Authorization\Models\Role;
 use App\Containers\AppSection\Authorization\Tasks\FindRoleTask;
 use App\Containers\AppSection\Authorization\Tasks\UpdateRoleTask;
 use App\Ship\Parents\Actions\Action as ParentAction;
+use Prettus\Repository\Events\RepositoryEntityUpdated;
 
 final class UpdateRoleWithPermissionsAction extends ParentAction
 {
     public function __construct(
         private readonly FindRoleTask $findRoleTask,
         private readonly UpdateRoleTask $updateRoleTask,
+        private readonly RoleRepository $roleRepository,
     ) {
     }
 
@@ -30,7 +33,10 @@ final class UpdateRoleWithPermissionsAction extends ParentAction
 
         if ($permissionIds !== null) {
             $role->syncPermissions($permissionIds);
-            $role = $role->refresh();
+            $role->load('permissions');
+
+            // Clear the repository cache so subsequent queries return fresh data
+            event(new RepositoryEntityUpdated($this->roleRepository, $role));
         }
 
         if ($shouldLog) {
