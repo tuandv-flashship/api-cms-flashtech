@@ -27,11 +27,13 @@ final class AdminBootstrapController extends ApiController
 
         $user = User::query()
             ->findOrFail($authenticatedUser->getAuthIdentifier())
-            ->load('avatar');
+            ->load(['avatar', 'roles']);
 
         $profileData = (new UserTransformer())->transform($user);
         $permissions = $user->getAllPermissions()->pluck('name')->values()->all();
         $roles = $user->roles->pluck('name')->values()->all();
+
+        $appUrl = config('app.url');
 
         $languages = Language::query()
             ->orderBy('lang_order')
@@ -52,7 +54,7 @@ final class AdminBootstrapController extends ApiController
                         'locale' => $lang->lang_locale,
                         'code' => $lang->lang_code,
                         'flag' => $lang->lang_flag,
-                        'flag_img' => env('APP_URL') . '/images/flags/' . $lang->lang_flag . '.svg',
+                        'flag_img' => $appUrl . '/images/flags/' . $lang->lang_flag . '.svg',
                         'is_default' => $lang->lang_is_default,
                         'is_rtl' => $lang->lang_is_rtl,
                     ])->all(),
