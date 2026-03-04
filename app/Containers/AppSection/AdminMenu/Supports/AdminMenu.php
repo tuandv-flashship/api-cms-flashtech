@@ -157,36 +157,23 @@ final class AdminMenu
      */
     private function toNode(AdminMenuItem $item): array
     {
-        $node = [
+        // Translated values via HasLanguageTranslations accessor.
+        $translatedName = $item->name;
+        $translatedDesc = $item->description;
+
+        return [
             'id' => $item->key,
+            'key' => $item->key,
             'name' => $item->getRawOriginal('name'),
+            'title' => $translatedName ?? $item->getRawOriginal('name'),
             'icon' => $item->icon,
             'route' => $item->route,
             'permissions' => $item->permissions,
+            'children_display' => $item->children_display,
+            'description' => $translatedDesc ?? $item->getRawOriginal('description'),
             'priority' => $item->priority,
+            'is_active' => $item->is_active,
         ];
-
-        if ($item->children_display !== 'sidebar') {
-            $node['children_display'] = $item->children_display;
-        }
-
-        $rawDesc = $item->getRawOriginal('description');
-        if ($rawDesc !== null && $rawDesc !== '') {
-            $node['description'] = $rawDesc;
-        }
-
-        // Translated values via HasLanguageTranslations accessor.
-        $translatedName = $item->name;
-        if ($translatedName !== null) {
-            $node['title'] = $translatedName;
-        }
-
-        $translatedDesc = $item->description;
-        if ($translatedDesc !== null) {
-            $node['description'] = $translatedDesc;
-        }
-
-        return $node;
     }
 
     // -------------------------------------------------------------------------
