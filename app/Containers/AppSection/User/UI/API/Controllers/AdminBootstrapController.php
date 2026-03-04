@@ -7,7 +7,7 @@ use App\Containers\AppSection\Language\Models\Language;
 use App\Containers\AppSection\User\Models\User;
 use App\Containers\AppSection\User\UI\API\Transformers\UserTransformer;
 use App\Ship\Parents\Controllers\ApiController;
-use App\Ship\Supports\AdminMenu;
+use App\Containers\AppSection\AdminMenu\Supports\AdminMenu;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 

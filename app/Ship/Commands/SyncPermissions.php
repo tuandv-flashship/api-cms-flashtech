@@ -3,7 +3,7 @@
 namespace App\Ship\Commands;
 
 use Apiato\Core\Console\Command as ParentCommand;
-use App\Ship\Supports\AdminMenu;
+use App\Containers\AppSection\AdminMenu\Supports\AdminMenu;
 use App\Ship\Supports\PermissionSyncer;
 
 final class SyncPermissions extends ParentCommand
