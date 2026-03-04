@@ -6,7 +6,7 @@ use App\Containers\AppSection\AuditLog\Supports\AuditLogRecorder;
 use App\Containers\AppSection\Authentication\Values\RefreshToken;
 use App\Containers\AppSection\User\Models\User;
 use App\Ship\Parents\Actions\Action as ParentAction;
-use App\Ship\Supports\AdminMenu;
+use App\Containers\AppSection\AdminMenu\Supports\AdminMenu;
 use Illuminate\Support\Facades\Cookie as CookieFacade;
 use Symfony\Component\HttpFoundation\Cookie;
 

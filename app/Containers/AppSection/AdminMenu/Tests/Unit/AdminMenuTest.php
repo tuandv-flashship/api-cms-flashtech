@@ -1,15 +1,25 @@
 <?php
 
-namespace App\Ship\Tests\Unit\Supports;
+namespace App\Containers\AppSection\AdminMenu\Tests\Unit;
 
-use App\Ship\Supports\AdminMenu;
-use App\Ship\Tests\ShipTestCase;
+use App\Containers\AppSection\AdminMenu\Supports\AdminMenu;
+use App\Containers\AppSection\AdminMenu\Tests\ContainerTestCase;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\Cache;
 use PHPUnit\Framework\Attributes\CoversClass;
 
 #[CoversClass(AdminMenu::class)]
-final class AdminMenuTest extends ShipTestCase
+final class AdminMenuTest extends ContainerTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Clear cache to prevent pollution between tests.
+        Cache::flush();
+        config()->set('admin-menu-container.cache_ttl_seconds', 0);
+    }
+
     public function testParentNodeIsHiddenWhenNoChildrenAreAllowed(): void
     {
         config()->set('admin-menu', [
@@ -86,6 +96,9 @@ final class AdminMenuTest extends ShipTestCase
     }
 }
 
+/**
+ * @internal
+ */
 final class FakeAdminMenuUser implements Authenticatable
 {
     /**
