@@ -12,6 +12,10 @@ return [
             'command' => 'config:cache',
             'options' => [],
         ],
+        'db_seed' => [
+            'command' => 'db:seed',
+            'options' => [],
+        ],
         'migrate' => [
             'command' => 'migrate',
             'options' => [
