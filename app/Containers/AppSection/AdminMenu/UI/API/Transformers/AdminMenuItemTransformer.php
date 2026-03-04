@@ -30,10 +30,13 @@ final class AdminMenuItemTransformer extends TransformerAbstract
      */
     private function transformModel(AdminMenuItem $item): array
     {
+        $translatedName = $item->name;
+
         $data = [
             'id' => $item->getHashedKey(),
             'key' => $item->key,
-            'name' => $item->name,
+            'name' => $item->getRawOriginal('name'),
+            'title' => $translatedName ?? $item->getRawOriginal('name'),
             'icon' => $item->icon,
             'route' => $item->route,
             'permissions' => $item->permissions,
@@ -63,6 +66,7 @@ final class AdminMenuItemTransformer extends TransformerAbstract
             'id' => $item['id'] ?? null,
             'key' => $item['key'] ?? null,
             'name' => $item['name'] ?? null,
+            'title' => $item['title'] ?? $item['name'] ?? null,
             'icon' => $item['icon'] ?? null,
             'route' => $item['route'] ?? null,
             'permissions' => $item['permissions'] ?? null,
