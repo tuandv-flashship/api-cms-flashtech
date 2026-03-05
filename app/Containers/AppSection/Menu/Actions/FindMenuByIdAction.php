@@ -18,7 +18,7 @@ final class FindMenuByIdAction extends ParentAction
 
     public function run(FindMenuByIdRequest $request): Menu
     {
-        $menu = $this->findMenuTask->run((int) $request->id, ['locations', 'nodes.translations']);
+        $menu = $this->findMenuTask->run((int) $request->id, ['locations', 'nodes']);
         $tree = $this->buildMenuTreeTask->run($menu->nodes);
 
         $menu->setRelation('nodes', $tree);

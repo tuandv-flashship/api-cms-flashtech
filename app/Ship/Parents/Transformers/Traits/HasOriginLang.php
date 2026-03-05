@@ -2,7 +2,7 @@
 
 namespace App\Ship\Parents\Transformers\Traits;
 
-use App\Ship\Supports\Language;
+use App\Containers\AppSection\Language\Supports\LanguageLocaleCache;
 
 trait HasOriginLang
 {
@@ -12,10 +12,7 @@ trait HasOriginLang
      */
     protected function getOriginLang(): string
     {
-        $defaultLanguage = Language::getDefaultLanguage();
-
-        return $defaultLanguage['lang_code']
-            ?? $defaultLanguage['code']
+        return LanguageLocaleCache::getDefaultLocaleCode()
             ?? config('app.locale', 'en');
     }
 }

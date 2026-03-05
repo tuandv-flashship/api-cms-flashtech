@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class SlugTranslation extends ParentModel
 {
+    /**
+     * This model uses a composite primary key (lang_code + FK) defined in the migration.
+     * Eloquent does not support composite PKs natively, so $primaryKey is null.
+     * Do NOT use find(), save() on existing records, or refresh().
+     * Use updateOrCreate() or relation queries instead.
+     */
     public $timestamps = false;
     public $incrementing = false;
     protected $primaryKey = null;

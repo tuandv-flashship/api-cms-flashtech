@@ -41,7 +41,7 @@ final class CreateMenuAction extends ParentAction
 
         MenuSavedEvent::dispatch((int) $menu->getKey());
 
-        $menu = $this->findMenuTask->run((int) $menu->getKey(), ['locations', 'nodes.translations']);
+        $menu = $this->findMenuTask->run((int) $menu->getKey(), ['locations', 'nodes']);
         $menu->setRelation('nodes', $this->buildMenuTreeTask->run($menu->nodes));
 
         return $menu;

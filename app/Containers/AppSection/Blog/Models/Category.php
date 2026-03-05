@@ -84,11 +84,6 @@ final class Category extends ParentModel
         return $this->children()->wherePublished()->with('activeChildren');
     }
 
-    public function translations(): HasMany
-    {
-        return $this->hasMany(CategoryTranslation::class, 'categories_id');
-    }
-
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', ContentStatus::PUBLISHED);
@@ -124,15 +119,5 @@ final class Category extends ParentModel
         }
 
         return $parents;
-    }
-
-    public function getNameAttribute(mixed $value): mixed
-    {
-        return $this->getTranslatedAttribute('name', $value);
-    }
-
-    public function getDescriptionAttribute(mixed $value): mixed
-    {
-        return $this->getTranslatedAttribute('description', $value);
     }
 }

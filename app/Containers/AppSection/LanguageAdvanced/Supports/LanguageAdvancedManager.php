@@ -2,7 +2,7 @@
 
 namespace App\Containers\AppSection\LanguageAdvanced\Supports;
 
-use App\Containers\AppSection\Language\Models\Language;
+use App\Containers\AppSection\Language\Supports\LanguageLocaleCache;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -13,7 +13,6 @@ final class LanguageAdvancedManager
 {
     private const LOCALE_CACHE_KEY = '_language_advanced_locale';
     private const DEFAULT_LOCALE_CACHE_KEY = '_language_advanced_default_locale';
-    private const DEFAULT_LOCALE_CODE_CACHE_KEY = '_language_advanced_default_locale_code';
 
     public static function clearLocaleCache(): void
     {
@@ -21,7 +20,6 @@ final class LanguageAdvancedManager
 
         $request->attributes->remove(self::LOCALE_CACHE_KEY);
         $request->attributes->remove(self::DEFAULT_LOCALE_CACHE_KEY);
-        $request->attributes->remove(self::DEFAULT_LOCALE_CODE_CACHE_KEY);
     }
 
     public static function setTranslationLocale(string $langCode): void
@@ -71,33 +69,12 @@ final class LanguageAdvancedManager
 
     public static function normalizeLanguageCode(?string $value): ?string
     {
-        if (! $value) {
-            return null;
-        }
-
-        $language = Language::query()
-            ->where('lang_code', $value)
-            ->orWhere('lang_locale', $value)
-            ->first();
-
-        return $language?->lang_code;
+        return LanguageLocaleCache::normalizeLanguageCode($value);
     }
 
     public static function getDefaultLocaleCode(): ?string
     {
-        $request = request();
-
-        if ($request->attributes->has(self::DEFAULT_LOCALE_CODE_CACHE_KEY)) {
-            return $request->attributes->get(self::DEFAULT_LOCALE_CODE_CACHE_KEY);
-        }
-
-        $code = Language::query()
-            ->where('lang_is_default', true)
-            ->value('lang_code');
-
-        $request->attributes->set(self::DEFAULT_LOCALE_CODE_CACHE_KEY, $code);
-
-        return $code;
+        return LanguageLocaleCache::getDefaultLocaleCode();
     }
 
     public static function isSupported(Model|string|null $model): bool

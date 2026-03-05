@@ -14,7 +14,6 @@ use App\Ship\Casts\SafeContentCms;
 use App\Ship\Parents\Models\Model as ParentModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class Page extends ParentModel
 {
@@ -68,28 +67,8 @@ final class Page extends ParentModel
         return $this->belongsTo(User::class, 'user_id')->withDefault();
     }
 
-    public function translations(): HasMany
-    {
-        return $this->hasMany(PageTranslation::class, 'pages_id');
-    }
-
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', ContentStatus::PUBLISHED);
-    }
-
-    public function getNameAttribute(mixed $value): mixed
-    {
-        return $this->getTranslatedAttribute('name', $value);
-    }
-
-    public function getDescriptionAttribute(mixed $value): mixed
-    {
-        return $this->getTranslatedAttribute('description', $value);
-    }
-
-    public function getContentAttribute(mixed $value): mixed
-    {
-        return $this->getTranslatedAttribute('content', $value);
     }
 }

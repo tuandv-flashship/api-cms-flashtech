@@ -17,6 +17,8 @@ final class ListLanguagesRequest extends ParentRequest
 
     public function authorize(): bool
     {
-        return $this->user()->can('viewAny', Language::class);
+        // Allow public access (ListLanguages.v1.public.php has no auth middleware)
+        // When authenticated, check permission
+        return ! $this->user() || $this->user()->can('viewAny', Language::class);
     }
 }

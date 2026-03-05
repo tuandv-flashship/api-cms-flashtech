@@ -11,7 +11,7 @@ final class ListPostsRequest extends ParentRequest
         'category_ids.*',
         'tag_ids.*',
     ];
-    
+
     
     public function rules(): array
     {

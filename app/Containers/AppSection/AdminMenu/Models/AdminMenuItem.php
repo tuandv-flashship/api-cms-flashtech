@@ -44,19 +44,4 @@ final class AdminMenuItem extends ParentModel
     {
         return $this->hasMany(self::class, 'parent_id')->orderBy('priority');
     }
-
-    public function translations(): HasMany
-    {
-        return $this->hasMany(AdminMenuItemTranslation::class, 'admin_menu_items_id');
-    }
-
-    public function getNameAttribute(mixed $value): mixed
-    {
-        return $this->getTranslatedAttribute('name', $value);
-    }
-
-    public function getDescriptionAttribute(mixed $value): mixed
-    {
-        return $this->getTranslatedAttribute('description', $value);
-    }
 }

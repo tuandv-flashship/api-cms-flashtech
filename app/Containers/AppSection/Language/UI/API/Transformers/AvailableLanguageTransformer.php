@@ -19,6 +19,7 @@ final class AvailableLanguageTransformer extends ParentTransformer
             'lang_code' => $language['lang_code'] ?? null,
             'lang_flag' => $language['lang_flag'] ?? null,
             'lang_flag_img' => env('APP_URL') . '/images/flags/' . ($language['lang_flag'] ?? '-') . '.svg',
+            'lang_is_default' => (bool) ($language['lang_is_default'] ?? false),
             'lang_is_rtl' => (bool) ($language['lang_is_rtl'] ?? false),
         ];
     }

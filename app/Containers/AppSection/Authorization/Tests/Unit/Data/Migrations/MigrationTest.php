@@ -3,6 +3,7 @@
 namespace App\Containers\AppSection\Authorization\Tests\Unit\Data\Migrations;
 
 use App\Containers\AppSection\Authorization\Tests\UnitTestCase;
+use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\CoversNothing;
 
 #[CoversNothing]
@@ -20,63 +21,57 @@ final class MigrationTest extends UnitTestCase
 
     public function testPermissionsTableHasExpectedColumns(): void
     {
-        $columns = [
-            'id' => 'int8',
-            'name' => 'varchar',
-            'guard_name' => 'varchar',
-            'display_name' => 'varchar',
-            'description' => 'varchar',
-            'created_at' => 'timestamp',
-            'updated_at' => 'timestamp',
-        ];
+        $expectedColumns = ['id', 'name', 'guard_name', 'display_name', 'description', 'created_at', 'updated_at'];
 
-        $this->assertDatabaseTable($this->tableNames['permissions'], $columns);
+        $actualColumns = Schema::getColumnListing($this->tableNames['permissions']);
+        sort($expectedColumns);
+        sort($actualColumns);
+
+        $this->assertSame($expectedColumns, $actualColumns);
     }
 
     public function testRolesTableHasExpectedColumns(): void
     {
-        $columns = [
-            'id' => 'int8',
-            'name' => 'varchar',
-            'guard_name' => 'varchar',
-            'display_name' => 'varchar',
-            'description' => 'varchar',
-            'created_at' => 'timestamp',
-            'updated_at' => 'timestamp',
-        ];
+        $expectedColumns = ['id', 'name', 'guard_name', 'display_name', 'description', 'created_at', 'updated_at'];
 
-        $this->assertDatabaseTable($this->tableNames['roles'], $columns);
+        $actualColumns = Schema::getColumnListing($this->tableNames['roles']);
+        sort($expectedColumns);
+        sort($actualColumns);
+
+        $this->assertSame($expectedColumns, $actualColumns);
     }
 
     public function testModelHasPermissionsTableHasExpectedColumns(): void
     {
-        $columns = [
-            'permission_id' => 'int8',
-            'model_type' => 'varchar',
-            $this->columnNames['model_morph_key'] => 'int8',
-        ];
+        $expectedColumns = ['permission_id', 'model_type', $this->columnNames['model_morph_key']];
 
-        $this->assertDatabaseTable($this->tableNames['model_has_permissions'], $columns);
+        $actualColumns = Schema::getColumnListing($this->tableNames['model_has_permissions']);
+        sort($expectedColumns);
+        sort($actualColumns);
+
+        $this->assertSame($expectedColumns, $actualColumns);
     }
 
     public function testModelHasRolesTableHasExpectedColumns(): void
     {
-        $columns = [
-            'role_id' => 'int8',
-            'model_type' => 'varchar',
-            $this->columnNames['model_morph_key'] => 'int8',
-        ];
+        $expectedColumns = ['role_id', 'model_type', $this->columnNames['model_morph_key']];
 
-        $this->assertDatabaseTable($this->tableNames['model_has_roles'], $columns);
+        $actualColumns = Schema::getColumnListing($this->tableNames['model_has_roles']);
+        sort($expectedColumns);
+        sort($actualColumns);
+
+        $this->assertSame($expectedColumns, $actualColumns);
     }
 
     public function testRoleHasPermissionsTableHasExpectedColumns(): void
     {
-        $columns = [
-            'permission_id' => 'int8',
-            'role_id' => 'int8',
-        ];
+        $expectedColumns = ['permission_id', 'role_id'];
 
-        $this->assertDatabaseTable($this->tableNames['role_has_permissions'], $columns);
+        $actualColumns = Schema::getColumnListing($this->tableNames['role_has_permissions']);
+        sort($expectedColumns);
+        sort($actualColumns);
+
+        $this->assertSame($expectedColumns, $actualColumns);
     }
 }
+

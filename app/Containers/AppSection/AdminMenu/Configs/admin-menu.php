@@ -186,12 +186,21 @@ return [
         'children' => [
             [
                 'id' => 'cms-core-menu',
-                'key' => 'admin_menu.menus',
+                'key' => 'appearance.menus',
                 'name' => 'Menus',
                 'icon' => 'ti ti-tournament',
-                'route' => '/menus',
+                'route' => '/appearance/menus',
                 'priority' => 2,
                 'permissions' => ['menus.index'],
+            ],
+            [
+                'id' => 'cms-core-admin-menu',
+                'key' => 'appearance.admin_menus',
+                'name' => 'Admin Menus',
+                'icon' => 'ti ti-tournament',
+                'route' => '/appearance/admin-menus',
+                'priority' => 3,
+                'permissions' => ['admin-menus.index'],
             ],
         ],
     ],

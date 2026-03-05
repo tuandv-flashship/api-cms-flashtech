@@ -44,7 +44,7 @@ final class UpdateMenuAction extends ParentAction
 
         MenuSavedEvent::dispatch($id);
 
-        $menu = $this->findMenuTask->run($id, ['locations', 'nodes.translations']);
+        $menu = $this->findMenuTask->run($id, ['locations', 'nodes']);
         $menu->setRelation('nodes', $this->buildMenuTreeTask->run($menu->nodes));
 
         return $menu;

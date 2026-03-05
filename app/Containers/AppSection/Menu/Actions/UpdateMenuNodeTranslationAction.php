@@ -32,6 +32,6 @@ final class UpdateMenuNodeTranslationAction extends ParentAction
 
         MenuNodeTranslationUpdatedEvent::dispatch((int) $node->menu_id, (string) $payload['lang_code']);
 
-        return $this->findMenuNodeTask->run((int) $request->id, ['children', 'translations']);
+        return $this->findMenuNodeTask->run((int) $request->id, ['children']);
     }
 }
