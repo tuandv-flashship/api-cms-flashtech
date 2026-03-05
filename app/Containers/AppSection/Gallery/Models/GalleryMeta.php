@@ -4,7 +4,6 @@ namespace App\Containers\AppSection\Gallery\Models;
 
 use App\Containers\AppSection\LanguageAdvanced\Traits\HasLanguageTranslations;
 use App\Ship\Parents\Models\Model as ParentModel;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 final class GalleryMeta extends ParentModel
@@ -22,11 +21,6 @@ final class GalleryMeta extends ParentModel
     protected $casts = [
         'images' => 'array',
     ];
-
-    public function translations(): HasMany
-    {
-        return $this->hasMany(GalleryMetaTranslation::class, 'gallery_meta_id');
-    }
 
     public function reference(): MorphTo
     {

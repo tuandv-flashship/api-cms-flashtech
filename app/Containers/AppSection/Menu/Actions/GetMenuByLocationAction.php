@@ -34,7 +34,7 @@ final class GetMenuByLocationAction extends ParentAction
             $location,
             $normalizedLocale,
             function () use ($location): Menu {
-                $menu = $this->findMenuByLocationTask->run($location, ['locations', 'nodes.translations'], true);
+                $menu = $this->findMenuByLocationTask->run($location, ['locations'], true);
                 $tree = $this->buildMenuTreeTask->run($menu->nodes);
                 $menu->setRelation('nodes', $tree);
 

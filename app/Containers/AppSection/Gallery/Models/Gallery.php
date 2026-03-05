@@ -10,7 +10,6 @@ use App\Containers\AppSection\User\Models\User;
 use App\Ship\Casts\SafeContent;
 use App\Ship\Parents\Models\Model as ParentModel;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 final class Gallery extends ParentModel
@@ -55,11 +54,6 @@ final class Gallery extends ParentModel
         });
     }
 
-    public function translations(): HasMany
-    {
-        return $this->hasMany(GalleryTranslation::class, 'galleries_id');
-    }
-
     public function meta(): HasOne
     {
         return $this->hasOne(GalleryMeta::class, 'reference_id')
@@ -69,15 +63,5 @@ final class Gallery extends ParentModel
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', ContentStatus::PUBLISHED);
-    }
-
-    public function getNameAttribute(mixed $value): mixed
-    {
-        return $this->getTranslatedAttribute('name', $value);
-    }
-
-    public function getDescriptionAttribute(mixed $value): mixed
-    {
-        return $this->getTranslatedAttribute('description', $value);
     }
 }

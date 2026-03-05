@@ -11,7 +11,6 @@ use App\Ship\Casts\SafeContent;
 use App\Ship\Parents\Models\Model as ParentModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class Tag extends ParentModel
 {
@@ -52,23 +51,8 @@ final class Tag extends ParentModel
         return $this->belongsToMany(Post::class, 'post_tags');
     }
 
-    public function translations(): HasMany
-    {
-        return $this->hasMany(TagTranslation::class, 'tags_id');
-    }
-
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', ContentStatus::PUBLISHED);
-    }
-
-    public function getNameAttribute(mixed $value): mixed
-    {
-        return $this->getTranslatedAttribute('name', $value);
-    }
-
-    public function getDescriptionAttribute(mixed $value): mixed
-    {
-        return $this->getTranslatedAttribute('description', $value);
     }
 }

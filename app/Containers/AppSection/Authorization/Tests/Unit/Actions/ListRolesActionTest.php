@@ -17,6 +17,7 @@ final class ListRolesActionTest extends UnitTestCase
 
         $result = $action->run();
 
-        $this->assertCount(4, $result);
+        $seededRoles = count(config('auth.guards'));
+        $this->assertCount($seededRoles + 2, $result);
     }
 }

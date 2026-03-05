@@ -3,10 +3,14 @@
 namespace App\Containers\AppSection\Language\Models;
 
 use App\Containers\AppSection\Language\Data\Collections\LanguageCollection;
+use App\Containers\AppSection\Language\Data\Factories\LanguageFactory;
 use App\Ship\Parents\Models\Model as ParentModel;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 final class Language extends ParentModel
 {
+    /** @use HasFactory<LanguageFactory> */
+    use HasFactory;
     public $timestamps = false;
 
     protected $primaryKey = 'lang_id';
@@ -36,5 +40,10 @@ final class Language extends ParentModel
     public function newCollection(array $models = []): LanguageCollection
     {
         return new LanguageCollection($models);
+    }
+
+    protected static function newFactory(): LanguageFactory
+    {
+        return LanguageFactory::new();
     }
 }

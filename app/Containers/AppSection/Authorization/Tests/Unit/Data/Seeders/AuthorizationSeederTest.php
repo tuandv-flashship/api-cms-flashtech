@@ -12,7 +12,8 @@ final class AuthorizationSeederTest extends UnitTestCase
 {
     public function testCanSeed(): void
     {
-        $this->assertDatabaseCount('roles', 2);
+        $guardCount = count(config('auth.guards'));
+        $this->assertDatabaseCount('roles', $guardCount);
         foreach (config('auth.guards') as $name => $value) {
             $this->assertDatabaseHas('roles', [
                 'name' => Role::SUPER_ADMIN,

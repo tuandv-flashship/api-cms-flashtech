@@ -14,8 +14,11 @@ final class UpdatePostRequest extends ParentRequest
         'category_ids.*',
         'tag_ids.*',
     ];
+
     protected function prepareForValidation(): void
     {
+        parent::prepareForValidation();
+
         // Clean up array fields: filter out empty/null values so FE can send [""] to clear
         foreach (['category_ids', 'tag_ids', 'tag_names'] as $field) {
             if ($this->has($field) && is_array($this->input($field))) {

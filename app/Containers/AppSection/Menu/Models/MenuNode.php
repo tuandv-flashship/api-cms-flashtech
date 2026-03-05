@@ -51,19 +51,4 @@ final class MenuNode extends ParentModel
     {
         return $this->hasMany(self::class, 'parent_id')->orderBy('position');
     }
-
-    public function translations(): HasMany
-    {
-        return $this->hasMany(MenuNodeTranslation::class, 'menu_nodes_id');
-    }
-
-    public function getTitleAttribute(mixed $value): mixed
-    {
-        return $this->getTranslatedAttribute('title', $value);
-    }
-
-    public function getUrlAttribute(mixed $value): mixed
-    {
-        return $this->getTranslatedAttribute('url', $value);
-    }
 }
