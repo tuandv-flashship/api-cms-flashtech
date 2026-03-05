@@ -10,6 +10,7 @@ use App\Containers\AppSection\Member\Middleware\VerifyMemberCsrfToken;
 use App\Containers\AppSection\RequestLog\Middleware\LogRequestErrors;
 use App\Ship\Middleware\VerifyRequestSignature;
 use App\Ship\Middleware\ValidateAppId;
+use App\Containers\AppSection\Translation\Providers\TranslationServiceProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,7 +21,10 @@ $basePath = dirname(__DIR__);
 $apiato = Apiato::configure(basePath: $basePath)->create();
 
 return Application::configure(basePath: $basePath)
-    ->withProviders($apiato->providers())
+    ->withProviders([
+        ...$apiato->providers(),
+        TranslationServiceProvider::class,
+    ])
     ->withEvents($apiato->events())
     ->withRouting(
         web: $apiato->webRoutes(),
