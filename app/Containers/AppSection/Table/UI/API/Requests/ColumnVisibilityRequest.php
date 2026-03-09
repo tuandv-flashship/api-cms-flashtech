@@ -16,14 +16,13 @@ final class ColumnVisibilityRequest extends ParentRequest
         return [
             'model' => ['required', 'string', 'max:50'],
             'columns' => ['required', 'array'],
-            'columns.*' => ['required', 'boolean'],
+            'columns.*.visible' => ['required', 'boolean'],
+            'columns.*.order' => ['required', 'integer', 'min:0'],
         ];
     }
 
     public function authorize(): bool
     {
-        return $this->check([
-            'hasAccess',
-        ]);
+        return true;
     }
 }
