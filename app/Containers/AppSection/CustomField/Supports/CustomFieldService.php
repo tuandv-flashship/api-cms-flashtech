@@ -10,6 +10,7 @@ use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
 use App\Containers\AppSection\Media\Services\MediaService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 
 final class CustomFieldService
@@ -36,6 +37,9 @@ final class CustomFieldService
             $this->saveCustomField($referenceType, $referenceId, $row, $langCode);
         }
 
+        // Invalidate cache after save
+        $this->invalidateCache($referenceType, $referenceId);
+
         return true;
     }
 
@@ -49,39 +53,65 @@ final class CustomFieldService
         array $rules = [],
         ?string $langCode = null
     ): array {
-        $model = null;
-        if ($referenceId !== null && class_exists($referenceType)) {
-            $model = $referenceType::query()->find($referenceId);
-        }
+        $langCode = $langCode ?: LanguageAdvancedManager::getTranslationLocale();
+        $cacheKey = $this->cacheKey($referenceType, $referenceId, $langCode);
 
-        $context = CustomFieldRules::buildContext($model, $referenceType, $rules);
-
-        $groups = FieldGroup::query()
-            ->published()
-            ->orderBy('order')
-            ->get();
-
-        $result = [];
-        foreach ($groups as $group) {
-            $groupRules = $this->decodeRules($group->rules);
-            if (! $this->checkRules($groupRules, $context)) {
-                continue;
+        return Cache::remember($cacheKey, 3600, function () use ($referenceType, $referenceId, $rules, $langCode) {
+            $model = null;
+            if ($referenceId !== null && class_exists($referenceType)) {
+                $model = $referenceType::query()->find($referenceId);
             }
 
-            $result[] = [
-                'id' => $group->getKey(),
-                'title' => $group->title,
-                'items' => $this->getFieldGroupItems(
-                    (int) $group->getKey(),
-                    null,
-                    $referenceType,
-                    $referenceId,
-                    $langCode
-                ),
-            ];
-        }
+            $context = CustomFieldRules::buildContext($model, $referenceType, $rules);
 
-        return $result;
+            $groups = FieldGroup::query()
+                ->published()
+                ->orderBy('order')
+                ->get();
+
+            $result = [];
+            foreach ($groups as $group) {
+                $groupRules = $this->decodeRules($group->rules);
+                if (! $this->checkRules($groupRules, $context)) {
+                    continue;
+                }
+
+                $result[] = [
+                    'id' => $group->getKey(),
+                    'title' => $group->title,
+                    'items' => $this->getFieldGroupItems(
+                        (int) $group->getKey(),
+                        null,
+                        $referenceType,
+                        $referenceId,
+                        $langCode
+                    ),
+                ];
+            }
+
+            return $result;
+        });
+    }
+
+    /**
+     * Invalidate custom field cache for a specific model instance.
+     */
+    public function invalidateCache(string $referenceType, ?int $referenceId = null): void
+    {
+        // Clear for all known locales by using pattern-based tag or specific keys
+        $locales = config('laravellocalization.supportedLocales', []);
+        $localeCodes = array_keys($locales) ?: [app()->getLocale()];
+
+        foreach ($localeCodes as $locale) {
+            Cache::forget($this->cacheKey($referenceType, $referenceId, $locale));
+        }
+    }
+
+    private function cacheKey(string $referenceType, ?int $referenceId, ?string $langCode): string
+    {
+        $refKey = class_basename($referenceType);
+
+        return "custom_fields:{$refKey}:{$referenceId}:{$langCode}";
     }
 
     /**
