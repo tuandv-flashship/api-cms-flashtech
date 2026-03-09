@@ -3,7 +3,7 @@
 namespace App\Containers\AppSection\Page\Models;
 
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
-use App\Containers\AppSection\CustomField\Models\CustomField;
+use App\Containers\AppSection\CustomField\Traits\HasCustomFields;
 use App\Containers\AppSection\LanguageAdvanced\Traits\HasLanguageTranslations;
 use App\Containers\AppSection\MetaBox\Traits\HasMetaBoxes;
 use App\Containers\AppSection\Revision\Traits\RevisionableTrait;
@@ -20,6 +20,7 @@ final class Page extends ParentModel
     use HasSlug;
     use HasLanguageTranslations;
     use HasMetaBoxes;
+    use HasCustomFields;
     use RevisionableTrait;
 
     protected $table = 'pages';
@@ -52,13 +53,6 @@ final class Page extends ParentModel
     {
         static::creating(function (self $page): void {
             $page->user_id = $page->user_id ?: auth()->id();
-        });
-
-        static::deleted(function (self $page): void {
-            CustomField::query()
-                ->where('use_for', self::class)
-                ->where('use_for_id', $page->getKey())
-                ->each(static fn (CustomField $field) => $field->delete());
         });
     }
 

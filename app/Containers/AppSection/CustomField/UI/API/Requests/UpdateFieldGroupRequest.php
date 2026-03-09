@@ -32,6 +32,15 @@ final class UpdateFieldGroupRequest extends ParentRequest
             'order' => ['sometimes', 'integer', 'min:0'],
             'status' => ['sometimes', Rule::enum(ContentStatus::class)],
             'group_items' => ['sometimes', 'array'],
+            'group_items.*.title' => ['required_with:group_items', 'string', 'max:255'],
+            'group_items.*.slug' => ['nullable', 'string', 'max:255'],
+            'group_items.*.type' => ['required_with:group_items', 'string', Rule::in([
+                'text', 'number', 'email', 'password', 'url', 'date', 'datetime',
+                'time', 'color', 'textarea', 'checkbox', 'radio', 'select',
+                'image', 'file', 'wysiwyg', 'repeater',
+            ])],
+            'group_items.*.instructions' => ['nullable', 'string', 'max:1000'],
+            'group_items.*.options' => ['nullable'],
             'deleted_items' => ['sometimes', 'array'],
         ];
     }
