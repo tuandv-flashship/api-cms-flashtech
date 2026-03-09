@@ -100,7 +100,7 @@ abstract class BulkChangeAbstract
         ];
 
         if ($this->choices !== null) {
-            $data['choices'] = array_map(fn ($v) => trans($v), $this->choices);
+            $data['choices'] = (object) array_map(fn ($v) => trans($v), $this->choices);
         }
 
         if ($this->placeholder !== null) {
