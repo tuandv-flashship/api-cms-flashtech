@@ -9,6 +9,8 @@ return [
         \App\Containers\AppSection\Gallery\Models\GalleryMeta::class => ['images'],
         \App\Containers\AppSection\Page\Models\Page::class => ['name', 'description', 'content'],
         \App\Containers\AppSection\CustomField\Models\CustomField::class => ['value'],
+        \App\Containers\AppSection\CustomField\Models\FieldGroup::class => ['title'],
+        \App\Containers\AppSection\CustomField\Models\FieldItem::class => ['title', 'instructions', 'options'],
         \App\Containers\AppSection\Menu\Models\MenuNode::class => ['title', 'url'],
         \App\Containers\AppSection\AdminMenu\Models\AdminMenuItem::class => ['name', 'description'],
     ],

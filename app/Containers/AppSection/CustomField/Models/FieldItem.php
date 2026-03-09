@@ -2,12 +2,15 @@
 
 namespace App\Containers\AppSection\CustomField\Models;
 
+use App\Containers\AppSection\LanguageAdvanced\Traits\HasLanguageTranslations;
 use App\Ship\Parents\Models\Model as ParentModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class FieldItem extends ParentModel
 {
+    use HasLanguageTranslations;
+
     public $timestamps = false;
 
     protected $table = 'field_items';
@@ -55,3 +58,4 @@ final class FieldItem extends ParentModel
         return $this->hasMany(CustomField::class, 'field_item_id');
     }
 }
+

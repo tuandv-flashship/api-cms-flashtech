@@ -13,9 +13,13 @@ Container path: `app/Containers/AppSection/CustomField`
 
 ```
 FieldGroup (1) ──► (N) FieldItem (tree: parent_id)
+  │                       │
+  ▼                       ▼
+FieldGroupTranslation   FieldItemTranslation
+  (title per locale)      (title, instructions, options per locale)
                           │
                           ▼
-CustomField (N) ──► CustomFieldTranslation (per locale)
+CustomField (N) ──► CustomFieldTranslation (value per locale)
   use_for       = Model class (polymorphic)
   use_for_id    = Model instance ID
   field_item_id = FieldItem ID
@@ -40,6 +44,34 @@ final class Post extends Model
 - **Helper** — `$model->getCustomFieldBoxes(?string $locale, array $rules)` returns exported data.
 
 **Currently applied to:** `Post`, `Category`, `Page`.
+
+### Multilingual (i18n)
+
+3 translation layers, all using `HasLanguageTranslations` trait + `X-Locale` header:
+
+| Layer           | Table                        | Translatable Columns               | Description          |
+| --------------- | ---------------------------- | ---------------------------------- | -------------------- |
+| **FieldGroup**  | `field_groups_translations`  | `title`                            | Tên nhóm trường      |
+| **FieldItem**   | `field_items_translations`   | `title`, `instructions`, `options` | Metadata trường      |
+| **CustomField** | `custom_fields_translations` | `value`                            | Giá trị do user nhập |
+
+**Cách sử dụng:**
+
+```
+# Lấy data theo locale mặc định (en)
+GET /v1/custom-field-groups?include=items
+
+# Lấy data theo locale vi
+GET /v1/custom-field-groups?include=items
+X-Locale: vi
+```
+
+**Options i18n:**
+
+Options (selectChoices, placeholderText...) là JSON có cấu trúc không cố định → translate toàn bộ JSON per locale. Keys giữ nguyên, labels thay đổi:
+
+- **EN**: `"featured:Featured post\nsticky:Sticky post"`
+- **VI**: `"featured:Bài viết nổi bật\nsticky:Bài viết ghim"`
 
 ### Supported Field Types (17)
 
@@ -82,7 +114,7 @@ Rules use AND within groups, OR between groups.
 
 ### API Routes
 
-All routes are **private** (`auth:api` middleware).
+All routes are **private** (`auth:api` middleware). Hỗ trợ `X-Locale` header cho i18n.
 
 | Method   | Endpoint                                 | Permission              | Description                                      |
 | -------- | ---------------------------------------- | ----------------------- | ------------------------------------------------ |
@@ -93,6 +125,8 @@ All routes are **private** (`auth:api` middleware).
 | `PUT`    | `/v1/custom-field-groups/{id}`           | `custom-fields.edit`    | Update field group                               |
 | `DELETE` | `/v1/custom-field-groups/{id}`           | `custom-fields.destroy` | Delete field group                               |
 | `POST`   | `/v1/custom-field-groups/{id}/duplicate` | `custom-fields.create`  | Deep clone field group                           |
+| `GET`    | `/v1/custom-field-groups/{id}/export`    | `custom-fields.index`   | Export field group as portable JSON              |
+| `POST`   | `/v1/custom-field-groups/import`         | `custom-fields.create`  | Import field group from JSON                     |
 | `GET`    | `/v1/custom-fields/boxes`                | `custom-fields.index`   | Get custom field boxes for a model               |
 
 ### Supported Models
@@ -142,8 +176,11 @@ Field group items are validated:
 - Keep field schema validation centralized in Request/Task layers.
 - Changes to field schema should be backward-compatible with stored values.
 - When adding a new model to `custom-field.supported`, also add `use HasCustomFields` to the model.
+- Translation models use composite PK — use `DB::table()->upsert()` in seeders, not `Model::updateOrCreate()`.
 
 ### Change Log
 
 - `2026-02-07`: Added container README.
 - `2026-03-09`: Optimized — HasCustomFields trait, caching, validation hardening, duplication endpoint.
+- `2026-03-09`: Added import/export endpoints.
+- `2026-03-09`: Added multilingual support — FieldGroup title, FieldItem title/instructions/options translations.
