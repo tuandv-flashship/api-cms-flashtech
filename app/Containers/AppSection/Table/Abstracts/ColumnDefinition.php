@@ -20,6 +20,7 @@ final class ColumnDefinition
     private ?int $width = null;
     private string $align = 'left';
     private ?array $options = null;
+    private int $priority = 0;
 
     // ─── Display Properties (from Botble Concerns) ─────────────────
     private bool $copyable = false;
@@ -51,21 +52,24 @@ final class ColumnDefinition
     public static function id(): self
     {
         return self::make('id', 'table::columns.id')
-            ->type('id')->sortable()->width(70)->align('center');
+            ->type('id')->sortable()->width(70)->align('center')
+            ->priority(0);
     }
 
     public static function checkbox(): self
     {
         return self::make('checkbox', '')
             ->type('checkbox')->sortable(false)->searchable(false)
-            ->width(40)->align('center');
+            ->width(40)->align('center')
+            ->priority(-1);
     }
 
     public static function image(): self
     {
         return self::make('image', 'table::columns.image')
             ->type('image')->sortable(false)->searchable(false)
-            ->width(70)->align('center');
+            ->width(70)->align('center')
+            ->priority(1);
     }
 
     public static function status(string $enumClass): self
@@ -192,6 +196,13 @@ final class ColumnDefinition
         return $this;
     }
 
+    public function priority(int $priority): self
+    {
+        $this->priority = $priority;
+
+        return $this;
+    }
+
     // ─── Fluent Setters: Display (Botble Concerns) ─────────────────
 
     /** FE renders a copy-to-clipboard button. */
@@ -274,6 +285,11 @@ final class ColumnDefinition
         return $this->visible;
     }
 
+    public function getPriority(): int
+    {
+        return $this->priority;
+    }
+
     // ─── Serialize ─────────────────────────────────────────────────
 
     public function toArray(): array
@@ -287,6 +303,7 @@ final class ColumnDefinition
             'visible' => $this->visible,
             'width' => $this->width,
             'align' => $this->align,
+            'priority' => $this->priority,
         ];
 
         // Conditional fields — only sent when set (keeps response slim)

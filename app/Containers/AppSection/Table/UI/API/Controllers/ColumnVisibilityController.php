@@ -17,6 +17,6 @@ final class ColumnVisibilityController extends ApiController
             $request->input('columns'),
         );
 
-        return response()->json(['message' => 'Column visibility saved.']);
+        return response()->json(['message' => 'Column preferences saved.']);
     }
 }

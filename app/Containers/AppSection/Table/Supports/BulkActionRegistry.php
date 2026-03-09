@@ -194,18 +194,27 @@ final class BulkActionRegistry
             }
         }
 
-        // Step 4: Apply user visibility preferences
-        $visibility = $this->getUserColumnVisibility($user, $modelKey);
+        // Step 4: Apply user preferences (visibility + order)
+        $prefs = $this->getUserColumnPreferences($user, $modelKey);
 
         return collect($columns)
-            ->map(function (ColumnDefinition $col) use ($visibility) {
+            ->map(function (ColumnDefinition $col) use ($prefs) {
                 $arr = $col->toArray();
-                if (isset($visibility[$col->getKey()])) {
-                    $arr['visible'] = (bool) $visibility[$col->getKey()];
+                $key = $col->getKey();
+
+                if (isset($prefs[$key])) {
+                    $pref = $prefs[$key];
+                    if (isset($pref['visible'])) {
+                        $arr['visible'] = (bool) $pref['visible'];
+                    }
+                    if (isset($pref['order'])) {
+                        $arr['priority'] = (int) $pref['order'];
+                    }
                 }
 
                 return $arr;
             })
+            ->sortBy('priority')
             ->values()
             ->all();
     }
@@ -216,43 +225,44 @@ final class BulkActionRegistry
         $fillable = $model->getFillable();
         $casts = $model->getCasts();
 
-        // Always add ID
+        // Always add ID (priority 0 — set in factory)
         $columns['id'] = ColumnDefinition::id();
 
         // Image column
         if (in_array('image', $fillable, true)) {
-            $columns['image'] = ColumnDefinition::image();
+            $columns['image'] = ColumnDefinition::image(); // priority 1
         }
 
         // Name column (searchable, linkable to edit)
         if (in_array('name', $fillable, true)) {
-            $columns['name'] = ColumnDefinition::name()->emptyState();
+            $columns['name'] = ColumnDefinition::name()->emptyState()->priority(2);
         }
 
         // Email column (searchable, mailto link)
         if (in_array('email', $fillable, true)) {
-            $columns['email'] = ColumnDefinition::email()->emptyState();
+            $columns['email'] = ColumnDefinition::email()->emptyState()->priority(3);
         }
 
         // Phone column (searchable, tel link)
         if (in_array('phone', $fillable, true)) {
-            $columns['phone'] = ColumnDefinition::phone()->emptyState();
+            $columns['phone'] = ColumnDefinition::phone()->emptyState()->priority(4);
         }
 
         // Status column with enum
         if (isset($casts['status']) && enum_exists($casts['status'])) {
-            $columns['status'] = ColumnDefinition::status($casts['status']);
+            $columns['status'] = ColumnDefinition::status($casts['status'])->priority(5);
         }
 
         // Boolean columns
         if (isset($casts['is_featured']) && $casts['is_featured'] === 'bool') {
-            $columns['is_featured'] = ColumnDefinition::boolean('is_featured', 'table::columns.is_featured')->width(100);
+            $columns['is_featured'] = ColumnDefinition::boolean('is_featured', 'table::columns.is_featured')
+                ->width(100)->priority(6);
         }
 
         // Always add created_at if model uses timestamps
         if ($model->usesTimestamps()) {
             $columns['created_at'] = ColumnDefinition::date('created_at', 'table::columns.created_at')
-                ->width(160)->emptyState();
+                ->width(160)->emptyState()->priority(99);
         }
 
         return $columns;
@@ -461,7 +471,11 @@ final class BulkActionRegistry
 
     // ─── Column Visibility ─────────────────────────────────────────
 
-    private function getUserColumnVisibility(Authenticatable&Authorizable $user, string $modelKey): array
+    /**
+     * Get user column preferences (visibility + order).
+     * Backward-compatible: handles old format {key: bool} and new format {key: {visible, order}}.
+     */
+    private function getUserColumnPreferences(Authenticatable&Authorizable $user, string $modelKey): array
     {
         $key = "user:{$user->getAuthIdentifier()}:table_columns:{$modelKey}";
 
@@ -473,7 +487,19 @@ final class BulkActionRegistry
             return [];
         }
 
-        return json_decode($setting->value, true) ?: [];
+        $stored = json_decode($setting->value, true) ?: [];
+
+        // Normalize: old format {key: bool} → {key: {visible: bool}}
+        $prefs = [];
+        foreach ($stored as $colKey => $value) {
+            if (is_array($value)) {
+                $prefs[$colKey] = $value; // new format
+            } else {
+                $prefs[$colKey] = ['visible' => (bool) $value]; // old format
+            }
+        }
+
+        return $prefs;
     }
 
     // ─── Cache ─────────────────────────────────────────────────────

@@ -50,13 +50,13 @@ FE nhận JSON: columns[], header_actions[], row_actions[], bulk_actions[], bulk
 
 ## API Routes
 
-| Method | URI                            | Description                                     |
-| ------ | ------------------------------ | ----------------------------------------------- |
-| `GET`  | `/v1/table-meta?model=post`    | Full table metadata cho 1 model                 |
-| `GET`  | `/v1/table-meta`               | Danh sách tất cả model keys đã đăng ký          |
-| `POST` | `/v1/bulk-actions`             | Dispatch bulk action (delete, etc.)             |
-| `POST` | `/v1/bulk-changes`             | Dispatch bulk field update (status, name, etc.) |
-| `PUT`  | `/v1/table-columns-visibility` | Lưu column visibility preferences per user      |
+| Method | URI                            | Description                                        |
+| ------ | ------------------------------ | -------------------------------------------------- |
+| `GET`  | `/v1/table-meta?model=post`    | Full table metadata cho 1 model                    |
+| `GET`  | `/v1/table-meta`               | Danh sách tất cả model keys đã đăng ký             |
+| `POST` | `/v1/bulk-actions`             | Dispatch bulk action (delete, etc.)                |
+| `POST` | `/v1/bulk-changes`             | Dispatch bulk field update (status, name, etc.)    |
+| `PUT`  | `/v1/table-columns-visibility` | Lưu column visibility + order preferences per user |
 
 ### Response `GET /v1/table-meta?model=post`
 
@@ -66,32 +66,38 @@ FE nhận JSON: columns[], header_actions[], row_actions[], bulk_actions[], bulk
     "model": "post",
     "columns": [
       { "key": "id", "title": "ID", "type": "id", "sortable": true, "searchable": false,
-        "visible": true, "width": 70, "align": "center" },
+        "visible": true, "width": 70, "align": "center", "priority": 0 },
       { "key": "name", "title": "Tên", "type": "text", "sortable": true, "searchable": true,
-        "visible": true, "width": null, "align": "left" },
+        "visible": true, "width": null, "align": "left", "priority": 2 },
       { "key": "status", "title": "Trạng thái", "type": "status", "sortable": true,
-        "visible": true, "width": 120, "align": "center",
+        "visible": true, "width": 120, "align": "center", "priority": 5,
         "options": { "published": "Đã xuất bản", "draft": "Bản nháp" } }
     ],
     "header_actions": [
       { "name": "create", "label": "Tạo mới", "icon": "ti-plus", "color": "primary",
-        "type": "link", "url_pattern": "/admin/posts/create", ... }
+        "type": "link", "url_pattern": "/blog/posts/create",
+        "permission": "posts.create", ... }
     ],
     "row_actions": [
-      { "name": "edit", "label": "Sửa", ..., "confirmation": null },
-      { "name": "delete", "label": "Xoá", ...,
-        "confirmation": { "title": "Xác nhận xoá", "message": "Bạn chắc chắn muốn xoá \"{name}\"?",
-          "confirm_button": { "label": "Xoá", "color": "danger", "icon": "ti-trash" },
-          "cancel_button": { "label": "Huỷ", "color": "secondary" } } }
+      { "name": "edit", "label": "Sửa", "type": "link",
+        "url_pattern": "/blog/posts/{id}/edit",
+        "permission": "posts.edit", ..., "confirmation": null },
+      { "name": "delete", "label": "Xoá", "type": "action",
+        "method": "DELETE", "url_pattern": "/v1/blog/posts/{id}",
+        "permission": "posts.destroy", ...,
+        "confirmation": { "title": "Xác nhận xoá", ... } }
     ],
     "bulk_actions": [
       { "action": "delete", "label": "Xoá đã chọn", "icon": "ti-trash", "color": "danger",
+        "permission": "posts.destroy",
         "confirmation": { "title": "Xác nhận xoá hàng loạt", ... } }
     ],
     "bulk_changes": [
       { "key": "status", "title": "Trạng thái", "type": "select",
-        "choices": { "published": "Đã xuất bản", "draft": "Bản nháp" } },
-      { "key": "name", "title": "Tên", "type": "text", "placeholder": "Nhập tên..." }
+        "choices": { "published": "Đã xuất bản", "draft": "Bản nháp" },
+        "permission": "posts.edit" },
+      { "key": "name", "title": "Tên", "type": "text", "placeholder": "Nhập tên...",
+        "permission": "posts.edit" }
     ],
     "default_sort": { "key": "created_at", "direction": "desc" },
     "max_bulk_items": 100
@@ -129,23 +135,32 @@ Response:
 ### Request `PUT /v1/table-columns-visibility`
 
 ```json
-{ "model": "post", "columns": { "id": true, "views": false } }
+{
+    "model": "post",
+    "columns": {
+        "id": { "visible": true, "order": 0 },
+        "name": { "visible": true, "order": 1 },
+        "status": { "visible": true, "order": 2 },
+        "views": { "visible": false, "order": 6 },
+        "created_at": { "visible": true, "order": 99 }
+    }
+}
 ```
 
 ## Auto-Detection Rules
 
 ### Columns
 
-| Model Property            | Factory Method                         | Column Config                             |
-| ------------------------- | -------------------------------------- | ----------------------------------------- |
-| Primary key               | `ColumnDefinition::id()`               | type: `id`, width: 70, center             |
-| `'image'` in fillable     | `ColumnDefinition::image()`            | type: `image`, width: 70, center          |
-| `'name'` in fillable      | `ColumnDefinition::name()`             | type: `text`, searchable, emptyState      |
-| `'email'` in fillable     | `ColumnDefinition::email()`            | type: `email`, searchable, `mailto:` link |
-| `'phone'` in fillable     | `ColumnDefinition::phone()`            | type: `phone`, searchable, `tel:` link    |
-| `'status'` Enum cast      | `ColumnDefinition::status($enum)`      | type: `status`, options from enum cases   |
-| `'is_featured'` bool cast | `ColumnDefinition::boolean()`          | type: `boolean`, width: 100               |
-| `usesTimestamps()`        | `ColumnDefinition::date('created_at')` | type: `date`, width: 160, emptyState      |
+| Model Property            | Factory Method                         | Column Config                                          |
+| ------------------------- | -------------------------------------- | ------------------------------------------------------ |
+| Primary key               | `ColumnDefinition::id()`               | type: `id`, width: 70, center, priority: 0             |
+| `'image'` in fillable     | `ColumnDefinition::image()`            | type: `image`, width: 70, center, priority: 1          |
+| `'name'` in fillable      | `ColumnDefinition::name()`             | type: `text`, searchable, emptyState, priority: 2      |
+| `'email'` in fillable     | `ColumnDefinition::email()`            | type: `email`, searchable, `mailto:` link, priority: 3 |
+| `'phone'` in fillable     | `ColumnDefinition::phone()`            | type: `phone`, searchable, `tel:` link, priority: 4    |
+| `'status'` Enum cast      | `ColumnDefinition::status($enum)`      | type: `status`, options from enum, priority: 5         |
+| `'is_featured'` bool cast | `ColumnDefinition::boolean()`          | type: `boolean`, width: 100, priority: 6               |
+| `usesTimestamps()`        | `ColumnDefinition::date('created_at')` | type: `date`, width: 160, emptyState, priority: 99     |
 
 ### Display Properties (FE metadata)
 
