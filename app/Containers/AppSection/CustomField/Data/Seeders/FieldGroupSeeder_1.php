@@ -5,6 +5,7 @@ namespace App\Containers\AppSection\CustomField\Data\Seeders;
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
 use App\Containers\AppSection\Blog\Models\Post;
 use App\Containers\AppSection\CustomField\Models\FieldGroup;
+use App\Containers\AppSection\CustomField\Models\FieldGroupTranslation;
 use App\Containers\AppSection\Page\Models\Page;
 use App\Ship\Parents\Seeders\Seeder as ParentSeeder;
 
@@ -16,8 +17,6 @@ final class FieldGroupSeeder_1 extends ParentSeeder
             [
                 'id' => 1,
                 'title' => 'Post Additional Information',
-                // Rules format: array of rule groups, each group is array of rules
-                // [[{rule1}, {rule2}], [{rule3}]] means: (rule1 AND rule2) OR (rule3)
                 'rules' => json_encode([
                     [
                         ['name' => 'model_name', 'type' => '==', 'value' => Post::class],
@@ -27,6 +26,9 @@ final class FieldGroupSeeder_1 extends ParentSeeder
                 'created_by' => 1,
                 'updated_by' => 1,
                 'status' => ContentStatus::PUBLISHED,
+                '_translations' => [
+                    'vi' => ['title' => 'Thông tin bổ sung bài viết'],
+                ],
             ],
             [
                 'id' => 2,
@@ -40,16 +42,31 @@ final class FieldGroupSeeder_1 extends ParentSeeder
                 'created_by' => 1,
                 'updated_by' => 1,
                 'status' => ContentStatus::PUBLISHED,
+                '_translations' => [
+                    'vi' => ['title' => 'Trường tuỳ chỉnh trang'],
+                ],
             ],
         ];
 
-        foreach ($fieldGroups as $group) {
-            FieldGroup::query()->firstOrCreate(
-                ['id' => $group['id']],
-                $group
+        foreach ($fieldGroups as $groupData) {
+            $translations = $groupData['_translations'] ?? [];
+            unset($groupData['_translations']);
+
+            $group = FieldGroup::query()->firstOrCreate(
+                ['id' => $groupData['id']],
+                $groupData
             );
+
+            foreach ($translations as $langCode => $fields) {
+                \DB::table('field_groups_translations')->upsert(
+                    array_merge($fields, [
+                        'lang_code' => $langCode,
+                        'field_groups_id' => $group->getKey(),
+                    ]),
+                    ['lang_code', 'field_groups_id'],
+                    array_keys($fields),
+                );
+            }
         }
     }
 }
-
-

@@ -3,12 +3,15 @@
 namespace App\Containers\AppSection\CustomField\Models;
 
 use App\Containers\AppSection\Blog\Enums\ContentStatus;
+use App\Containers\AppSection\LanguageAdvanced\Traits\HasLanguageTranslations;
 use App\Ship\Parents\Models\Model as ParentModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class FieldGroup extends ParentModel
 {
+    use HasLanguageTranslations;
+
     protected $table = 'field_groups';
 
     protected $fillable = [
@@ -42,3 +45,4 @@ final class FieldGroup extends ParentModel
         return $query->where('status', ContentStatus::PUBLISHED);
     }
 }
+
