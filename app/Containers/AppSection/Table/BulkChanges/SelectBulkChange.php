@@ -55,7 +55,7 @@ class SelectBulkChange extends BulkChangeAbstract
     {
         $data = parent::toMeta();
 
-        $data['choices'] = $this->resolveChoices();
+        $data['choices'] = (object) array_map(fn ($v) => trans($v), $this->resolveChoices());
 
         if ($this->searchable) {
             $data['type'] = 'select-search';

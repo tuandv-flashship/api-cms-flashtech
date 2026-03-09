@@ -291,7 +291,7 @@ final class ColumnDefinition
 
         // Conditional fields — only sent when set (keeps response slim)
         if ($this->options !== null) {
-            $data['options'] = array_map(fn ($v) => trans($v), $this->options);
+            $data['options'] = (object) array_map(fn ($v) => trans($v), $this->options);
         }
 
         if ($this->copyable) {

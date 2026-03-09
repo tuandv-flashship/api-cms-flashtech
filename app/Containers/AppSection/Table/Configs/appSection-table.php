@@ -27,6 +27,8 @@ return [
         'post' => [
             'model' => Post::class,
             'permission_prefix' => 'posts',
+            'api_prefix' => '/v1/blog/posts',     // API route for type=action
+            'fe_prefix' => '/blog/posts',           // FE route for type=link
             'default_sort' => ['key' => 'created_at', 'direction' => 'desc'],
             'columns' => [
                 ColumnDefinition::number('views', 'table::columns.views')
@@ -37,16 +39,22 @@ return [
         'category' => [
             'model' => Category::class,
             'permission_prefix' => 'categories',
+            'api_prefix' => '/v1/blog/categories',
+            'fe_prefix' => '/blog/categories',
         ],
 
         'tag' => [
             'model' => Tag::class,
             'permission_prefix' => 'tags',
+            'api_prefix' => '/v1/blog/tags',
+            'fe_prefix' => '/blog/tags',
         ],
 
         'page' => [
             'model' => Page::class,
             'permission_prefix' => 'pages',
+            'api_prefix' => '/v1/pages',
+            'fe_prefix' => '/pages',
         ],
     ],
 ];

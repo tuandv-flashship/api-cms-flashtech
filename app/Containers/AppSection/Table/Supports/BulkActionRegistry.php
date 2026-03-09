@@ -158,12 +158,14 @@ final class BulkActionRegistry
         }
 
         $prefix = $config['permission_prefix'] ?? $modelKey;
+        $apiPrefix = $config['api_prefix'] ?? "/v1/{$prefix}";
+        $fePrefix = $config['fe_prefix'] ?? "/{$prefix}";
 
         return [
             'model' => $modelKey,
             'columns' => $this->resolveColumns($model, $config, $user, $modelKey),
-            'header_actions' => $this->resolveHeaderActions($model, $config, $prefix, $user),
-            'row_actions' => $this->resolveRowActions($model, $config, $prefix, $user),
+            'header_actions' => $this->resolveHeaderActions($model, $config, $prefix, $fePrefix, $user),
+            'row_actions' => $this->resolveRowActions($model, $config, $prefix, $apiPrefix, $fePrefix, $user),
             'bulk_actions' => $this->resolveBulkActionsForFe($model, $config, $prefix, $user, $modelKey),
             'bulk_changes' => $this->resolveBulkChangesForFe($model, $config, $prefix, $user, $modelKey),
             'default_sort' => $config['default_sort'] ?? ['key' => 'created_at', 'direction' => 'desc'],
@@ -258,7 +260,7 @@ final class BulkActionRegistry
 
     // ─── Header Actions ────────────────────────────────────────────
 
-    private function resolveHeaderActions(Model $model, array $config, string $prefix, Authenticatable&Authorizable $user): array
+    private function resolveHeaderActions(Model $model, array $config, string $prefix, string $fePrefix, Authenticatable&Authorizable $user): array
     {
         // Priority 1: Model trait
         if (method_exists($model, 'getTableHeaderActions') && ! empty($model->getTableHeaderActions())) {
@@ -270,47 +272,47 @@ final class BulkActionRegistry
         }
         // Priority 3: Auto-generate
         else {
-            $actions = $this->defaultHeaderActions($prefix);
+            $actions = $this->defaultHeaderActions($prefix, $fePrefix);
         }
 
         return $this->filterActionsByPermission($actions, $user);
     }
 
-    private function defaultHeaderActions(string $prefix): array
+    private function defaultHeaderActions(string $prefix, string $fePrefix): array
     {
         return [
             ActionDefinition::link('create', 'table::actions.create')
                 ->icon('ti-plus')->color('primary')
-                ->url("/admin/{$prefix}/create")
+                ->url("{$fePrefix}/create")
                 ->permission("{$prefix}.create"),
         ];
     }
 
     // ─── Row Actions ───────────────────────────────────────────────
 
-    private function resolveRowActions(Model $model, array $config, string $prefix, Authenticatable&Authorizable $user): array
+    private function resolveRowActions(Model $model, array $config, string $prefix, string $apiPrefix, string $fePrefix, Authenticatable&Authorizable $user): array
     {
         if (method_exists($model, 'getTableRowActions') && ! empty($model->getTableRowActions())) {
             $actions = $model->getTableRowActions();
         } elseif (isset($config['row_actions'])) {
             $actions = $config['row_actions'];
         } else {
-            $actions = $this->defaultRowActions($prefix);
+            $actions = $this->defaultRowActions($prefix, $apiPrefix, $fePrefix);
         }
 
         return $this->filterActionsByPermission($actions, $user);
     }
 
-    private function defaultRowActions(string $prefix): array
+    private function defaultRowActions(string $prefix, string $apiPrefix, string $fePrefix): array
     {
         return [
             ActionDefinition::link('edit', 'table::actions.edit')
                 ->icon('ti-edit')->color('primary')
-                ->url("/admin/{$prefix}/{id}/edit")
+                ->url("{$fePrefix}/{id}/edit")
                 ->permission("{$prefix}.edit"),
             ActionDefinition::action('delete', 'table::actions.delete')
                 ->icon('ti-trash')->color('danger')
-                ->method('DELETE')->url("/admin/{$prefix}/{id}")
+                ->method('DELETE')->url("{$apiPrefix}/{id}")
                 ->permission("{$prefix}.destroy")->priority(99)
                 ->confirmation('table::actions.confirm_delete_title', 'table::actions.confirm_delete_message')
                 ->confirmButton('table::actions.delete', 'danger', 'ti-trash')
