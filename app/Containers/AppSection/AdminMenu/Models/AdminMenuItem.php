@@ -45,4 +45,13 @@ final class AdminMenuItem extends ParentModel
     {
         return $this->hasMany(self::class, 'parent_id')->orderBy('priority');
     }
+
+    /**
+     * All translations (not constrained by locale).
+     * Use this for ?include=translations to return every locale at once.
+     */
+    public function allTranslations(): HasMany
+    {
+        return $this->hasMany(AdminMenuItemTranslation::class, 'admin_menu_items_id');
+    }
 }

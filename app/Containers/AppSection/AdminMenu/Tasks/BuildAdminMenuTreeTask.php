@@ -38,7 +38,7 @@ final class BuildAdminMenuTreeTask extends ParentTask
      */
     private function toNode(mixed $item): array
     {
-        return [
+        $node = [
             'id' => $item->getHashedKey(),
             'raw_id' => (int) $item->getKey(),
             'key' => $item->key,
@@ -53,5 +53,19 @@ final class BuildAdminMenuTreeTask extends ParentTask
             'is_active' => $item->is_active,
             'children' => [],
         ];
+
+        if ($item->relationLoaded('allTranslations')) {
+            $map = [];
+            foreach ($item->allTranslations as $t) {
+                $map[$t->lang_code] = [
+                    'name' => $t->name,
+                    'description' => $t->description,
+                    'section' => $t->section,
+                ];
+            }
+            $node['_translations'] = $map;
+        }
+
+        return $node;
     }
 }

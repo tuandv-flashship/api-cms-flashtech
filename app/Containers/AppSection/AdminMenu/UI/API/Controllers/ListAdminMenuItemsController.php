@@ -14,9 +14,12 @@ final class ListAdminMenuItemsController extends ApiController
     {
         $tree = $action->run();
 
+        $includeTranslations = str_contains((string) $request->query('include', ''), 'translations');
+        $transformer = new AdminMenuItemTransformer($includeTranslations);
+
         return response()->json([
             'data' => array_map(
-                fn (array $item): array => (new AdminMenuItemTransformer())->transform($item),
+                fn (array $item): array => $transformer->transform($item),
                 $tree,
             ),
         ]);

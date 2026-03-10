@@ -20,7 +20,7 @@ final class ListAdminMenuItemsTask extends ParentTask
             $query->where('is_active', true);
         }
 
-        $with = LanguageAdvancedManager::withTranslations([], AdminMenuItem::class);
+        $with = LanguageAdvancedManager::withTranslations(['allTranslations'], AdminMenuItem::class);
 
         return $query->with($with)->orderBy('priority')->get();
     }
