@@ -10,6 +10,11 @@ final class GetTranslationGroupPublicController extends ApiController
 {
     public function __invoke(string $locale, string $group): JsonResponse
     {
+        // 'json' in URL maps to '*' (wildcard) group_key in DB.
+        if ($group === 'json') {
+            $group = '*';
+        }
+
         $translations = Translation::getForGroup($locale, $group);
 
         $response = response()->json([

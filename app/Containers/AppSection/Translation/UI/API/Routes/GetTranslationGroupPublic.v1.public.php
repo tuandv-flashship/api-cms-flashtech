@@ -27,5 +27,5 @@ use App\Containers\AppSection\Translation\UI\API\Controllers\GetTranslationGroup
 use Illuminate\Support\Facades\Route;
 
 Route::get('translations/{locale}/{group}', GetTranslationGroupPublicController::class)
-    ->where('locale', '^(?!locales$)[a-z]{2}(_[A-Za-z]+)?$')
-    ->where('group', '^(?!groups?$|json$|locales$).+$');
+    ->where('locale', '[a-z]{2}(_[A-Za-z]+)?')
+    ->where('group', '(?!groups?$|locales$|download$)[a-zA-Z0-9_-]+');
