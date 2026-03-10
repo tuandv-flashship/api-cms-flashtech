@@ -47,6 +47,7 @@ final class AdminMenuSeeder_1 extends ParentSeeder
                 'route' => $item['route'] ?? null,
                 'permissions' => $item['permissions'] ?? null,
                 'children_display' => $item['children_display'] ?? 'sidebar',
+                'section' => $item['section'] ?? null,
                 'description' => $item['description'] ?? null,
                 'priority' => $item['priority'] ?? 0,
                 'is_active' => true,
@@ -61,6 +62,7 @@ final class AdminMenuSeeder_1 extends ParentSeeder
                         'lang_code' => $langCode,
                         'name' => $fields['name'] ?? null,
                         'description' => $fields['description'] ?? null,
+                        'section' => $fields['section'] ?? null,
                     ]);
                 }
             }
@@ -125,31 +127,31 @@ final class AdminMenuSeeder_1 extends ParentSeeder
             'vi' => ['name' => 'Cài đặt', 'description' => null],
         ],
         'cms-settings-languages' => [
-            'vi' => ['name' => 'Ngôn ngữ', 'description' => 'Quản lý ngôn ngữ và bản địa hoá'],
+            'vi' => ['name' => 'Ngôn ngữ', 'description' => 'Quản lý ngôn ngữ và bản địa hoá', 'section' => 'Bản địa hóa'],
         ],
         'cms-settings-translations' => [
-            'vi' => ['name' => 'Bản dịch', 'description' => 'Quản lý chuỗi dịch cho tất cả ngôn ngữ'],
+            'vi' => ['name' => 'Bản dịch', 'description' => 'Quản lý chuỗi dịch cho tất cả ngôn ngữ', 'section' => 'Bản địa hóa'],
         ],
         'cms-core-system' => [
             'vi' => ['name' => 'Quản trị hệ thống', 'description' => null],
         ],
         'cms-system-users' => [
-            'vi' => ['name' => 'Người dùng', 'description' => 'Quản lý người dùng quản trị và phân quyền'],
+            'vi' => ['name' => 'Người dùng', 'description' => 'Quản lý người dùng quản trị và phân quyền', 'section' => 'Người dùng & Quyền'],
         ],
         'cms-system-roles' => [
-            'vi' => ['name' => 'Vai trò & Quyền', 'description' => 'Quản lý vai trò và phân quyền'],
+            'vi' => ['name' => 'Vai trò & Quyền', 'description' => 'Quản lý vai trò và phân quyền', 'section' => 'Người dùng & Quyền'],
         ],
         'cms-system-audit-logs' => [
-            'vi' => ['name' => 'Nhật ký hoạt động', 'description' => 'Theo dõi hoạt động và thay đổi của quản trị viên'],
+            'vi' => ['name' => 'Nhật ký hoạt động', 'description' => 'Theo dõi hoạt động và thay đổi của quản trị viên', 'section' => 'Giám sát'],
         ],
         'cms-system-request-logs' => [
-            'vi' => ['name' => 'Nhật ký yêu cầu', 'description' => 'Giám sát nhật ký và lỗi API'],
+            'vi' => ['name' => 'Nhật ký yêu cầu', 'description' => 'Giám sát nhật ký và lỗi API', 'section' => 'Giám sát'],
         ],
         'cms-system-info' => [
-            'vi' => ['name' => 'Thông tin hệ thống', 'description' => 'Xem môi trường và cấu hình hệ thống'],
+            'vi' => ['name' => 'Thông tin hệ thống', 'description' => 'Xem môi trường và cấu hình hệ thống', 'section' => 'Hệ thống'],
         ],
         'cms-system-cache' => [
-            'vi' => ['name' => 'Quản lý bộ nhớ đệm', 'description' => 'Xóa và quản lý bộ nhớ đệm ứng dụng'],
+            'vi' => ['name' => 'Quản lý bộ nhớ đệm', 'description' => 'Xóa và quản lý bộ nhớ đệm ứng dụng', 'section' => 'Hệ thống'],
         ],
     ];
 }

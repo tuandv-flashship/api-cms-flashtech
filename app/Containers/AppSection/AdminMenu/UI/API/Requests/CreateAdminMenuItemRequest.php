@@ -21,6 +21,7 @@ final class CreateAdminMenuItemRequest extends ParentRequest
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['string'],
             'children_display' => ['nullable', 'string', 'in:sidebar,panel'],
+            'section' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:255'],
             'priority' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['nullable', 'boolean'],

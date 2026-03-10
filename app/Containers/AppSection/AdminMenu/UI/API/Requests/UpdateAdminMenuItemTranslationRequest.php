@@ -18,6 +18,7 @@ final class UpdateAdminMenuItemTranslationRequest extends ParentRequest
             'lang_code' => ['required', 'string', Rule::in($langCodes)],
             'name' => ['sometimes', 'nullable', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'section' => ['sometimes', 'nullable', 'string', 'max:100'],
         ];
     }
 

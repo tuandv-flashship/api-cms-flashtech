@@ -41,6 +41,7 @@ final class AdminMenuItemTransformer extends TransformerAbstract
             'route' => $item->route,
             'permissions' => $item->permissions,
             'children_display' => $item->children_display,
+            'section' => $item->section,
             'description' => $item->description,
             'priority' => $item->priority,
             'is_active' => $item->is_active,
@@ -48,9 +49,15 @@ final class AdminMenuItemTransformer extends TransformerAbstract
         ];
 
         if ($item->relationLoaded('children')) {
-            $data['children'] = $item->children->map(
+            $children = $item->children->map(
                 fn (AdminMenuItem $child): array => $this->transformModel($child),
             )->all();
+
+            $data['children'] = $children;
+
+            if ($item->children_display === 'panel') {
+                $data['sections'] = $this->groupBySection($children);
+            }
         }
 
         return $data;
@@ -71,18 +78,53 @@ final class AdminMenuItemTransformer extends TransformerAbstract
             'route' => $item['route'] ?? null,
             'permissions' => $item['permissions'] ?? null,
             'children_display' => $item['children_display'] ?? 'sidebar',
+            'section' => $item['section'] ?? null,
             'description' => $item['description'] ?? null,
             'priority' => $item['priority'] ?? 0,
             'is_active' => $item['is_active'] ?? true,
         ];
 
         if (isset($item['children']) && is_array($item['children'])) {
-            $data['children'] = array_map(
+            $children = array_map(
                 fn (array $child): array => $this->transformArray($child),
                 $item['children'],
             );
+
+            $data['children'] = $children;
+
+            if (($item['children_display'] ?? 'sidebar') === 'panel') {
+                $data['sections'] = $this->groupBySection($children);
+            }
         }
 
         return $data;
+    }
+
+    /**
+     * Group children by section name, preserving order.
+     *
+     * @param  array<int, array<string, mixed>> $children
+     * @return array<int, array{name: string, items: array<int, array<string, mixed>>}>
+     */
+    private function groupBySection(array $children): array
+    {
+        $groups = [];
+        $order = [];
+
+        foreach ($children as $child) {
+            $section = $child['section'] ?? 'General';
+
+            if (!isset($groups[$section])) {
+                $groups[$section] = [];
+                $order[] = $section;
+            }
+
+            $groups[$section][] = $child;
+        }
+
+        return array_map(
+            fn (string $name): array => ['name' => $name, 'items' => $groups[$name]],
+            $order,
+        );
     }
 }
