@@ -214,6 +214,11 @@ final class AdminMenu
             // Attach filtered children or remove empty key.
             if ($children !== []) {
                 $node['children'] = $children;
+
+                // Group children by section for panel-display parents.
+                if (($node['children_display'] ?? 'sidebar') === 'panel') {
+                    $node['sections'] = $this->groupBySection($children);
+                }
             } else {
                 unset($node['children']);
             }
@@ -245,6 +250,34 @@ final class AdminMenu
         usort($filtered, static fn (array $a, array $b): int => ((int) ($a['priority'] ?? 0)) <=> ((int) ($b['priority'] ?? 0)));
 
         return $filtered;
+    }
+
+    /**
+     * Group children by section name, preserving order.
+     *
+     * @param  array<int, array<string, mixed>> $children
+     * @return array<int, array{name: string, items: array<int, array<string, mixed>>}>
+     */
+    private function groupBySection(array $children): array
+    {
+        $groups = [];
+        $order = [];
+
+        foreach ($children as $child) {
+            $section = $child['section'] ?? 'General';
+
+            if (!isset($groups[$section])) {
+                $groups[$section] = [];
+                $order[] = $section;
+            }
+
+            $groups[$section][] = $child;
+        }
+
+        return array_map(
+            static fn (string $name): array => ['name' => $name, 'items' => $groups[$name]],
+            $order,
+        );
     }
 
     /**
