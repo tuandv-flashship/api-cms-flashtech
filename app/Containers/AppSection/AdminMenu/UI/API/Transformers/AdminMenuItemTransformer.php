@@ -11,6 +11,11 @@ final class AdminMenuItemTransformer extends TransformerAbstract
 
     protected array $availableIncludes = [];
 
+    public function __construct(
+        private readonly bool $includeTranslations = false,
+    ) {
+    }
+
     /**
      * @param AdminMenuItem|array<string, mixed> $item
      * @return array<string, mixed>
@@ -58,6 +63,10 @@ final class AdminMenuItemTransformer extends TransformerAbstract
             if ($item->children_display === 'panel') {
                 $data['sections'] = $this->groupBySection($children);
             }
+        }
+
+        if ($this->includeTranslations && $item->relationLoaded('translations')) {
+            $data['translations'] = $this->buildTranslationsMap($item);
         }
 
         return $data;
@@ -126,5 +135,25 @@ final class AdminMenuItemTransformer extends TransformerAbstract
             fn (string $name): array => ['name' => $name, 'items' => $groups[$name]],
             $order,
         );
+    }
+
+    /**
+     * Build translations map keyed by lang_code.
+     *
+     * @return array<string, array{name: string|null, description: string|null, section: string|null}>
+     */
+    private function buildTranslationsMap(AdminMenuItem $item): array
+    {
+        $map = [];
+
+        foreach ($item->translations as $translation) {
+            $map[$translation->lang_code] = [
+                'name' => $translation->name,
+                'description' => $translation->description,
+                'section' => $translation->section,
+            ];
+        }
+
+        return $map;
     }
 }

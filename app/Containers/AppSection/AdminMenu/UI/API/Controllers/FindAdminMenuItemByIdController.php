@@ -15,6 +15,8 @@ final class FindAdminMenuItemByIdController extends ApiController
     {
         $item = $action->run($request);
 
-        return Response::create($item, AdminMenuItemTransformer::class)->ok();
+        $includeTranslations = str_contains((string) $request->query('include', ''), 'translations');
+
+        return Response::create($item, new AdminMenuItemTransformer($includeTranslations))->ok();
     }
 }

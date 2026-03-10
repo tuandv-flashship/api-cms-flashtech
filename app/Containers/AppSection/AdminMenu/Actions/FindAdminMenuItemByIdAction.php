@@ -16,6 +16,6 @@ final class FindAdminMenuItemByIdAction extends ParentAction
 
     public function run(FindAdminMenuItemByIdRequest $request): AdminMenuItem
     {
-        return $this->findTask->run((int) $request->id, ['children.translations']);
+        return $this->findTask->run((int) $request->id, ['translations', 'children.translations']);
     }
 }
