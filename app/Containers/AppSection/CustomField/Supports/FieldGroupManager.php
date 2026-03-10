@@ -5,6 +5,7 @@ namespace App\Containers\AppSection\CustomField\Supports;
 use App\Containers\AppSection\CustomField\Models\FieldGroup;
 use App\Containers\AppSection\CustomField\Models\FieldItem;
 use App\Containers\AppSection\CustomField\Supports\CustomFieldRules;
+use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -26,17 +27,27 @@ final class FieldGroupManager
     }
 
     /**
+     * Update a field group. If `lang_code` is present and is not the default locale,
+     * saves translations via LanguageAdvancedManager instead of updating the main table.
+     *
      * @param array<string, mixed> $data
      */
     public function update(int $id, array $data): FieldGroup
     {
+        $langCode = $data['lang_code'] ?? null;
+        $isTranslation = $langCode && ! LanguageAdvancedManager::isDefaultLocale($langCode);
+
         [$payload, $items, $deletedItems] = $this->normalizePayload($data);
 
         $group = FieldGroup::query()->findOrFail($id);
-        $group->fill($payload);
-        $group->save();
 
-        $this->syncItems($group, $items, $deletedItems);
+        if ($isTranslation) {
+            $this->saveGroupTranslation($group, $payload, $items, $langCode);
+        } else {
+            $group->fill($payload);
+            $group->save();
+            $this->syncItems($group, $items, $deletedItems);
+        }
 
         return $group->refresh();
     }
@@ -44,6 +55,83 @@ final class FieldGroupManager
     public function delete(int $id): bool
     {
         return (bool) FieldGroup::query()->whereKey($id)->delete();
+    }
+
+    /**
+     * Save translations for a FieldGroup and its items.
+     *
+     * @param array<string, mixed> $payload
+     * @param array<int, array<string, mixed>> $items
+     */
+    private function saveGroupTranslation(FieldGroup $group, array $payload, array $items, string $langCode): void
+    {
+        // Save FieldGroup translation (title)
+        $translatableGroupData = Arr::only($payload, ['title']);
+        if ($translatableGroupData !== []) {
+            LanguageAdvancedManager::saveTranslation($group, $translatableGroupData, $langCode);
+        }
+
+        // Save FieldItem translations
+        if ($items === []) {
+            return;
+        }
+
+        $this->saveItemTranslations($items, (int) $group->getKey(), null, $langCode);
+    }
+
+    /**
+     * Recursively save translations for field items.
+     *
+     * @param array<int, array<string, mixed>> $items
+     */
+    private function saveItemTranslations(array $items, int $groupId, ?int $parentId, string $langCode): void
+    {
+        // Load existing items to match by slug or id
+        $existingItems = FieldItem::query()
+            ->where('field_group_id', $groupId)
+            ->where('parent_id', $parentId)
+            ->get()
+            ->keyBy('slug');
+
+        foreach ($items as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            // Find the existing item by id or slug
+            $fieldItem = null;
+            $decodedId = $this->decodeId($item['id'] ?? null);
+
+            if ($decodedId !== null) {
+                $fieldItem = FieldItem::query()->find($decodedId);
+            }
+
+            if (! $fieldItem && isset($item['slug'])) {
+                $fieldItem = $existingItems->get($item['slug']);
+            }
+
+            if (! $fieldItem) {
+                continue;
+            }
+
+            // Save translatable fields for this item
+            $translatableData = Arr::only($item, ['title', 'instructions', 'options']);
+
+            // Encode options if array
+            if (isset($translatableData['options']) && (is_array($translatableData['options']) || is_object($translatableData['options']))) {
+                $translatableData['options'] = json_encode($translatableData['options']);
+            }
+
+            if ($translatableData !== []) {
+                LanguageAdvancedManager::saveTranslation($fieldItem, $translatableData, $langCode);
+            }
+
+            // Recurse for children
+            $children = $item['items'] ?? [];
+            if (is_array($children) && $children !== []) {
+                $this->saveItemTranslations($children, $groupId, (int) $fieldItem->getKey(), $langCode);
+            }
+        }
     }
 
     /**

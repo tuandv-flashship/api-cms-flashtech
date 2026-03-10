@@ -5,6 +5,7 @@ namespace App\Containers\AppSection\CustomField\Actions;
 use App\Containers\AppSection\CustomField\Models\FieldGroup;
 use App\Containers\AppSection\CustomField\Models\FieldItem;
 use App\Ship\Parents\Actions\Action as ParentAction;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 final class ExportFieldGroupAction extends ParentAction
@@ -18,15 +19,25 @@ final class ExportFieldGroupAction extends ParentAction
     public function run(int $id): array
     {
         $group = FieldGroup::query()->findOrFail($id);
+        $groupId = (int) $group->getKey();
 
-        $groupTranslations = $this->getGroupTranslations((int) $group->getKey());
+        // Batch-load all items and translations in 3 queries total
+        $allItems = FieldItem::query()
+            ->where('field_group_id', $groupId)
+            ->orderBy('order')
+            ->get();
+
+        $itemIds = $allItems->pluck('id')->all();
+
+        $groupTranslations = $this->getGroupTranslations($groupId);
+        $allItemTranslations = $this->batchGetItemTranslations($itemIds);
 
         $result = [
             'title' => $group->getRawOriginal('title'),
             'rules' => $this->decodeJson($group->getRawOriginal('rules')),
             'order' => $group->order,
             'status' => $group->status?->value ?? (string) $group->status,
-            'items' => $this->exportItems((int) $group->getKey(), null),
+            'items' => $this->buildItemTree($allItems, $allItemTranslations, null),
         ];
 
         if (! empty($groupTranslations)) {
@@ -37,18 +48,18 @@ final class ExportFieldGroupAction extends ParentAction
     }
 
     /**
+     * Build item tree recursively from pre-loaded collections.
+     *
+     * @param Collection<int, FieldItem> $allItems
+     * @param array<int, array<string, array<string, string>>> $allTranslations
      * @return array<int, array<string, mixed>>
      */
-    private function exportItems(int $groupId, ?int $parentId): array
+    private function buildItemTree(Collection $allItems, array $allTranslations, ?int $parentId): array
     {
-        $items = FieldItem::query()
-            ->where('field_group_id', $groupId)
-            ->where('parent_id', $parentId)
-            ->orderBy('order')
-            ->get();
-
         $result = [];
-        foreach ($items as $item) {
+
+        foreach ($allItems->where('parent_id', $parentId) as $item) {
+            $itemId = (int) $item->getKey();
             $itemData = [
                 'title' => $item->getRawOriginal('title'),
                 'slug' => $item->slug,
@@ -56,12 +67,11 @@ final class ExportFieldGroupAction extends ParentAction
                 'instructions' => $item->getRawOriginal('instructions'),
                 'options' => $this->decodeJson($item->getRawOriginal('options')),
                 'order' => $item->order,
-                'items' => $this->exportItems($groupId, (int) $item->getKey()),
+                'items' => $this->buildItemTree($allItems, $allTranslations, $itemId),
             ];
 
-            $itemTranslations = $this->getItemTranslations((int) $item->getKey());
-            if (! empty($itemTranslations)) {
-                $itemData['translations'] = $itemTranslations;
+            if (isset($allTranslations[$itemId])) {
+                $itemData['translations'] = $allTranslations[$itemId];
             }
 
             $result[] = $itemData;
@@ -96,14 +106,19 @@ final class ExportFieldGroupAction extends ParentAction
     }
 
     /**
-     * Get translations for a FieldItem, keyed by lang_code.
+     * Batch-load all translations for multiple FieldItems in a single query.
      *
-     * @return array<string, array<string, string>>
+     * @param array<int, int> $itemIds
+     * @return array<int, array<string, array<string, string>>>
      */
-    private function getItemTranslations(int $itemId): array
+    private function batchGetItemTranslations(array $itemIds): array
     {
+        if ($itemIds === []) {
+            return [];
+        }
+
         $rows = DB::table('field_items_translations')
-            ->where('field_items_id', $itemId)
+            ->whereIn('field_items_id', $itemIds)
             ->get();
 
         $translations = [];
@@ -117,7 +132,7 @@ final class ExportFieldGroupAction extends ParentAction
                 }
             }
             if (! empty($data)) {
-                $translations[$row->lang_code] = $data;
+                $translations[(int) $row->field_items_id][$row->lang_code] = $data;
             }
         }
 

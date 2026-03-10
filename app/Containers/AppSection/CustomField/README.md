@@ -76,7 +76,7 @@ FE gửi `X-Locale` theo ngôn ngữ hiển thị của user. BE tự trả data
 **Request (user đang xem tiếng Việt):**
 
 ```http
-GET /v1/custom-field-groups?include=items
+GET /v1/custom-fields/groups?include=items
 Authorization: Bearer {{access_token}}
 X-Locale: vi
 ```
@@ -194,7 +194,7 @@ X-Locale: en
 **Bước 1: Tạo bản ghi gốc (POST) — KHÔNG gửi `lang_code`**
 
 ```http
-POST /v1/custom-field-groups
+POST /v1/custom-fields/groups
 Authorization: Bearer {{access_token}}
 X-Locale: en
 
@@ -212,7 +212,7 @@ X-Locale: en
 **Bước 2: Thêm bản dịch (PUT) — GỬI `lang_code`**
 
 ```http
-PUT /v1/custom-field-groups/{id}
+PATCH /v1/custom-fields/groups/{id}
 Authorization: Bearer {{access_token}}
 X-Locale: en
 
@@ -320,18 +320,18 @@ All routes are **private** (`auth:api` middleware).
 - **Đọc (GET)**: dùng `X-Locale` header để nhận response đa ngôn ngữ.
 - **Ghi (POST/PUT/PATCH)**: dùng `lang_code` trong body để chỉ định ngôn ngữ target.
 
-| Method   | Endpoint                                 | Permission              | Description                                      |
-| -------- | ---------------------------------------- | ----------------------- | ------------------------------------------------ |
-| `GET`    | `/v1/custom-field-options`               | `custom-fields.index`   | Get options (statuses, field_types, rule_groups) |
-| `GET`    | `/v1/custom-field-groups`                | `custom-fields.index`   | List all field groups                            |
-| `GET`    | `/v1/custom-field-groups/{id}`           | `custom-fields.index`   | Find field group by ID                           |
-| `POST`   | `/v1/custom-field-groups`                | `custom-fields.create`  | Create field group                               |
-| `PUT`    | `/v1/custom-field-groups/{id}`           | `custom-fields.edit`    | Update field group                               |
-| `DELETE` | `/v1/custom-field-groups/{id}`           | `custom-fields.destroy` | Delete field group                               |
-| `POST`   | `/v1/custom-field-groups/{id}/duplicate` | `custom-fields.create`  | Deep clone field group                           |
-| `GET`    | `/v1/custom-field-groups/{id}/export`    | `custom-fields.index`   | Export field group as portable JSON              |
-| `POST`   | `/v1/custom-field-groups/import`         | `custom-fields.create`  | Import field group from JSON                     |
-| `GET`    | `/v1/custom-fields/boxes`                | `custom-fields.index`   | Get custom field boxes for a model               |
+| Method   | Endpoint                                  | Permission              | Description                                         |
+| -------- | ----------------------------------------- | ----------------------- | --------------------------------------------------- |
+| `GET`    | `/v1/custom-fields/options`               | `custom-fields.index`   | Get options (statuses, field_types, rule_groups)    |
+| `GET`    | `/v1/custom-fields/groups`                | `custom-fields.index`   | List all field groups                               |
+| `GET`    | `/v1/custom-fields/groups/{id}`           | `custom-fields.index`   | Find field group by ID                              |
+| `POST`   | `/v1/custom-fields/groups`                | `custom-fields.create`  | Create field group                                  |
+| `PATCH`  | `/v1/custom-fields/groups/{id}`           | `custom-fields.edit`    | Update field group (+ `lang_code` for translations) |
+| `DELETE` | `/v1/custom-fields/groups/{id}`           | `custom-fields.destroy` | Delete field group (cascade delete translations)    |
+| `POST`   | `/v1/custom-fields/groups/{id}/duplicate` | `custom-fields.create`  | Deep clone field group + translations               |
+| `GET`    | `/v1/custom-fields/groups/{id}/export`    | `custom-fields.index`   | Export field group + translations as JSON           |
+| `POST`   | `/v1/custom-fields/groups/import`         | `custom-fields.create`  | Import field group + auto-import translations       |
+| `GET`    | `/v1/custom-fields/boxes`                 | `custom-fields.index`   | Get custom field boxes for a model                  |
 
 ### Supported Models
 

@@ -5,7 +5,7 @@
  *
  * @apiName            DuplicateFieldGroup
  *
- * @api                {post} /v1/custom-field-groups/:id/duplicate Duplicate Field Group
+ * @api                {post} /v1/custom-fields/groups/:id/duplicate Duplicate Field Group
  *
  * @apiVersion         1.0.0
  *
@@ -18,5 +18,5 @@
 use App\Containers\AppSection\CustomField\UI\API\Controllers\DuplicateFieldGroupController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('custom-field-groups/{field_group_id}/duplicate', DuplicateFieldGroupController::class)
+Route::post('custom-fields/groups/{field_group_id}/duplicate', DuplicateFieldGroupController::class)
     ->middleware(['auth:api']);
