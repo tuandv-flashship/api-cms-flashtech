@@ -209,7 +209,7 @@ X-Locale: en
 
 → Tạo `field_groups` + `field_items` ở default locale (en). Trả về ID.
 
-**Bước 2: Thêm bản dịch (PUT) — GỬI `lang_code`**
+**Bước 2: Thêm bản dịch (PATCH) — GỬI `lang_code`**
 
 ```http
 PATCH /v1/custom-fields/groups/{id}
@@ -231,9 +231,14 @@ X-Locale: en
 }
 ```
 
-→ Lưu vào `field_groups_translations` + `field_items_translations` (locale vi)
+→ Khi có `lang_code`: lưu vào `field_groups_translations` + `field_items_translations` (locale vi). Items khớp qua `id` hoặc `slug`.
+→ Khi không có `lang_code`: cập nhật main table (default locale).
 
-> **Lưu ý**: `lang_code` chỉ dùng ở **PUT** (update). **POST** (create) luôn tạo bản ghi default locale. Phải có bản ghi gốc trước mới tạo được bản dịch.
+> **Lưu ý**:
+>
+> - `lang_code` chỉ dùng ở **PATCH** (update). **POST** (create) luôn tạo bản ghi default locale.
+> - `lang_code` phải là locale hợp lệ trong table `languages` (`exists:languages,lang_code`), nếu sai trả về **422 Validation Error**.
+> - Hỗ trợ alias `language` → tự normalize thành `lang_code`.
 
 ---
 
@@ -261,16 +266,60 @@ const choices = options.selectChoices.split("\n").map((line) => {
 
 ---
 
-#### 6. Edge Cases
+#### 6. Import / Export Round-trip
+
+**Export** → **Import** tương thích hoàn toàn. Workflow:
+
+```
+1. GET /v1/custom-fields/groups/{id}/export
+   → Trả JSON chứa default locale data + key `translations` cho tất cả locales
+
+2. POST /v1/custom-fields/groups/import
+   Body: { "data": <export output> }
+   → Tạo FieldGroup + FieldItems ở default locale + auto-import tất cả translations
+```
+
+Ví dụ output Export:
+
+```json
+{
+    "title": "Post Additional Information",
+    "translations": { "vi": { "title": "Thông tin bổ sung bài viết" } },
+    "items": [
+        {
+            "title": "Post Type",
+            "slug": "post_type",
+            "type": "select",
+            "translations": {
+                "vi": {
+                    "title": "Loại bài viết",
+                    "instructions": "Chọn loại bài viết",
+                    "options": {
+                        "selectChoices": "article:Bài viết\nnews:Tin tức"
+                    }
+                }
+            }
+        }
+    ]
+}
+```
+
+→ Dùng trực tiếp làm body cho Import endpoint.
+
+---
+
+#### 7. Edge Cases
 
 | Tình huống                      | Hành vi                                                                           |
 | ------------------------------- | --------------------------------------------------------------------------------- |
 | Locale không có translation     | Trả về giá trị default locale (fallback)                                          |
 | `lang_code` không gửi           | Cập nhật default locale                                                           |
+| `lang_code` không hợp lệ        | **422 Validation Error** (`exists:languages,lang_code`)                           |
 | `X-Locale` trùng default locale | Đọc từ main table, không query translations                                       |
 | Export field group              | Trả về data default locale + key `translations` chứa tất cả bản dịch              |
 | Import field group              | Tạo data default locale + auto-import translations nếu JSON có key `translations` |
 | Duplicate field group           | Deep clone kèm tất cả translations (FieldGroup + FieldItems)                      |
+| Delete FieldGroup/FieldItem     | **Cascade delete** translations tự động (FK constraint)                           |
 
 ---
 
