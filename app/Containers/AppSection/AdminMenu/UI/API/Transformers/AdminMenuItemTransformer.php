@@ -65,7 +65,7 @@ final class AdminMenuItemTransformer extends TransformerAbstract
             }
         }
 
-        if ($this->includeTranslations && $item->relationLoaded('translations')) {
+        if ($this->includeTranslations && $item->relationLoaded('allTranslations')) {
             $data['translations'] = $this->buildTranslationsMap($item);
         }
 
@@ -104,6 +104,10 @@ final class AdminMenuItemTransformer extends TransformerAbstract
             if (($item['children_display'] ?? 'sidebar') === 'panel') {
                 $data['sections'] = $this->groupBySection($children);
             }
+        }
+
+        if ($this->includeTranslations && isset($item['_translations'])) {
+            $data['translations'] = $item['_translations'];
         }
 
         return $data;
@@ -146,7 +150,7 @@ final class AdminMenuItemTransformer extends TransformerAbstract
     {
         $map = [];
 
-        foreach ($item->translations as $translation) {
+        foreach ($item->allTranslations as $translation) {
             $map[$translation->lang_code] = [
                 'name' => $translation->name,
                 'description' => $translation->description,
