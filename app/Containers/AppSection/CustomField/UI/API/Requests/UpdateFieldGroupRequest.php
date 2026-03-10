@@ -22,6 +22,15 @@ final class UpdateFieldGroupRequest extends ParentRequest
                 }
             }
         }
+
+        // Normalize 'language' alias → 'lang_code'
+        $langCode = $this->input('lang_code') ?? $this->input('language');
+        if ($langCode !== null) {
+            $normalized = \App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager::normalizeLanguageCode($langCode);
+            if ($normalized) {
+                $this->merge(['lang_code' => $normalized]);
+            }
+        }
     }
 
     public function rules(): array
@@ -31,6 +40,7 @@ final class UpdateFieldGroupRequest extends ParentRequest
             'rules' => ['sometimes', 'array'],
             'order' => ['sometimes', 'integer', 'min:0'],
             'status' => ['sometimes', Rule::enum(ContentStatus::class)],
+            'lang_code' => ['sometimes', 'nullable', 'string', 'max:20', 'exists:languages,lang_code'],
             'group_items' => ['sometimes', 'array'],
             'group_items.*.title' => ['required_with:group_items', 'string', 'max:255'],
             'group_items.*.slug' => ['nullable', 'string', 'max:255'],

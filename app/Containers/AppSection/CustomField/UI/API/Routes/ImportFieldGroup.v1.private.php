@@ -5,7 +5,7 @@
  *
  * @apiName            ImportFieldGroup
  *
- * @api                {post} /v1/custom-field-groups/import Import Field Group
+ * @api                {post} /v1/custom-fields/groups/import Import Field Group
  *
  * @apiVersion         1.0.0
  *
@@ -19,5 +19,5 @@
 use App\Containers\AppSection\CustomField\UI\API\Controllers\ImportFieldGroupController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('custom-field-groups/import', ImportFieldGroupController::class)
+Route::post('custom-fields/groups/import', ImportFieldGroupController::class)
     ->middleware(['auth:api']);
