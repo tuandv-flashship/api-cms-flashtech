@@ -23,6 +23,7 @@ final class AdminMenuItem extends ParentModel
         'route',
         'permissions',
         'children_display',
+        'section',
         'description',
         'priority',
         'is_active',

@@ -18,6 +18,7 @@ final class BulkSaveAdminMenuItemsRequest extends ParentRequest
             'items.*.permissions' => ['nullable', 'array'],
             'items.*.permissions.*' => ['string'],
             'items.*.children_display' => ['nullable', 'string', 'in:sidebar,panel'],
+            'items.*.section' => ['nullable', 'string', 'max:100'],
             'items.*.description' => ['nullable', 'string', 'max:255'],
             'items.*.priority' => ['nullable', 'integer', 'min:0'],
             'items.*.is_active' => ['nullable', 'boolean'],

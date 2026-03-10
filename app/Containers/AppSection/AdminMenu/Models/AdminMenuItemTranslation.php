@@ -25,6 +25,7 @@ final class AdminMenuItemTranslation extends ParentModel
         'admin_menu_items_id',
         'name',
         'description',
+        'section',
     ];
 
     public function adminMenuItem(): BelongsTo

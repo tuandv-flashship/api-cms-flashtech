@@ -256,6 +256,7 @@ return [
                 'route' => '/settings/languages',
                 'priority' => 10,
                 'permissions' => ['languages.index'],
+                'section' => 'Localization',
             ],
             [
                 'id' => 'cms-settings-translations',
@@ -266,6 +267,7 @@ return [
                 'route' => '/settings/translations',
                 'priority' => 20,
                 'permissions' => ['translations.index'],
+                'section' => 'Localization',
             ],
         ],
     ],
@@ -294,6 +296,7 @@ return [
                 'route' => '/system/users',
                 'priority' => 10,
                 'permissions' => ['users.index'],
+                'section' => 'Users & Permissions',
             ],
             [
                 'id' => 'cms-system-roles',
@@ -304,6 +307,7 @@ return [
                 'route' => '/system/roles',
                 'priority' => 20,
                 'permissions' => ['roles.index'],
+                'section' => 'Users & Permissions',
             ],
             [
                 'id' => 'cms-system-audit-logs',
@@ -314,6 +318,7 @@ return [
                 'route' => '/system/audit-logs',
                 'priority' => 30,
                 'permissions' => ['audit-log.index'],
+                'section' => 'Monitoring',
             ],
             [
                 'id' => 'cms-system-request-logs',
@@ -324,6 +329,7 @@ return [
                 'route' => '/system/request-logs',
                 'priority' => 40,
                 'permissions' => ['request-log.index'],
+                'section' => 'Monitoring',
             ],
             [
                 'id' => 'cms-system-info',
@@ -334,6 +340,7 @@ return [
                 'route' => '/system/info',
                 'priority' => 50,
                 'permissions' => ['system.info'],
+                'section' => 'System',
             ],
             [
                 'id' => 'cms-system-cache',
@@ -344,6 +351,7 @@ return [
                 'route' => '/system/cache',
                 'priority' => 60,
                 'permissions' => ['system.cache'],
+                'section' => 'System',
             ],
         ],
     ],

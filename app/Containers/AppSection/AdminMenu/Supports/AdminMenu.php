@@ -160,6 +160,7 @@ final class AdminMenu
         // Translated values via HasLanguageTranslations accessor.
         $translatedName = $item->name;
         $translatedDesc = $item->description;
+        $translatedSection = $item->section;
 
         return [
             'id' => $item->key,
@@ -170,6 +171,7 @@ final class AdminMenu
             'route' => $item->route,
             'permissions' => $item->permissions,
             'children_display' => $item->children_display,
+            'section' => $translatedSection ?? $item->getRawOriginal('section'),
             'description' => $translatedDesc ?? $item->getRawOriginal('description'),
             'priority' => $item->priority,
             'is_active' => $item->is_active,

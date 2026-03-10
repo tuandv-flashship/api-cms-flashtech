@@ -47,6 +47,7 @@ final class BuildAdminMenuTreeTask extends ParentTask
             'route' => $item->route,
             'permissions' => $item->permissions,
             'children_display' => $item->children_display,
+            'section' => $item->section,
             'description' => $item->description,
             'priority' => $item->priority,
             'is_active' => $item->is_active,

@@ -23,6 +23,7 @@ final class UpdateAdminMenuItemRequest extends ParentRequest
             'permissions' => ['sometimes', 'nullable', 'array'],
             'permissions.*' => ['string'],
             'children_display' => ['sometimes', 'nullable', 'string', 'in:sidebar,panel'],
+            'section' => ['sometimes', 'nullable', 'string', 'max:100'],
             'description' => ['sometimes', 'nullable', 'string', 'max:255'],
             'priority' => ['sometimes', 'nullable', 'integer', 'min:0'],
             'is_active' => ['sometimes', 'nullable', 'boolean'],
