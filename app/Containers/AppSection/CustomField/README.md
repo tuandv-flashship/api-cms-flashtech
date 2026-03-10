@@ -8,6 +8,7 @@ Container path: `app/Containers/AppSection/CustomField`
 - Store **custom field values** against any supported model (polymorphic).
 - Support **conditional rules** to show/hide field groups based on context.
 - Provide **API-first** CRUD + listing for FE (Next.js) admin panels.
+- Full **multilingual** support (3 translation layers).
 
 ### Architecture
 
@@ -45,33 +46,233 @@ final class Post extends Model
 
 **Currently applied to:** `Post`, `Category`, `Page`.
 
-### Multilingual (i18n)
+---
 
-3 translation layers, all using `HasLanguageTranslations` trait + `X-Locale` header:
+### Multilingual (i18n) — FE Integration Guide
 
-| Layer           | Table                        | Translatable Columns               | Description          |
-| --------------- | ---------------------------- | ---------------------------------- | -------------------- |
-| **FieldGroup**  | `field_groups_translations`  | `title`                            | Tên nhóm trường      |
-| **FieldItem**   | `field_items_translations`   | `title`, `instructions`, `options` | Metadata trường      |
-| **CustomField** | `custom_fields_translations` | `value`                            | Giá trị do user nhập |
+#### Nguyên tắc chính
 
-**Cách sử dụng:**
+| Header / Field      | Vai trò                                   | Mô tả                                             |
+| ------------------- | ----------------------------------------- | ------------------------------------------------- |
+| `X-Locale` (header) | **Đọc** — ngôn ngữ hiển thị UI            | FE user chọn English → `X-Locale: en` mọi request |
+| `lang_code` (body)  | **Ghi** — ngôn ngữ đang cập nhật bản dịch | Admin đang sửa bản dịch VI → `"lang_code": "vi"`  |
 
-```
-# Lấy data theo locale mặc định (en)
+> **Quan trọng**: `X-Locale` là ngôn ngữ display của user, luôn gửi theo cài đặt ngôn ngữ hiện tại. `lang_code` là ngôn ngữ **target** khi admin nhập/sửa bản dịch cho ngôn ngữ khác.
+
+#### 3 Translation Layers
+
+| Layer           | Table                        | Columns translate                  | Mô tả                                         |
+| --------------- | ---------------------------- | ---------------------------------- | --------------------------------------------- |
+| **FieldGroup**  | `field_groups_translations`  | `title`                            | Tên nhóm trường hiển thị trong form builder   |
+| **FieldItem**   | `field_items_translations`   | `title`, `instructions`, `options` | Label, hướng dẫn, lựa chọn trong form         |
+| **CustomField** | `custom_fields_translations` | `value`                            | Giá trị user nhập (text, textarea, select...) |
+
+---
+
+#### 1. Đọc dữ liệu — `X-Locale` header
+
+FE gửi `X-Locale` theo ngôn ngữ hiển thị của user. BE tự trả data đúng locale.
+
+**Request (user đang xem tiếng Việt):**
+
+```http
 GET /v1/custom-field-groups?include=items
-
-# Lấy data theo locale vi
-GET /v1/custom-field-groups?include=items
+Authorization: Bearer {{access_token}}
 X-Locale: vi
 ```
 
-**Options i18n:**
+**Response:**
 
-Options (selectChoices, placeholderText...) là JSON có cấu trúc không cố định → translate toàn bộ JSON per locale. Keys giữ nguyên, labels thay đổi:
+```json
+{
+    "data": [
+        {
+            "type": "FieldGroup",
+            "id": "v9jEX5zd5kDdnW2O",
+            "title": "Thông tin bổ sung bài viết",
+            "items": {
+                "data": [
+                    {
+                        "title": "Loại bài viết",
+                        "slug": "post_type",
+                        "type": "select",
+                        "instructions": "Chọn loại bài viết",
+                        "options": {
+                            "selectChoices": "article:Bài viết\nnews:Tin tức\ntutorial:Hướng dẫn",
+                            "defaultValue": "article"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
+```
 
-- **EN**: `"featured:Featured post\nsticky:Sticky post"`
-- **VI**: `"featured:Bài viết nổi bật\nsticky:Bài viết ghim"`
+**Cùng request với `X-Locale: en` (hoặc không gửi):**
+
+```json
+{
+    "title": "Post Additional Information",
+    "items": {
+        "data": [
+            {
+                "title": "Post Type",
+                "instructions": "Select the type of post",
+                "options": {
+                    "selectChoices": "article:Article\nnews:News\ntutorial:Tutorial"
+                }
+            }
+        ]
+    }
+}
+```
+
+> Response structure **giống hệt nhau** giữa các locales. FE không cần branch logic theo locale.
+
+---
+
+#### 2. Đọc Custom Field Boxes — `X-Locale` header
+
+```http
+GET /v1/custom-fields/boxes?model=post&reference_id=v9jEX5zd5kDdnW2O
+Authorization: Bearer {{access_token}}
+X-Locale: vi
+```
+
+3 layers translate **đồng thời**:
+
+- **FieldGroup title**: "Thông tin bổ sung bài viết"
+- **FieldItem**: title, instructions, options đều tiếng Việt
+- **CustomField value**: Giá trị user đã nhập cho locale `vi`
+
+---
+
+#### 3. Lưu giá trị Custom Field — `lang_code` trong body
+
+Khi admin edit custom fields của một Post/Page, dùng `lang_code` trong body để chỉ định target locale.
+
+**Lưu cho default locale (en) — không cần `lang_code`:**
+
+```http
+PATCH /v1/posts/{id}
+Authorization: Bearer {{access_token}}
+X-Locale: en
+
+{
+  "custom_fields": [
+    { "slug": "post_type", "type": "select", "value": "tutorial" }
+  ]
+}
+```
+
+→ Value `"tutorial"` lưu vào `custom_fields.value` (main table)
+
+**Lưu cho locale khác (vi) — gửi `lang_code`:**
+
+```http
+PATCH /v1/posts/{id}
+Authorization: Bearer {{access_token}}
+X-Locale: en
+
+{
+  "lang_code": "vi",
+  "custom_fields": [
+    { "slug": "post_type", "type": "select", "value": "hướng dẫn" }
+  ]
+}
+```
+
+→ Value `"hướng dẫn"` lưu vào `custom_fields_translations` (locale vi)
+
+> `X-Locale: en` vì admin đang dùng UI tiếng Anh. `lang_code: vi` vì đang cập nhật bản dịch tiếng Việt.
+
+---
+
+#### 4. Tạo & cập nhật FieldGroup translations — Workflow
+
+**Bước 1: Tạo bản ghi gốc (POST) — KHÔNG gửi `lang_code`**
+
+```http
+POST /v1/custom-field-groups
+Authorization: Bearer {{access_token}}
+X-Locale: en
+
+{
+  "title": "Post Additional Information",
+  "status": "published",
+  "group_items": [
+    { "title": "Post Type", "slug": "post_type", "type": "select" }
+  ]
+}
+```
+
+→ Tạo `field_groups` + `field_items` ở default locale (en). Trả về ID.
+
+**Bước 2: Thêm bản dịch (PUT) — GỬI `lang_code`**
+
+```http
+PUT /v1/custom-field-groups/{id}
+Authorization: Bearer {{access_token}}
+X-Locale: en
+
+{
+  "lang_code": "vi",
+  "title": "Thông tin bổ sung bài viết",
+  "group_items": [
+    {
+      "title": "Loại bài viết",
+      "slug": "post_type",
+      "type": "select",
+      "instructions": "Chọn loại bài viết",
+      "options": "{\"selectChoices\":\"article:Bài viết\\nnews:Tin tức\"}"
+    }
+  ]
+}
+```
+
+→ Lưu vào `field_groups_translations` + `field_items_translations` (locale vi)
+
+> **Lưu ý**: `lang_code` chỉ dùng ở **PUT** (update). **POST** (create) luôn tạo bản ghi default locale. Phải có bản ghi gốc trước mới tạo được bản dịch.
+
+---
+
+#### 5. Options i18n — FE parse
+
+Options **không cố định** cấu trúc, phụ thuộc field type:
+
+| Field Type                    | Options keys cần translate | Ví dụ                              |
+| ----------------------------- | -------------------------- | ---------------------------------- |
+| `select`, `radio`, `checkbox` | `selectChoices`            | `"key:Label\nkey2:Label2"`         |
+| `text`, `textarea`, `number`  | `placeholderText`          | `"Nhập tóm tắt..."`                |
+| `image`, `file`               | —                          | Không có text cần translate        |
+| Tất cả                        | `defaultValue`             | **KHÔNG translate** (đây là value) |
+
+```javascript
+// Parse selectChoices cho FE
+const choices = options.selectChoices.split("\n").map((line) => {
+    const [value, ...rest] = line.split(":");
+    return { value, label: rest.join(":") };
+});
+// → [{ value: "article", label: "Bài viết" }, ...]
+```
+
+> FE **luôn dùng `value` (key)** để submit, chỉ hiển thị `label`. Keys giữ nguyên giữa các locales.
+
+---
+
+#### 6. Edge Cases
+
+| Tình huống                      | Hành vi                                                                           |
+| ------------------------------- | --------------------------------------------------------------------------------- |
+| Locale không có translation     | Trả về giá trị default locale (fallback)                                          |
+| `lang_code` không gửi           | Cập nhật default locale                                                           |
+| `X-Locale` trùng default locale | Đọc từ main table, không query translations                                       |
+| Export field group              | Trả về data default locale + key `translations` chứa tất cả bản dịch              |
+| Import field group              | Tạo data default locale + auto-import translations nếu JSON có key `translations` |
+| Duplicate field group           | Deep clone kèm tất cả translations (FieldGroup + FieldItems)                      |
+
+---
 
 ### Supported Field Types (17)
 
@@ -114,7 +315,10 @@ Rules use AND within groups, OR between groups.
 
 ### API Routes
 
-All routes are **private** (`auth:api` middleware). Hỗ trợ `X-Locale` header cho i18n.
+All routes are **private** (`auth:api` middleware).
+
+- **Đọc (GET)**: dùng `X-Locale` header để nhận response đa ngôn ngữ.
+- **Ghi (POST/PUT/PATCH)**: dùng `lang_code` trong body để chỉ định ngôn ngữ target.
 
 | Method   | Endpoint                                 | Permission              | Description                                      |
 | -------- | ---------------------------------------- | ----------------------- | ------------------------------------------------ |
@@ -184,3 +388,4 @@ Field group items are validated:
 - `2026-03-09`: Optimized — HasCustomFields trait, caching, validation hardening, duplication endpoint.
 - `2026-03-09`: Added import/export endpoints.
 - `2026-03-09`: Added multilingual support — FieldGroup title, FieldItem title/instructions/options translations.
+- `2026-03-09`: Corrected i18n docs — separated `X-Locale` (read/display) from `lang_code` (write/save target).
