@@ -32,6 +32,29 @@ abstract class Exporter
             ->toString();
     }
 
+    public function description(): string
+    {
+        return 'Export ' . $this->label() . ' to CSV/Excel file.';
+    }
+
+    /**
+     * Total exportable record count for FE display.
+     */
+    public function getTotal(): int
+    {
+        return 0;
+    }
+
+    /**
+     * Filter schema for FE form rendering.
+     *
+     * @return array<int, array{key: string, type: string, label: string, options?: array}>
+     */
+    public function getFilterSchema(): array
+    {
+        return [];
+    }
+
     public function format(string $format): self
     {
         $this->format = strtolower($format);

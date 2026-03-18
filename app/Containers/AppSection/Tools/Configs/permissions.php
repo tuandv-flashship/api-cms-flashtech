@@ -31,4 +31,24 @@ return [
         'flag' => 'other-translations.import',
         'parent_flag' => 'tools.data-synchronize',
     ],
+    [
+        'name' => 'Export Pages',
+        'flag' => 'pages.export',
+        'parent_flag' => 'tools.data-synchronize',
+    ],
+    [
+        'name' => 'Import Pages',
+        'flag' => 'pages.import',
+        'parent_flag' => 'tools.data-synchronize',
+    ],
+    [
+        'name' => 'Export Page Translations',
+        'flag' => 'page-translations.export',
+        'parent_flag' => 'tools.data-synchronize',
+    ],
+    [
+        'name' => 'Import Page Translations',
+        'flag' => 'page-translations.import',
+        'parent_flag' => 'tools.data-synchronize',
+    ],
 ];

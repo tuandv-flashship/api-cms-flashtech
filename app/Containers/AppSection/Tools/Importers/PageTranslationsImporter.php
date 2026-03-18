@@ -2,15 +2,15 @@
 
 namespace App\Containers\AppSection\Tools\Importers;
 
-use App\Containers\AppSection\Blog\Models\Post;
-use App\Containers\AppSection\Blog\Models\PostTranslation;
 use App\Containers\AppSection\LanguageAdvanced\Supports\LanguageAdvancedManager;
+use App\Containers\AppSection\Page\Models\Page;
+use App\Containers\AppSection\Page\Models\PageTranslation;
 use App\Containers\AppSection\Tools\Supports\Concerns\TranslationLocaleHelper;
 use App\Containers\AppSection\Tools\Supports\Import\ImportColumn;
 use App\Containers\AppSection\Tools\Supports\Import\Importer;
 use Illuminate\Support\Arr;
 
-final class PostTranslationsImporter extends Importer
+final class PageTranslationsImporter extends Importer
 {
     use TranslationLocaleHelper;
 
@@ -36,7 +36,7 @@ final class PostTranslationsImporter extends Importer
 
             $suffix = $this->normalizeLangKey($langCode);
 
-            foreach ($this->getTranslatableColumnsFor(Post::class) as $column) {
+            foreach ($this->getTranslatableColumnsFor(Page::class) as $column) {
                 $columns[] = ImportColumn::make($column . '_' . $suffix)
                     ->label(ucfirst($column) . ' (' . $suffix . ')')
                     ->rules(['nullable', 'string', 'max:' . $this->maxLengthForColumn($column)]);
@@ -48,7 +48,7 @@ final class PostTranslationsImporter extends Importer
 
     public function chunkSize(): int
     {
-        return (int) config('data-synchronize.imports.post_translations_chunk_size', 100);
+        return (int) config('data-synchronize.imports.page_translations_chunk_size', 100);
     }
 
     /**
@@ -56,23 +56,23 @@ final class PostTranslationsImporter extends Importer
      */
     public function examples(): array
     {
-        $posts = Post::query()->take(5)->get(['id', 'name']);
-        if ($posts->isEmpty()) {
+        $pages = Page::query()->take(5)->get(['id', 'name']);
+        if ($pages->isEmpty()) {
             return [
-                ['id' => 1, 'name' => 'Example post'],
+                ['id' => 1, 'name' => 'Example page'],
             ];
         }
 
-        $translations = PostTranslation::query()
-            ->whereIn('posts_id', $posts->pluck('id')->all())
+        $translations = PageTranslation::query()
+            ->whereIn('pages_id', $pages->pluck('id')->all())
             ->get()
-            ->groupBy('posts_id');
+            ->groupBy('pages_id');
 
         $rows = [];
-        foreach ($posts as $post) {
+        foreach ($pages as $page) {
             $row = [
-                'id' => $post->getKey(),
-                'name' => $post->name,
+                'id' => $page->getKey(),
+                'name' => $page->name,
             ];
 
             foreach ($this->getSupportedLangCodes() as $langCode) {
@@ -81,10 +81,10 @@ final class PostTranslationsImporter extends Importer
                 }
 
                 $suffix = $this->normalizeLangKey($langCode);
-                $translation = $translations->get($post->getKey(), collect())
+                $translation = $translations->get($page->getKey(), collect())
                     ->firstWhere('lang_code', $langCode);
 
-                foreach ($this->getTranslatableColumnsFor(Post::class) as $column) {
+                foreach ($this->getTranslatableColumnsFor(Page::class) as $column) {
                     $row[$column . '_' . $suffix] = $translation?->{$column} ?? '';
                 }
             }
@@ -102,23 +102,23 @@ final class PostTranslationsImporter extends Importer
     {
         $count = 0;
         $defaultLang = $this->getDefaultLangCode();
-        $translatable = $this->getTranslatableColumnsFor(Post::class);
+        $translatable = $this->getTranslatableColumnsFor(Page::class);
 
-        // Batch pre-fetch all posts to eliminate N+1 queries.
-        $postIds = array_filter(array_map(
+        // Batch pre-fetch all pages to eliminate N+1 queries.
+        $pageIds = array_filter(array_map(
             static fn (array $row) => (int) Arr::get($row, 'id', 0),
             $rows
         ), static fn (int $id) => $id > 0);
 
-        $posts = Post::query()
-            ->whereIn('id', $postIds)
+        $pages = Page::query()
+            ->whereIn('id', $pageIds)
             ->get()
             ->keyBy('id');
 
         foreach ($rows as $row) {
-            $postId = (int) Arr::get($row, 'id', 0);
-            $post = $posts->get($postId);
-            if (! $post) {
+            $pageId = (int) Arr::get($row, 'id', 0);
+            $page = $pages->get($pageId);
+            if (! $page) {
                 continue;
             }
 
@@ -141,7 +141,7 @@ final class PostTranslationsImporter extends Importer
                     continue;
                 }
 
-                LanguageAdvancedManager::saveTranslation($post, $translationData, $langCode);
+                LanguageAdvancedManager::saveTranslation($page, $translationData, $langCode);
                 $count++;
             }
         }

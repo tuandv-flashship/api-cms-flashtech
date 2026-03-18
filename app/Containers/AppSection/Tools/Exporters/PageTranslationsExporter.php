@@ -2,13 +2,13 @@
 
 namespace App\Containers\AppSection\Tools\Exporters;
 
-use App\Containers\AppSection\Blog\Models\Post;
-use App\Containers\AppSection\Blog\Models\PostTranslation;
+use App\Containers\AppSection\Page\Models\Page;
+use App\Containers\AppSection\Page\Models\PageTranslation;
 use App\Containers\AppSection\Tools\Supports\Concerns\TranslationLocaleHelper;
 use App\Containers\AppSection\Tools\Supports\Export\ExportColumn;
 use App\Containers\AppSection\Tools\Supports\Export\Exporter;
 
-final class PostTranslationsExporter extends Exporter
+final class PageTranslationsExporter extends Exporter
 {
     use TranslationLocaleHelper;
 
@@ -23,7 +23,7 @@ final class PostTranslationsExporter extends Exporter
         ];
 
         foreach ($this->getLocaleMap() as $langCode => $suffix) {
-            foreach ($this->getTranslatableColumnsFor(Post::class) as $column) {
+            foreach ($this->getTranslatableColumnsFor(Page::class) as $column) {
                 $label = ucfirst($column) . ' (' . $suffix . ')';
                 $columns[] = ExportColumn::make($column . '_' . $suffix)->label($label);
             }
@@ -34,7 +34,7 @@ final class PostTranslationsExporter extends Exporter
 
     public function getTotal(): int
     {
-        return Post::query()->count();
+        return Page::query()->count();
     }
 
     /**
@@ -42,19 +42,19 @@ final class PostTranslationsExporter extends Exporter
      */
     protected function getRows(): iterable
     {
-        $translatable = $this->getTranslatableColumnsFor(Post::class);
+        $translatable = $this->getTranslatableColumnsFor(Page::class);
         $localeMap = $this->getLocaleMap();
 
-        // Stream posts with cursor to avoid loading all into memory.
-        foreach (Post::query()->select(['id', 'name'])->cursor() as $post) {
-            $translations = PostTranslation::query()
-                ->where('posts_id', $post->getKey())
+        // Stream pages with cursor to avoid loading all into memory.
+        foreach (Page::query()->select(['id', 'name'])->cursor() as $page) {
+            $translations = PageTranslation::query()
+                ->where('pages_id', $page->getKey())
                 ->get()
                 ->keyBy('lang_code');
 
             $row = [
-                'id' => $post->getKey(),
-                'name' => $post->name,
+                'id' => $page->getKey(),
+                'name' => $page->name,
             ];
 
             foreach ($localeMap as $langCode => $suffix) {

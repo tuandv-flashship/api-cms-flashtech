@@ -2,6 +2,8 @@
 
 namespace App\Containers\AppSection\Tools\Exporters;
 
+use App\Containers\AppSection\Blog\Enums\ContentStatus;
+use App\Containers\AppSection\Blog\Models\Category;
 use App\Containers\AppSection\Blog\Models\Post;
 use App\Containers\AppSection\Tools\Supports\Export\ExportColumn;
 use App\Containers\AppSection\Tools\Supports\Export\Exporter;
@@ -46,6 +48,38 @@ final class PostsExporter extends Exporter
         ];
     }
 
+    public function getTotal(): int
+    {
+        return Post::query()->count();
+    }
+
+    public function getFilterSchema(): array
+    {
+        $statusOptions = array_map(
+            static fn (ContentStatus $s) => ['value' => $s->value, 'label' => ucfirst($s->value)],
+            ContentStatus::cases()
+        );
+
+        $categoryOptions = Category::query()
+            ->select(['id', 'name'])
+            ->orderBy('name')
+            ->get()
+            ->map(static fn ($c) => ['value' => $c->getHashedKey(), 'label' => $c->name])
+            ->all();
+
+        return [
+            ['key' => 'limit', 'type' => 'number', 'label' => 'Limit', 'placeholder' => 'Leave empty to export all'],
+            ['key' => 'status', 'type' => 'select', 'label' => 'Status', 'options' => $statusOptions],
+            ['key' => 'is_featured', 'type' => 'select', 'label' => 'Is Featured', 'options' => [
+                ['value' => '1', 'label' => 'Yes'],
+                ['value' => '0', 'label' => 'No'],
+            ]],
+            ['key' => 'category_id', 'type' => 'select', 'label' => 'Category', 'options' => $categoryOptions],
+            ['key' => 'start_date', 'type' => 'date', 'label' => 'Start Date'],
+            ['key' => 'end_date', 'type' => 'date', 'label' => 'End Date'],
+        ];
+    }
+
     /**
      * @return iterable<int, array<string, mixed>>
      */
@@ -56,7 +90,8 @@ final class PostsExporter extends Exporter
 
         $this->applyFilters($query);
 
-        foreach ($query->get() as $post) {
+        // Use cursor for memory efficiency on large datasets.
+        foreach ($query->cursor() as $post) {
             yield [
                 'name' => $post->name,
                 'description' => $post->description,

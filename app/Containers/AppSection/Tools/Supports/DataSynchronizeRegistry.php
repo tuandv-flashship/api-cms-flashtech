@@ -3,10 +3,15 @@
 namespace App\Containers\AppSection\Tools\Supports;
 
 use App\Containers\AppSection\Blog\Models\Post;
+use App\Containers\AppSection\Page\Models\Page;
 use App\Containers\AppSection\Tools\Exporters\OtherTranslationsExporter;
+use App\Containers\AppSection\Tools\Exporters\PageTranslationsExporter;
+use App\Containers\AppSection\Tools\Exporters\PagesExporter;
 use App\Containers\AppSection\Tools\Exporters\PostTranslationsExporter;
 use App\Containers\AppSection\Tools\Exporters\PostsExporter;
 use App\Containers\AppSection\Tools\Importers\OtherTranslationsImporter;
+use App\Containers\AppSection\Tools\Importers\PageTranslationsImporter;
+use App\Containers\AppSection\Tools\Importers\PagesImporter;
 use App\Containers\AppSection\Tools\Importers\PostTranslationsImporter;
 use App\Containers\AppSection\Tools\Importers\PostsImporter;
 use App\Containers\AppSection\Tools\Supports\Export\Exporter;
@@ -15,68 +20,69 @@ use InvalidArgumentException;
 
 final class DataSynchronizeRegistry
 {
+    /** @var array<string, Importer> */
+    private array $importers;
+
+    /** @var array<string, Exporter> */
+    private array $exporters;
+
     public function __construct(
-        private readonly PostsImporter $postsImporter,
-        private readonly PostTranslationsImporter $postTranslationsImporter,
-        private readonly OtherTranslationsImporter $otherTranslationsImporter,
-        private readonly PostsExporter $postsExporter,
-        private readonly PostTranslationsExporter $postTranslationsExporter,
-        private readonly OtherTranslationsExporter $otherTranslationsExporter,
+        PostsImporter $postsImporter,
+        PostTranslationsImporter $postTranslationsImporter,
+        OtherTranslationsImporter $otherTranslationsImporter,
+        PagesImporter $pagesImporter,
+        PageTranslationsImporter $pageTranslationsImporter,
+        PostsExporter $postsExporter,
+        PostTranslationsExporter $postTranslationsExporter,
+        OtherTranslationsExporter $otherTranslationsExporter,
+        PagesExporter $pagesExporter,
+        PageTranslationsExporter $pageTranslationsExporter,
     ) {
+        $this->importers = [
+            'posts' => $postsImporter,
+            'post-translations' => $postTranslationsImporter,
+            'other-translations' => $otherTranslationsImporter,
+            'pages' => $pagesImporter,
+            'page-translations' => $pageTranslationsImporter,
+        ];
+
+        $this->exporters = [
+            'posts' => $postsExporter,
+            'post-translations' => $postTranslationsExporter,
+            'other-translations' => $otherTranslationsExporter,
+            'pages' => $pagesExporter,
+            'page-translations' => $pageTranslationsExporter,
+        ];
     }
 
-    public function makeImporter(string $type, ?string $class = null): Importer
+    public function makeImporter(string $type): Importer
     {
-        return match ($type) {
-            'posts' => $this->freshImporter($this->postsImporter),
-            'post-translations' => $this->makePostTranslationsImporter($class),
-            'other-translations' => $this->freshImporter($this->otherTranslationsImporter),
-            default => throw new InvalidArgumentException('Unsupported import type.'),
-        };
-    }
-
-    public function makeExporter(string $type, ?string $class = null): Exporter
-    {
-        return match ($type) {
-            'posts' => $this->freshExporter($this->postsExporter),
-            'post-translations' => $this->makePostTranslationsExporter($class),
-            'other-translations' => $this->freshExporter($this->otherTranslationsExporter),
-            default => throw new InvalidArgumentException('Unsupported export type.'),
-        };
-    }
-
-    private function makePostTranslationsImporter(?string $class): Importer
-    {
-        $this->guardPostClass($class);
-
-        return $this->freshImporter($this->postTranslationsImporter);
-    }
-
-    private function makePostTranslationsExporter(?string $class): Exporter
-    {
-        $this->guardPostClass($class);
-
-        return $this->freshExporter($this->postTranslationsExporter);
-    }
-
-    private function guardPostClass(?string $class): void
-    {
-        if ($class === null || $class === '') {
-            return;
+        if (! isset($this->importers[$type])) {
+            throw new InvalidArgumentException("Unsupported import type: {$type}");
         }
 
-        if ($class !== Post::class) {
-            throw new InvalidArgumentException('Unsupported translation class.');
+        return clone $this->importers[$type];
+    }
+
+    public function makeExporter(string $type): Exporter
+    {
+        if (! isset($this->exporters[$type])) {
+            throw new InvalidArgumentException("Unsupported export type: {$type}");
         }
+
+        return clone $this->exporters[$type];
     }
 
-    private function freshImporter(Importer $importer): Importer
+    /**
+     * @return array<int, string>
+     */
+    public function getAvailableTypes(): array
     {
-        return clone $importer;
+        return array_keys($this->exporters);
     }
 
-    private function freshExporter(Exporter $exporter): Exporter
+    public function hasType(string $type): bool
     {
-        return clone $exporter;
+        return isset($this->exporters[$type]);
     }
 }

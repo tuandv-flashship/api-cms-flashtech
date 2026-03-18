@@ -6,15 +6,17 @@ use App\Containers\AppSection\AdminMenu\Models\AdminMenuItem;
 use App\Containers\AppSection\AdminMenu\Models\AdminMenuItemTranslation;
 use App\Containers\AppSection\AdminMenu\Supports\AdminMenu;
 use App\Ship\Parents\Seeders\Seeder as ParentSeeder;
+use Illuminate\Support\Facades\DB;
 
 final class AdminMenuSeeder_1 extends ParentSeeder
 {
     public function run(): void
     {
-        // Skip if items already exist.
-        if (AdminMenuItem::query()->exists()) {
-            return;
-        }
+        // Clear existing data before re-seeding.
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+        AdminMenuItemTranslation::query()->truncate();
+        AdminMenuItem::query()->truncate();
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
 
         $menu = config('admin-menu', []);
 
@@ -126,11 +128,35 @@ final class AdminMenuSeeder_1 extends ParentSeeder
         'cms-core-settings' => [
             'vi' => ['name' => 'Cài đặt', 'description' => null],
         ],
-        'cms-settings-languages' => [
-            'vi' => ['name' => 'Ngôn ngữ', 'description' => 'Quản lý ngôn ngữ và bản địa hoá', 'section' => 'Bản địa hóa'],
+        'cms-settings-general' => [
+            'vi' => ['name' => 'Chung', 'description' => 'Xem và cập nhật cài đặt chung và kích hoạt giấy phép', 'section' => 'Chung'],
         ],
-        'cms-settings-translations' => [
-            'vi' => ['name' => 'Bản dịch', 'description' => 'Quản lý chuỗi dịch cho tất cả ngôn ngữ', 'section' => 'Bản địa hóa'],
+        'cms-settings-email-rules' => [
+            'vi' => ['name' => 'Quy tắc email', 'description' => 'Cấu hình quy tắc email để kiểm tra', 'section' => 'Chung'],
+        ],
+        'cms-settings-phone-number' => [
+            'vi' => ['name' => 'Số điện thoại', 'description' => 'Cấu hình cài đặt trường số điện thoại', 'section' => 'Chung'],
+        ],
+        'cms-settings-media' => [
+            'vi' => ['name' => 'Phương tiện', 'description' => 'Xem và cập nhật cài đặt media', 'section' => 'Chung'],
+        ],
+        'cms-settings-languages' => [
+            'vi' => ['name' => 'Ngôn ngữ', 'description' => 'Xem và cập nhật ngôn ngữ trang web của bạn', 'section' => 'Chung'],
+        ],
+        'cms-settings-admin-appearance' => [
+            'vi' => ['name' => 'Giao Diện Quản Trị', 'description' => 'Xem và cập nhật logo, favicon, bố cục,...', 'section' => 'Chung'],
+        ],
+        'cms-settings-cache' => [
+            'vi' => ['name' => 'Bộ nhớ cache', 'description' => 'Cấu hình bộ nhớ đệm để tối ưu tốc độ', 'section' => 'Chung'],
+        ],
+        'cms-settings-speed-optimization' => [
+            'vi' => ['name' => 'Tối ưu tốc độ', 'description' => 'Nén HTML output, inline CSS, xóa chú thích...', 'section' => 'Chung'],
+        ],
+        'cms-settings-locales' => [
+            'vi' => ['name' => 'Ngôn ngữ', 'description' => 'Xem, tải xuống và nhập ngôn ngữ', 'section' => 'Bản địa hóa'],
+        ],
+        'cms-settings-other-translations' => [
+            'vi' => ['name' => 'Bản dịch khác', 'description' => 'Quản lý các bản dịch khác (admin, plugins, packages...)', 'section' => 'Bản địa hóa'],
         ],
         'cms-core-system' => [
             'vi' => ['name' => 'Quản trị hệ thống', 'description' => null],

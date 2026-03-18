@@ -18,6 +18,8 @@ return [
     'imports' => [
         'posts_chunk_size' => 50,
         'post_translations_chunk_size' => 100,
+        'pages_chunk_size' => 50,
+        'page_translations_chunk_size' => 100,
         'other_translations_chunk_size' => 1000,
     ],
 ];

@@ -23,6 +23,10 @@ class ContainerTestCase extends TestCase
             'post-translations.export',
             'other-translations.import',
             'other-translations.export',
+            'pages.import',
+            'pages.export',
+            'page-translations.import',
+            'page-translations.export',
         ];
 
         foreach ($permissions as $permission) {
