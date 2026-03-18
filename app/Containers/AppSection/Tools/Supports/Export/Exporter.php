@@ -55,6 +55,16 @@ abstract class Exporter
         return [];
     }
 
+    /**
+     * Validation rules for filter fields. Override in subclasses to validate type-specific filters.
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    public function getFilterValidationRules(): array
+    {
+        return [];
+    }
+
     public function format(string $format): self
     {
         $this->format = strtolower($format);

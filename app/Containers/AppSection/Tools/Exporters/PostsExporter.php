@@ -9,6 +9,7 @@ use App\Containers\AppSection\Tools\Supports\Export\ExportColumn;
 use App\Containers\AppSection\Tools\Supports\Export\Exporter;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rule;
 
 final class PostsExporter extends Exporter
 {
@@ -77,6 +78,18 @@ final class PostsExporter extends Exporter
             ['key' => 'category_id', 'type' => 'select', 'label' => 'Category', 'options' => $categoryOptions],
             ['key' => 'start_date', 'type' => 'date', 'label' => 'Start Date'],
             ['key' => 'end_date', 'type' => 'date', 'label' => 'End Date'],
+        ];
+    }
+
+    public function getFilterValidationRules(): array
+    {
+        return [
+            'limit' => ['nullable', 'integer', 'min:1'],
+            'status' => ['nullable', Rule::in(array_map(static fn (ContentStatus $s) => $s->value, ContentStatus::cases()))],
+            'is_featured' => ['nullable', 'boolean'],
+            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'start_date' => ['nullable', 'date'],
+            'end_date' => ['nullable', 'date'],
         ];
     }
 

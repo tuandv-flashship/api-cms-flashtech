@@ -12,11 +12,23 @@ final class ExportDataSynchronizeRequest extends ParentRequest
 
     public function rules(): array
     {
-        return [
+        $baseRules = [
             'format' => ['sometimes', 'string', Rule::in(config('data-synchronize.formats', ['csv', 'xlsx']))],
             'columns' => ['sometimes', 'array'],
             'columns.*' => ['string'],
         ];
+
+        // Merge type-specific filter validation rules from the exporter
+        $type = $this->route('type');
+        if ($type) {
+            $registry = app(DataSynchronizeRegistry::class);
+            if ($registry->hasType($type)) {
+                $exporter = $registry->makeExporter($type);
+                $baseRules = array_merge($baseRules, $exporter->getFilterValidationRules());
+            }
+        }
+
+        return $baseRules;
     }
 
     public function authorize(): bool
