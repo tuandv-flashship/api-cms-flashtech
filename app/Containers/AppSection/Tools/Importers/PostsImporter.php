@@ -8,6 +8,7 @@ use App\Containers\AppSection\Blog\Models\Post;
 use App\Containers\AppSection\Blog\Models\Tag;
 use App\Containers\AppSection\Blog\Supports\PostFormat;
 use App\Containers\AppSection\Slug\Supports\SlugHelper;
+use App\Containers\AppSection\Tools\Supports\Concerns\ImportNormalizationHelper;
 use App\Containers\AppSection\Tools\Supports\DataSynchronizeStorage;
 use App\Containers\AppSection\Tools\Supports\Import\ImportColumn;
 use App\Containers\AppSection\Tools\Supports\Import\Importer;
@@ -18,6 +19,7 @@ use Illuminate\Validation\Rule;
 
 final class PostsImporter extends Importer
 {
+    use ImportNormalizationHelper;
     public function __construct(
         SpreadsheetReader $reader,
         DataSynchronizeStorage $storage,
@@ -193,24 +195,7 @@ final class PostsImporter extends Importer
         return array_values(array_filter(array_map('trim', explode(',', $value)), static fn ($item) => $item !== ''));
     }
 
-    private function normalizeString(mixed $value): ?string
-    {
-        $value = is_string($value) ? trim($value) : $value;
 
-        return $value === '' ? null : (is_string($value) ? $value : null);
-    }
-
-    private function normalizeStatus(mixed $value): ContentStatus
-    {
-        $value = is_string($value) ? strtolower(trim($value)) : '';
-        foreach (ContentStatus::cases() as $status) {
-            if ($status->value === $value) {
-                return $status;
-            }
-        }
-
-        return ContentStatus::PUBLISHED;
-    }
 
     private function normalizeFormatType(mixed $value): ?string
     {

@@ -52,6 +52,11 @@ abstract class Importer
             ->toString();
     }
 
+    public function description(): string
+    {
+        return 'Import ' . $this->label() . ' from a CSV/Excel file.';
+    }
+
     public function validate(string $fileName, int $offset, int $limit, ?int $total = null): ValidationResult
     {
         $rows = $this->getRowsByOffset($fileName, $offset, $limit);
