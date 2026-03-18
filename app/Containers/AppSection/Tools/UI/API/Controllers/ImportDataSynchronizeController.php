@@ -5,19 +5,20 @@ namespace App\Containers\AppSection\Tools\UI\API\Controllers;
 use Apiato\Support\Facades\Response;
 use App\Containers\AppSection\Tools\Actions\ImportDataSynchronizeAction;
 use App\Containers\AppSection\Tools\Supports\DataSynchronizeRegistry;
-use App\Containers\AppSection\Tools\UI\API\Requests\ImportPostsRequest;
+use App\Containers\AppSection\Tools\UI\API\Requests\ImportDataSynchronizeRequest;
 use App\Containers\AppSection\Tools\UI\API\Transformers\DataSynchronizeImportTransformer;
 use App\Ship\Parents\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 
-final class ImportPostsController extends ApiController
+final class ImportDataSynchronizeController extends ApiController
 {
     public function __invoke(
-        ImportPostsRequest $request,
+        ImportDataSynchronizeRequest $request,
         DataSynchronizeRegistry $registry,
-        ImportDataSynchronizeAction $action
+        ImportDataSynchronizeAction $action,
+        string $type,
     ): JsonResponse {
-        $importer = $registry->makeImporter('posts');
+        $importer = $registry->makeImporter($type);
 
         $result = $action->run(
             $importer,

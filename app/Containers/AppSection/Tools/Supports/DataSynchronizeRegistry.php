@@ -85,4 +85,14 @@ final class DataSynchronizeRegistry
     {
         return isset($this->exporters[$type]);
     }
+
+    public function getExportPermission(string $type): string
+    {
+        return "{$type}.export";
+    }
+
+    public function getImportPermission(string $type): string
+    {
+        return "{$type}.import";
+    }
 }

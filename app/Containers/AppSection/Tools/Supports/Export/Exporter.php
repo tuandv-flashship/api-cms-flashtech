@@ -62,6 +62,16 @@ abstract class Exporter
         return $this;
     }
 
+    /**
+     * Apply filters to the export query. Override in subclasses that support filtering.
+     *
+     * @param array<string, mixed> $filters
+     */
+    public function withFilters(array $filters): self
+    {
+        return $this;
+    }
+
     public function getFormat(): string
     {
         return $this->format;

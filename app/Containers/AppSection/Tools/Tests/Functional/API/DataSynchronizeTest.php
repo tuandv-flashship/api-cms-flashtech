@@ -3,59 +3,35 @@
 namespace App\Containers\AppSection\Tools\Tests\Functional\API;
 
 use App\Containers\AppSection\Tools\Tests\Functional\ApiTestCase;
-use App\Containers\AppSection\Tools\UI\API\Controllers\DownloadOtherTranslationsExampleController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\DownloadPageTranslationsExampleController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\DownloadPagesExampleController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\DownloadPostsExampleController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\DownloadPostTranslationsExampleController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\ExportOtherTranslationsController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\ExportPageTranslationsController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\ExportPagesController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\ExportPostsController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\ExportPostTranslationsController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\ImportOtherTranslationsController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\ImportPageTranslationsController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\ImportPagesController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\ImportPostsController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\ImportPostTranslationsController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\UploadDataSynchronizeFileController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\ValidateOtherTranslationsImportController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\ValidatePageTranslationsImportController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\ValidatePagesImportController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\ValidatePostsImportController;
-use App\Containers\AppSection\Tools\UI\API\Controllers\ValidatePostTranslationsImportController;
+use App\Containers\AppSection\Tools\UI\API\Controllers\DownloadDataSynchronizeExampleController;
+use App\Containers\AppSection\Tools\UI\API\Controllers\ExportDataSynchronizeController;
 use App\Containers\AppSection\Tools\UI\API\Controllers\GetDataSynchronizeSchemaController;
+use App\Containers\AppSection\Tools\UI\API\Controllers\ImportDataSynchronizeController;
 use App\Containers\AppSection\Tools\UI\API\Controllers\ListDataSynchronizeTypesController;
+use App\Containers\AppSection\Tools\UI\API\Controllers\UploadDataSynchronizeFileController;
+use App\Containers\AppSection\Tools\UI\API\Controllers\ValidateDataSynchronizeImportController;
 use App\Containers\AppSection\User\Models\User;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Spatie\Permission\Models\Permission;
 
-#[CoversClass(ExportPostsController::class)]
-#[CoversClass(ExportPostTranslationsController::class)]
-#[CoversClass(ExportOtherTranslationsController::class)]
-#[CoversClass(ExportPagesController::class)]
-#[CoversClass(ExportPageTranslationsController::class)]
-#[CoversClass(ImportPostsController::class)]
-#[CoversClass(ImportPostTranslationsController::class)]
-#[CoversClass(ImportOtherTranslationsController::class)]
-#[CoversClass(ImportPagesController::class)]
-#[CoversClass(ImportPageTranslationsController::class)]
-#[CoversClass(ValidatePostsImportController::class)]
-#[CoversClass(ValidatePostTranslationsImportController::class)]
-#[CoversClass(ValidateOtherTranslationsImportController::class)]
-#[CoversClass(ValidatePagesImportController::class)]
-#[CoversClass(ValidatePageTranslationsImportController::class)]
-#[CoversClass(DownloadPostsExampleController::class)]
-#[CoversClass(DownloadPostTranslationsExampleController::class)]
-#[CoversClass(DownloadOtherTranslationsExampleController::class)]
-#[CoversClass(DownloadPagesExampleController::class)]
-#[CoversClass(DownloadPageTranslationsExampleController::class)]
+#[CoversClass(ExportDataSynchronizeController::class)]
+#[CoversClass(ImportDataSynchronizeController::class)]
+#[CoversClass(ValidateDataSynchronizeImportController::class)]
+#[CoversClass(DownloadDataSynchronizeExampleController::class)]
 #[CoversClass(UploadDataSynchronizeFileController::class)]
 #[CoversClass(GetDataSynchronizeSchemaController::class)]
 #[CoversClass(ListDataSynchronizeTypesController::class)]
 final class DataSynchronizeTest extends ApiTestCase
 {
     private User $user;
+
+    private const TYPES = [
+        'posts',
+        'pages',
+        'post-translations',
+        'page-translations',
+        'other-translations',
+    ];
 
     protected function setUp(): void
     {
@@ -82,70 +58,47 @@ final class DataSynchronizeTest extends ApiTestCase
 
     public function testAllRoutesRequireAuthentication(): void
     {
-        $endpoints = [
-            '/v1/tools/data-synchronize/export/posts',
-            '/v1/tools/data-synchronize/export/translations/model',
-            '/v1/tools/data-synchronize/export/other-translations',
-            '/v1/tools/data-synchronize/export/pages',
-            '/v1/tools/data-synchronize/export/translations/page',
-            '/v1/tools/data-synchronize/import/posts',
-            '/v1/tools/data-synchronize/import/translations/model',
-            '/v1/tools/data-synchronize/import/other-translations',
-            '/v1/tools/data-synchronize/import/pages',
-            '/v1/tools/data-synchronize/import/translations/page',
-            '/v1/tools/data-synchronize/import/posts/validate',
-            '/v1/tools/data-synchronize/import/translations/model/validate',
-            '/v1/tools/data-synchronize/import/other-translations/validate',
-            '/v1/tools/data-synchronize/import/pages/validate',
-            '/v1/tools/data-synchronize/import/translations/page/validate',
-            '/v1/tools/data-synchronize/upload',
-        ];
-
-        foreach ($endpoints as $uri) {
-            $response = $this->postJson($uri);
+        foreach (self::TYPES as $type) {
+            $response = $this->postJson("/v1/tools/data-synchronize/export/{$type}");
             $this->assertContains(
                 $response->getStatusCode(),
                 [401, 403, 500],
-                "Endpoint POST {$uri} should require authentication",
+                "Export {$type} should require authentication",
             );
-        }
 
-        // GET endpoints
-        $getEndpoints = [
-            '/v1/tools/data-synchronize/types',
-            '/v1/tools/data-synchronize/schema/posts',
-        ];
-
-        foreach ($getEndpoints as $uri) {
-            $response = $this->getJson($uri);
+            $response = $this->postJson("/v1/tools/data-synchronize/import/{$type}");
             $this->assertContains(
                 $response->getStatusCode(),
                 [401, 403, 500],
-                "Endpoint GET {$uri} should require authentication",
+                "Import {$type} should require authentication",
+            );
+
+            $response = $this->postJson("/v1/tools/data-synchronize/import/{$type}/validate");
+            $this->assertContains(
+                $response->getStatusCode(),
+                [401, 403, 500],
+                "Validate {$type} should require authentication",
             );
         }
+
+        // Upload + GET endpoints
+        $this->assertContains($this->postJson('/v1/tools/data-synchronize/upload')->getStatusCode(), [401, 403, 500]);
+        $this->assertContains($this->getJson('/v1/tools/data-synchronize/types')->getStatusCode(), [401, 403, 500]);
+        $this->assertContains($this->getJson('/v1/tools/data-synchronize/schema/posts')->getStatusCode(), [401, 403, 500]);
     }
 
     public function testAllRoutesRequirePermission(): void
     {
         $userWithoutPermissions = User::factory()->createOne();
 
-        $endpoints = [
-            '/v1/tools/data-synchronize/export/posts',
-            '/v1/tools/data-synchronize/export/translations/model',
-            '/v1/tools/data-synchronize/export/other-translations',
-            '/v1/tools/data-synchronize/export/pages',
-            '/v1/tools/data-synchronize/export/translations/page',
-        ];
-
-        foreach ($endpoints as $uri) {
+        foreach (self::TYPES as $type) {
             $response = $this->actingAs($userWithoutPermissions, 'api')
-                ->postJson($uri);
+                ->postJson("/v1/tools/data-synchronize/export/{$type}");
 
             $this->assertContains(
                 $response->getStatusCode(),
                 [403],
-                "Endpoint POST {$uri} should require permission",
+                "Export {$type} should require permission",
             );
         }
     }
@@ -163,7 +116,7 @@ final class DataSynchronizeTest extends ApiTestCase
     public function testExportPostTranslations(): void
     {
         $response = $this->actingAs($this->user, 'api')
-            ->postJson('/v1/tools/data-synchronize/export/translations/model');
+            ->postJson('/v1/tools/data-synchronize/export/post-translations');
 
         $this->assertContains($response->getStatusCode(), [200, 422, 500]);
     }
@@ -187,7 +140,7 @@ final class DataSynchronizeTest extends ApiTestCase
     public function testExportPageTranslations(): void
     {
         $response = $this->actingAs($this->user, 'api')
-            ->postJson('/v1/tools/data-synchronize/export/translations/page');
+            ->postJson('/v1/tools/data-synchronize/export/page-translations');
 
         $this->assertContains($response->getStatusCode(), [200, 422, 500]);
     }
@@ -205,7 +158,7 @@ final class DataSynchronizeTest extends ApiTestCase
     public function testDownloadPostTranslationsExample(): void
     {
         $response = $this->actingAs($this->user, 'api')
-            ->postJson('/v1/tools/data-synchronize/import/translations/model/download-example');
+            ->postJson('/v1/tools/data-synchronize/import/post-translations/download-example');
 
         $this->assertContains($response->getStatusCode(), [200, 422]);
     }
@@ -229,7 +182,7 @@ final class DataSynchronizeTest extends ApiTestCase
     public function testDownloadPageTranslationsExample(): void
     {
         $response = $this->actingAs($this->user, 'api')
-            ->postJson('/v1/tools/data-synchronize/import/translations/page/download-example');
+            ->postJson('/v1/tools/data-synchronize/import/page-translations/download-example');
 
         $this->assertContains($response->getStatusCode(), [200, 422]);
     }
@@ -247,7 +200,7 @@ final class DataSynchronizeTest extends ApiTestCase
     public function testValidatePostTranslationsImportWithoutFileFails(): void
     {
         $response = $this->actingAs($this->user, 'api')
-            ->postJson('/v1/tools/data-synchronize/import/translations/model/validate');
+            ->postJson('/v1/tools/data-synchronize/import/post-translations/validate');
 
         $this->assertContains($response->getStatusCode(), [422, 500]);
     }
@@ -271,7 +224,7 @@ final class DataSynchronizeTest extends ApiTestCase
     public function testValidatePageTranslationsImportWithoutFileFails(): void
     {
         $response = $this->actingAs($this->user, 'api')
-            ->postJson('/v1/tools/data-synchronize/import/translations/page/validate');
+            ->postJson('/v1/tools/data-synchronize/import/page-translations/validate');
 
         $this->assertContains($response->getStatusCode(), [422, 500]);
     }

@@ -2,22 +2,23 @@
 
 namespace App\Containers\AppSection\Tools\UI\API\Controllers;
 
+use Apiato\Support\Facades\Response;
 use App\Containers\AppSection\Tools\Actions\ValidateDataSynchronizeImportAction;
 use App\Containers\AppSection\Tools\Supports\DataSynchronizeRegistry;
-use App\Containers\AppSection\Tools\UI\API\Requests\ValidatePageTranslationsImportRequest;
-use Apiato\Support\Facades\Response;
+use App\Containers\AppSection\Tools\UI\API\Requests\ImportDataSynchronizeRequest;
 use App\Containers\AppSection\Tools\UI\API\Transformers\DataSynchronizeValidationTransformer;
 use App\Ship\Parents\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 
-final class ValidatePageTranslationsImportController extends ApiController
+final class ValidateDataSynchronizeImportController extends ApiController
 {
     public function __invoke(
-        ValidatePageTranslationsImportRequest $request,
+        ImportDataSynchronizeRequest $request,
         DataSynchronizeRegistry $registry,
-        ValidateDataSynchronizeImportAction $action
+        ValidateDataSynchronizeImportAction $action,
+        string $type,
     ): JsonResponse {
-        $importer = $registry->makeImporter('page-translations');
+        $importer = $registry->makeImporter($type);
 
         $result = $action->run(
             $importer,

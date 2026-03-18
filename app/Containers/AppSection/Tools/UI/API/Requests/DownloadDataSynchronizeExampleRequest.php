@@ -2,13 +2,13 @@
 
 namespace App\Containers\AppSection\Tools\UI\API\Requests;
 
+use App\Containers\AppSection\Tools\Supports\DataSynchronizeRegistry;
 use App\Ship\Parents\Requests\Request as ParentRequest;
 use Illuminate\Validation\Rule;
 
-abstract class BaseDataSynchronizeExampleRequest extends ParentRequest
+final class DownloadDataSynchronizeExampleRequest extends ParentRequest
 {
     protected array $decode = [];
-    protected string $permission = '';
 
     public function rules(): array
     {
@@ -19,10 +19,15 @@ abstract class BaseDataSynchronizeExampleRequest extends ParentRequest
 
     public function authorize(): bool
     {
-        if ($this->permission === '') {
+        $type = $this->route('type');
+        $registry = app(DataSynchronizeRegistry::class);
+
+        if (! $registry->hasType($type)) {
             return false;
         }
 
-        return $this->user()?->can($this->permission) ?? false;
+        $permission = $registry->getImportPermission($type);
+
+        return $this->user()?->can($permission) ?? false;
     }
 }
