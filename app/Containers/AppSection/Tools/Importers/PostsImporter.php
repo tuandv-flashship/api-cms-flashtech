@@ -48,17 +48,17 @@ final class PostsImporter extends Importer
                 ->rules(['nullable', 'string', 'max:300000']),
             ImportColumn::make('tags')
                 ->label('Tags')
-                ->rules(['sometimes', 'array']),
+                ->rules(['nullable', 'string']),
             ImportColumn::make('categories')
                 ->label('Categories')
-                ->rules(['sometimes', 'array']),
+                ->rules(['nullable', 'string']),
             ImportColumn::make('status')
                 ->label('Status')
                 ->rules(['nullable', Rule::in(array_map(static fn (ContentStatus $status) => $status->value, ContentStatus::cases()))]),
             ImportColumn::make('is_featured')
                 ->label('Is Featured')
                 ->boolean()
-                ->rules(['boolean']),
+                ->rules(['nullable', 'boolean']),
             ImportColumn::make('image')
                 ->label('Image')
                 ->rules(['nullable', 'string']),

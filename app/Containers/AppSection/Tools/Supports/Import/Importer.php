@@ -177,7 +177,7 @@ abstract class Importer
                 if ($column->isNullable() && $this->isEmpty($value)) {
                     $value = null;
                 } elseif ($column->isBoolean() && is_string($value)) {
-                    $value = $value === $column->getTrueValue() ? 1 : 0;
+                    $value = strcasecmp($value, $column->getTrueValue()) === 0 ? 1 : 0;
                 }
 
                 $formatted[$column->getName()] = $value;
