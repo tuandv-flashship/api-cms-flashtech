@@ -114,18 +114,7 @@ final class PostsImporter extends Importer
         ];
     }
 
-    /**
-     * @param array<string, mixed> $row
-     * @return array<string, mixed>
-     */
-    protected function mapRow(array $row): array
-    {
-        return [
-            ...$row,
-            'tags' => $this->parseList(Arr::get($row, 'tags')),
-            'categories' => $this->parseList(Arr::get($row, 'categories')),
-        ];
-    }
+
 
     /**
      * @param array<int, array<string, mixed>> $rows
@@ -163,12 +152,12 @@ final class PostsImporter extends Importer
                 $count++;
             }
 
-            $categoryIds = $this->resolveCategories($row['categories'] ?? [], $this->slugHelper);
+            $categoryIds = $this->resolveCategories($this->parseList($row['categories'] ?? ''), $this->slugHelper);
             if ($categoryIds !== []) {
                 $post->categories()->sync($categoryIds);
             }
 
-            $tagIds = $this->resolveTags($row['tags'] ?? [], $this->slugHelper);
+            $tagIds = $this->resolveTags($this->parseList($row['tags'] ?? ''), $this->slugHelper);
             if ($tagIds !== []) {
                 $post->tags()->sync($tagIds);
             }
