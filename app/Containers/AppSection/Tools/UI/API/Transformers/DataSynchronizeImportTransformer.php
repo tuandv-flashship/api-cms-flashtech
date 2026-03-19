@@ -13,6 +13,7 @@ final class DataSynchronizeImportTransformer extends ParentTransformer
             'offset' => $result->offset,
             'count' => $result->count,
             'imported' => $result->imported,
+            'failures_count' => count($result->failures),
             'failures' => $result->failures,
         ];
     }
