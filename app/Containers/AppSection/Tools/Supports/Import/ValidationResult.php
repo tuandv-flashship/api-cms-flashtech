@@ -5,7 +5,7 @@ namespace App\Containers\AppSection\Tools\Supports\Import;
 final class ValidationResult
 {
     /**
-     * @param array<int, string> $errors
+     * @param array<int, array{row: int, attribute: string, errors: array<int, string>}> $errors
      */
     public function __construct(
         public readonly int $offset,

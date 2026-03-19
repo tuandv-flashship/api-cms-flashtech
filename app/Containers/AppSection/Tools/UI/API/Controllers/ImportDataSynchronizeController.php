@@ -27,8 +27,8 @@ final class ImportDataSynchronizeController extends ApiController
             $request->integer('limit')
         );
 
-        $from = $result->offset + 1;
-        $to = $result->offset + $result->count;
+        $from = max(1, $result->offset - $result->count + 1);
+        $to = $result->offset;
 
         $message = __('data-synchronize.import_progress', [
             'from' => $from,

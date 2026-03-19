@@ -61,13 +61,14 @@ abstract class Importer
     {
         $rows = $this->getRowsByOffset($fileName, $offset, $limit);
         $total = $total ?? $this->getTotalRows($fileName);
+        $count = count($rows);
 
         $validator = Validator::make($rows, $this->getValidationRules(), [], $this->getAttributeNames($rows));
-        $errors = $validator->fails() ? array_values(array_unique($validator->errors()->all())) : [];
+        $errors = $validator->fails() ? $this->formatValidationErrors($validator->errors()->toArray(), $offset) : [];
 
         return new ValidationResult(
-            offset: $offset,
-            count: count($rows),
+            offset: $offset + $count,
+            count: $count,
             total: $total,
             fileName: $fileName,
             errors: $errors
@@ -88,7 +89,7 @@ abstract class Importer
         }
 
         return new ImportResult(
-            offset: $offset,
+            offset: $offset + $count,
             count: $count,
             imported: $imported,
             failures: $failures
@@ -254,6 +255,39 @@ abstract class Importer
         }
 
         return $attributes;
+    }
+
+    /**
+     * Format validation errors into structured {row, attribute, errors} format.
+     *
+     * @param array<string, array<int, string>> $errors
+     * @return array<int, array{row: int, attribute: string, errors: array<int, string>}>
+     */
+    private function formatValidationErrors(array $errors, int $offset): array
+    {
+        $grouped = [];
+
+        foreach ($errors as $attribute => $messages) {
+            [$rowIndex, $field] = $this->parseErrorKey($attribute);
+            if ($rowIndex === null) {
+                continue;
+            }
+
+            $row = $offset + $rowIndex + 1;
+            $key = $row . '.' . ($field ?? $attribute);
+
+            if (! isset($grouped[$key])) {
+                $grouped[$key] = [
+                    'row' => $row,
+                    'attribute' => $field ?? $attribute,
+                    'errors' => [],
+                ];
+            }
+
+            $grouped[$key]['errors'] = array_merge($grouped[$key]['errors'], $messages);
+        }
+
+        return array_values($grouped);
     }
 
     /**

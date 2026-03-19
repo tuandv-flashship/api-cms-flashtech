@@ -28,8 +28,8 @@ final class ValidateDataSynchronizeImportController extends ApiController
             $request->input('total')
         );
 
-        $from = $result->offset + 1;
-        $to = $result->offset + $result->count;
+        $from = max(1, $result->offset - $result->count + 1);
+        $to = $result->offset;
 
         $message = __('data-synchronize.validate_progress', [
             'from' => $from,
