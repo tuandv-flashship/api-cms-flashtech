@@ -33,9 +33,6 @@ final class PagesImporter extends Importer
             ImportColumn::make('name')
                 ->label('Name')
                 ->rules(['required', 'string', 'max:250']),
-            ImportColumn::make('slug')
-                ->label('Slug')
-                ->rules(['nullable', 'string', 'max:250']),
             ImportColumn::make('description')
                 ->label('Description')
                 ->rules(['nullable', 'string', 'max:400']),
@@ -48,6 +45,9 @@ final class PagesImporter extends Importer
             ImportColumn::make('template')
                 ->label('Template')
                 ->rules(['nullable', 'string', 'max:60']),
+            ImportColumn::make('slug')
+                ->label('Slug')
+                ->rules(['nullable', 'string', 'max:250']),
             ImportColumn::make('status')
                 ->label('Status')
                 ->rules(['nullable', Rule::in(array_map(static fn (ContentStatus $status) => $status->value, ContentStatus::cases()))]),
@@ -71,11 +71,11 @@ final class PagesImporter extends Importer
             ->map(function (Page $page): array {
                 return [
                     'name' => $page->name,
-                    'slug' => $page->slugable?->key ?? '',
                     'description' => $page->description,
                     'content' => $page->content,
                     'image' => $page->image,
                     'template' => $page->template,
+                    'slug' => $page->slugable?->key ?? '',
                     'status' => $page->status?->value ?? (string) $page->status,
                 ];
             })
@@ -84,11 +84,11 @@ final class PagesImporter extends Importer
         return $pages !== [] ? $pages : [
             [
                 'name' => 'About Us',
-                'slug' => 'about-us',
                 'description' => 'Learn more about our company',
                 'content' => 'Welcome to our company.',
                 'image' => '',
                 'template' => 'default',
+                'slug' => 'about-us',
                 'status' => ContentStatus::PUBLISHED->value,
             ],
         ];

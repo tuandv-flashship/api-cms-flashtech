@@ -37,34 +37,34 @@ final class PostsImporter extends Importer
             ImportColumn::make('name')
                 ->label('Name')
                 ->rules(['required', 'string', 'max:250']),
-            ImportColumn::make('slug')
-                ->label('Slug')
-                ->rules(['nullable', 'string', 'max:250']),
             ImportColumn::make('description')
                 ->label('Description')
                 ->rules(['nullable', 'string', 'max:400']),
             ImportColumn::make('content')
                 ->label('Content')
                 ->rules(['nullable', 'string', 'max:300000']),
-            ImportColumn::make('tags')
-                ->label('Tags')
-                ->rules(['nullable', 'string']),
-            ImportColumn::make('categories')
-                ->label('Categories')
-                ->rules(['nullable', 'string']),
-            ImportColumn::make('status')
-                ->label('Status')
-                ->rules(['nullable', Rule::in(array_map(static fn (ContentStatus $status) => $status->value, ContentStatus::cases()))]),
             ImportColumn::make('is_featured')
                 ->label('Is Featured')
                 ->boolean()
                 ->rules(['nullable', 'boolean']),
-            ImportColumn::make('image')
-                ->label('Image')
-                ->rules(['nullable', 'string']),
             ImportColumn::make('format_type')
                 ->label('Format Type')
                 ->rules(['nullable', 'string', 'max:50', Rule::in(array_keys(PostFormat::all()))]),
+            ImportColumn::make('image')
+                ->label('Image')
+                ->rules(['nullable', 'string']),
+            ImportColumn::make('slug')
+                ->label('Slug')
+                ->rules(['nullable', 'string', 'max:250']),
+            ImportColumn::make('status')
+                ->label('Status')
+                ->rules(['nullable', Rule::in(array_map(static fn (ContentStatus $status) => $status->value, ContentStatus::cases()))]),
+            ImportColumn::make('categories')
+                ->label('Categories')
+                ->rules(['nullable', 'string']),
+            ImportColumn::make('tags')
+                ->label('Tags')
+                ->rules(['nullable', 'string']),
         ];
     }
 
@@ -85,15 +85,15 @@ final class PostsImporter extends Importer
             ->map(function (Post $post): array {
                 return [
                     'name' => $post->name,
-                    'slug' => $post->slugable?->key ?? '',
                     'description' => $post->description,
                     'content' => $post->content,
-                    'tags' => $post->tags->pluck('name')->implode(', '),
-                    'categories' => $post->categories->pluck('name')->implode(', '),
-                    'status' => $post->status?->value ?? (string) $post->status,
                     'is_featured' => $post->is_featured ? 'Yes' : 'No',
-                    'image' => $post->image,
                     'format_type' => $post->format_type,
+                    'image' => $post->image,
+                    'slug' => $post->slugable?->key ?? '',
+                    'status' => $post->status?->value ?? (string) $post->status,
+                    'categories' => $post->categories->pluck('name')->implode(', '),
+                    'tags' => $post->tags->pluck('name')->implode(', '),
                 ];
             })
             ->all();
@@ -101,15 +101,15 @@ final class PostsImporter extends Importer
         return $posts !== [] ? $posts : [
             [
                 'name' => 'Example post',
-                'slug' => 'example-post',
                 'description' => 'Example description',
                 'content' => 'Example content',
-                'tags' => 'Tech, News',
-                'categories' => 'News',
-                'status' => ContentStatus::PUBLISHED->value,
                 'is_featured' => 'No',
-                'image' => 'https://example.com/example.jpg',
                 'format_type' => '',
+                'image' => 'https://example.com/example.jpg',
+                'slug' => 'example-post',
+                'status' => ContentStatus::PUBLISHED->value,
+                'categories' => 'News',
+                'tags' => 'Tech, News',
             ],
         ];
     }
