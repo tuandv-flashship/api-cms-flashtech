@@ -6,6 +6,7 @@ use App\Containers\AppSection\Translation\Models\Translation;
 use App\Containers\AppSection\Translation\Supports\TranslationFilesystem;
 use App\Ship\Parents\Tasks\Task as ParentTask;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 final class UpdateTranslationGroupTask extends ParentTask
@@ -66,5 +67,9 @@ final class UpdateTranslationGroupTask extends ParentTask
         );
 
         Translation::flushLocaleCache($locale);
+
+        // Flush admin rows cache for paginated endpoint
+        Cache::forget("translations.admin_rows.{$locale}.{$dbGroup}");
+        Cache::forget("translations.admin_rows.{$locale}._all");
     }
 }

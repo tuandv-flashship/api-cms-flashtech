@@ -30,7 +30,10 @@ final class GetTranslationGroupRequest extends ParentRequest
     {
         return [
             'locale' => ['required', 'string', 'max:20', 'regex:/^[A-Za-z0-9_-]+$/'],
-            'group' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z0-9_\/-]+$/', 'not_regex:/\.\./'],
+            'group' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z0-9_\/-]+$/', 'not_regex:/\.\./'],
+            'search' => ['nullable', 'string', 'max:100'],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'limit' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }
 
