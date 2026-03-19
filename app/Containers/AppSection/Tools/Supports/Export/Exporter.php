@@ -65,6 +65,16 @@ abstract class Exporter
         return [];
     }
 
+    /**
+     * Fields that need hashed-ID decoding (Apiato $decode).
+     *
+     * @return array<int, string>
+     */
+    public function getDecodeFields(): array
+    {
+        return [];
+    }
+
     public function format(string $format): self
     {
         $this->format = strtolower($format);

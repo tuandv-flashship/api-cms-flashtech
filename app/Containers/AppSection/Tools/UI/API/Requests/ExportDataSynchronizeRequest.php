@@ -10,6 +10,23 @@ final class ExportDataSynchronizeRequest extends ParentRequest
 {
     protected array $decode = [];
 
+    /**
+     * Dynamically merge decode fields from the exporter before validation.
+     */
+    public function prepareForValidation(): void
+    {
+        $type = $this->route('type');
+        if ($type) {
+            $registry = app(DataSynchronizeRegistry::class);
+            if ($registry->hasType($type)) {
+                $exporter = $registry->makeExporter($type);
+                $this->decode = array_merge($this->decode, $exporter->getDecodeFields());
+            }
+        }
+
+        parent::prepareForValidation();
+    }
+
     public function rules(): array
     {
         $baseRules = [

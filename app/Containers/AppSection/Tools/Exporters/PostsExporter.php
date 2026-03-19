@@ -93,6 +93,11 @@ final class PostsExporter extends Exporter
         ];
     }
 
+    public function getDecodeFields(): array
+    {
+        return ['category_id'];
+    }
+
     /**
      * @return iterable<int, array<string, mixed>>
      */
