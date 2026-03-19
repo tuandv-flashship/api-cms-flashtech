@@ -27,8 +27,22 @@ final class ImportDataSynchronizeController extends ApiController
             $request->integer('limit')
         );
 
-        return Response::create()
+        $from = max(1, $result->offset - $result->count + 1);
+        $to = $result->offset;
+
+        $message = __('data-synchronize.import_progress', [
+            'from' => $from,
+            'to' => $to,
+        ]);
+
+        $response = Response::create()
             ->item($result, DataSynchronizeImportTransformer::class)
             ->ok();
+
+        $data = $response->getData(true);
+        $data['message'] = $message;
+        $response->setData($data);
+
+        return $response;
     }
 }

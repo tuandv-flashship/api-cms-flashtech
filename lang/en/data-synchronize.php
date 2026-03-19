@@ -65,4 +65,9 @@ return [
         'boolean_values' => 'must be one of: :true, :false',
     ],
     'rule_template' => 'The :label field :description.',
+
+    'validate_progress' => 'Validating from :from to :to...',
+    'import_progress' => 'Importing from :from to :to...',
+    'validate_complete' => 'Validation complete. :total rows checked.',
+    'import_complete' => 'Import complete. :imported imported, :failures failed.',
 ];

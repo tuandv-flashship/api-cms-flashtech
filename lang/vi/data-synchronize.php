@@ -65,4 +65,9 @@ return [
         'boolean_values' => 'phải là một trong: :true, :false',
     ],
     'rule_template' => 'Trường :label :description.',
+
+    'validate_progress' => 'Đang xác thực từ :from đến :to...',
+    'import_progress' => 'Đang nhập từ :from đến :to...',
+    'validate_complete' => 'Xác thực hoàn tất. :total dòng đã kiểm tra.',
+    'import_complete' => 'Nhập hoàn tất. :imported thành công, :failures thất bại.',
 ];

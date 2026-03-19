@@ -28,8 +28,22 @@ final class ValidateDataSynchronizeImportController extends ApiController
             $request->input('total')
         );
 
-        return Response::create()
+        $from = max(1, $result->offset - $result->count + 1);
+        $to = $result->offset;
+
+        $message = __('data-synchronize.validate_progress', [
+            'from' => $from,
+            'to' => $to,
+        ]);
+
+        $response = Response::create()
             ->item($result, DataSynchronizeValidationTransformer::class)
             ->ok();
+
+        $data = $response->getData(true);
+        $data['message'] = $message;
+        $response->setData($data);
+
+        return $response;
     }
 }
