@@ -163,7 +163,7 @@ final class AdminMenu
         $translatedSection = $item->section;
 
         return [
-            'id' => $item->key,
+            'id' => $item->getHashedKey(),
             'key' => $item->key,
             'name' => $item->getRawOriginal('name'),
             'title' => $translatedName ?? $item->getRawOriginal('name'),
