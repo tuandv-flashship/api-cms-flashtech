@@ -46,3 +46,8 @@ CLAUDE.md
 /postman
 /.postman
 /.gemini
+
+# Translations — only track default locales (en, vi), other locales managed via CMS
+/lang/*
+!/lang/en/
+!/lang/vi/
