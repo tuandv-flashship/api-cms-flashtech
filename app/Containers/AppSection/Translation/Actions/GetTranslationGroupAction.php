@@ -27,8 +27,8 @@ final class GetTranslationGroupAction extends ParentAction
             $searchLower = mb_strtolower($search);
             $rows = array_values(array_filter($rows, static function (array $row) use ($searchLower): bool {
                 return str_contains(mb_strtolower($row['key']), $searchLower)
-                    || ($row['en'] !== null && str_contains(mb_strtolower($row['en']), $searchLower))
-                    || ($row['value'] !== null && str_contains(mb_strtolower($row['value']), $searchLower));
+                    || (is_string($row['en']) && str_contains(mb_strtolower($row['en']), $searchLower))
+                    || (is_string($row['value']) && str_contains(mb_strtolower($row['value']), $searchLower));
             }));
         }
 
@@ -68,23 +68,32 @@ final class GetTranslationGroupAction extends ParentAction
                     : [];
 
                 foreach ($enTranslations as $key => $enValue) {
+                    // Skip nested arrays — only leaf string values are editable.
+                    if (is_array($enValue)) {
+                        continue;
+                    }
+
+                    $localeVal = $localeTranslations[$key] ?? null;
+
                     $rows[] = [
                         'group' => $g,
                         'key' => $key,
                         'en' => $enValue,
-                        'value' => $localeTranslations[$key] ?? null,
+                        'value' => is_string($localeVal) ? $localeVal : null,
                     ];
                 }
 
                 foreach ($localeTranslations as $key => $value) {
-                    if (! isset($enTranslations[$key])) {
-                        $rows[] = [
-                            'group' => $g,
-                            'key' => $key,
-                            'en' => null,
-                            'value' => $value,
-                        ];
+                    if (is_array($value) || isset($enTranslations[$key])) {
+                        continue;
                     }
+
+                    $rows[] = [
+                        'group' => $g,
+                        'key' => $key,
+                        'en' => null,
+                        'value' => $value,
+                    ];
                 }
             }
 
