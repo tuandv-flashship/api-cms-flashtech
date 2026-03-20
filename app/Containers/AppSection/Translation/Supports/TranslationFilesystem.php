@@ -245,14 +245,8 @@ final class TranslationFilesystem
             ];
         }
 
-        if (Str::contains($group, '/')) {
-            $normalizedGroup = 'app/' . $group;
-        } else {
-            $normalizedGroup = 'app/' . $group;
-        }
-
         return [
-            'group' => $normalizedGroup,
+            'group' => $group,
             'path' => $this->langPath($this->normalizeLocale($locale) . '/' . $group . '.php'),
             'type' => 'php',
         ];
@@ -529,7 +523,7 @@ final class TranslationFilesystem
             if ($filename && Str::endsWith($filename, '.php')) {
                 $relativeFile = implode('/', array_slice($segments, 1));
                 $relativeFile = Str::beforeLast($relativeFile, '.php');
-                return 'app/' . $relativeFile;
+                return $relativeFile;
             }
 
             return null;

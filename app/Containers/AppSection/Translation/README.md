@@ -59,16 +59,16 @@ TranslationLoaderManager (extends FileLoader)
 
 ### Private (auth + permission required)
 
-| Method   | URI                                          | Permission              | Description                                  |
-| -------- | -------------------------------------------- | ----------------------- | -------------------------------------------- |
-| `GET`    | `/v1/translations/locales`                   | `translations.index`    | List installed + available locales            |
-| `POST`   | `/v1/translations/locales`                   | `translations.create`   | Install new locale                            |
-| `DELETE` | `/v1/translations/locales/{locale}`          | `translations.destroy`  | Remove locale                                 |
-| `GET`    | `/v1/translations/locales/{locale}/download` | `translations.download` | Download locale archive                       |
-| `GET`    | `/v1/translations/{locale}/groups`           | `translations.index`    | List translation groups                       |
-| `GET`    | `/v1/translations/{locale}/group`            | `translations.index`    | Get group translations (paginated + search)   |
-| `PATCH`  | `/v1/translations/{locale}/group`            | `translations.edit`     | Update group (file + DB)                      |
-| `PATCH`  | `/v1/translations/{locale}/json`             | `translations.edit`     | Update JSON translations (file + DB)          |
+| Method   | URI                                          | Permission              | Description                                 |
+| -------- | -------------------------------------------- | ----------------------- | ------------------------------------------- |
+| `GET`    | `/v1/translations/locales`                   | `translations.index`    | List installed + available locales          |
+| `POST`   | `/v1/translations/locales`                   | `translations.create`   | Install new locale                          |
+| `DELETE` | `/v1/translations/locales/{locale}`          | `translations.destroy`  | Remove locale                               |
+| `GET`    | `/v1/translations/locales/{locale}/download` | `translations.download` | Download locale archive                     |
+| `GET`    | `/v1/translations/{locale}/groups`           | `translations.index`    | List translation groups                     |
+| `GET`    | `/v1/translations/{locale}/group`            | `translations.index`    | Get group translations (paginated + search) |
+| `PATCH`  | `/v1/translations/{locale}/group`            | `translations.edit`     | Update group (file + DB)                    |
+| `PATCH`  | `/v1/translations/{locale}/json`             | `translations.edit`     | Update JSON translations (file + DB)        |
 
 ### Get Group Translations (Paginated + Search)
 
@@ -76,12 +76,12 @@ TranslationLoaderManager (extends FileLoader)
 GET /v1/translations/vi/group?group=app/actions&search=accept&page=1&limit=20
 ```
 
-| Query param | Type    | Required | Mô tả                                                              |
-| ----------- | ------- | -------- | ------------------------------------------------------------------ |
-| `group`     | string  | No       | Tên group (e.g. `app/actions`). Bỏ trống → trả tất cả groups      |
-| `search`    | string  | No       | Tìm theo key, EN value, hoặc translated value                      |
-| `page`      | integer | No       | Trang hiện tại (default: `1`)                                      |
-| `limit`     | integer | No       | Số bản ghi/trang (default: `10`, max: `100`)                       |
+| Query param | Type    | Required | Mô tả                                                        |
+| ----------- | ------- | -------- | ------------------------------------------------------------ |
+| `group`     | string  | No       | Tên group (e.g. `app/actions`). Bỏ trống → trả tất cả groups |
+| `search`    | string  | No       | Tìm theo key, EN value, hoặc translated value                |
+| `page`      | integer | No       | Trang hiện tại (default: `1`)                                |
+| `limit`     | integer | No       | Số bản ghi/trang (default: `10`, max: `100`)                 |
 
 **Response:**
 
@@ -116,13 +116,13 @@ GET /v1/translations/vi/group?group=app/actions&search=accept&page=1&limit=20
 }
 ```
 
-| Response field     | Type    | Mô tả                                |
-| ------------------ | ------- | ------------------------------------- |
-| `data[].group`     | string  | Translation group name                |
-| `data[].key`       | string  | Translation key                       |
-| `data[].en`        | string? | Giá trị gốc EN (null nếu chỉ có bản dịch) |
-| `data[].value`     | string? | Giá trị đã dịch (null nếu chưa dịch) |
-| `meta.pagination`  | object  | Format chuẩn Apiato pagination        |
+| Response field    | Type    | Mô tả                                     |
+| ----------------- | ------- | ----------------------------------------- |
+| `data[].group`    | string  | Translation group name                    |
+| `data[].key`      | string  | Translation key                           |
+| `data[].en`       | string? | Giá trị gốc EN (null nếu chỉ có bản dịch) |
+| `data[].value`    | string? | Giá trị đã dịch (null nếu chưa dịch)      |
+| `meta.pagination` | object  | Format chuẩn Apiato pagination            |
 
 ## Artisan Commands
 
@@ -176,12 +176,12 @@ php artisan translations:import --dry-run
 
 ## Cache Strategy
 
-| Cache Key                                       | TTL     | Invalidation                                    |
-| ----------------------------------------------- | ------- | ----------------------------------------------- |
-| `translations.{locale}.{group}`                  | Forever | On `Translation` save/delete                    |
-| `translations.{locale}._all`                     | Forever | On `Translation` save/delete                    |
-| `translations.admin_rows.{locale}.{group}`       | 5 min   | On `UpdateTranslationGroupTask` upsert          |
-| `translations.admin_rows.{locale}._all`          | 5 min   | On `UpdateTranslationGroupTask` upsert          |
+| Cache Key                                  | TTL     | Invalidation                           |
+| ------------------------------------------ | ------- | -------------------------------------- |
+| `translations.{locale}.{group}`            | Forever | On `Translation` save/delete           |
+| `translations.{locale}._all`               | Forever | On `Translation` save/delete           |
+| `translations.admin_rows.{locale}.{group}` | 5 min   | On `UpdateTranslationGroupTask` upsert |
+| `translations.admin_rows.{locale}._all`    | 5 min   | On `UpdateTranslationGroupTask` upsert |
 
 ## Tests
 
