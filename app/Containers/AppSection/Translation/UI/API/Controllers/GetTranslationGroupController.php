@@ -12,8 +12,8 @@ final class GetTranslationGroupController extends ApiController
     public function __invoke(GetTranslationGroupRequest $request, GetTranslationGroupAction $action): JsonResponse
     {
         $locale = (string) $request->route('locale');
-        $group = $request->input('group');
-        $search = $request->input('search');
+        $group = $request->input('group') ?: null;
+        $search = $request->input('search') ?: null;
         $page = (int) ($request->input('page', 1));
         $limit = (int) ($request->input('limit', config('repository.pagination.limit', 10)));
 
