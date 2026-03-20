@@ -661,6 +661,11 @@ final class TranslationFilesystem
         File::ensureDirectoryExists(dirname($path));
         File::put($path, $this->exportPhpArray($existing));
 
+        // Invalidate OPcache so the next File::getRequire() reads the fresh file.
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($path, true);
+        }
+
         return $existing;
     }
 
