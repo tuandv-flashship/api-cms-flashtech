@@ -17,6 +17,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Prettus\Repository\Contracts\RepositoryInterface;
 
 /**
  * Resolves table configuration from config + model auto-detection.
@@ -194,7 +195,17 @@ final class BulkActionRegistry
             }
         }
 
-        // Step 4: Apply user preferences (visibility + order)
+        // Step 4: Enrich searchable + operator from Repository $fieldSearchable
+        $searchableFields = $this->resolveSearchableFields($modelKey);
+        foreach ($columns as $key => $col) {
+            if (isset($searchableFields[$key])) {
+                $col->searchable(true)->searchOperator($searchableFields[$key]);
+            } elseif (in_array($key, $searchableFields, true)) {
+                $col->searchable(true)->searchOperator('=');
+            }
+        }
+
+        // Step 5: Apply user preferences (visibility + order)
         $prefs = $this->getUserColumnPreferences($user, $modelKey);
 
         return collect($columns)
@@ -266,6 +277,37 @@ final class BulkActionRegistry
         }
 
         return $columns;
+    }
+
+    // ─── Search Fields ─────────────────────────────────────────────
+
+    /**
+     * Resolve $fieldSearchable from the Repository linked in config.
+     * Returns associative array: ['field' => 'operator', ...]
+     */
+    private function resolveSearchableFields(string $modelKey): array
+    {
+        $repositoryClass = $this->modelConfig($modelKey, 'repository');
+        if (! $repositoryClass || ! class_exists($repositoryClass)) {
+            return [];
+        }
+
+        /** @var RepositoryInterface $repository */
+        $repository = app($repositoryClass);
+
+        $raw = $repository->getFieldsSearchable();
+
+        // Normalize: support both ['field' => 'op'] and ['field'] (default '=')
+        $normalized = [];
+        foreach ($raw as $key => $value) {
+            if (is_numeric($key)) {
+                $normalized[$value] = '=';
+            } else {
+                $normalized[$key] = $value;
+            }
+        }
+
+        return $normalized;
     }
 
     // ─── Header Actions ────────────────────────────────────────────

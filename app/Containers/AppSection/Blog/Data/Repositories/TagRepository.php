@@ -16,6 +16,7 @@ final class TagRepository extends ParentRepository
         'id' => '=',
         'name' => 'like',
         'status' => '=',
+        'created_at' => 'between',
     ];
 
     public function model(): string

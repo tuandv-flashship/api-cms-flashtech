@@ -18,6 +18,7 @@ final class PostRepository extends ParentRepository
         'status' => '=',
         'author_id' => '=',
         'is_featured' => '=',
+        'created_at' => 'between',
     ];
 
     public function model(): string

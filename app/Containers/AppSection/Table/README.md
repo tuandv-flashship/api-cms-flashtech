@@ -29,14 +29,16 @@ BulkActionRegistry
     → 1. Auto-detect columns từ Model::getCasts() / getFillable()
     → 2. Merge config columns (additive)
     → 3. Merge model trait columns (highest priority)
-    → 4. Auto-generate CRUD actions từ permission_prefix
-    → 5. Filter ALL by user permissions ($user->can())
-    → 6. Merge user column visibility prefs (settings table)
-    → 7. Translate ALL labels via trans()
-    → 8. Cache result
+    → 4. Enrich searchable + search_operator từ Repository $fieldSearchable
+    → 5. Auto-generate CRUD actions từ permission_prefix
+    → 6. Filter ALL by user permissions ($user->can())
+    → 7. Merge user column visibility prefs (settings table)
+    → 8. Translate ALL labels via trans()
+    → 9. Cache result
     ↓
 FE nhận JSON: columns[], header_actions[], row_actions[], bulk_actions[], bulk_changes[]
     → Render table, render action buttons, render bulk dropdown
+    → Dynamic search UI dựa trên search_operator
     → Zero permission logic phía client
 ```
 
@@ -65,13 +67,22 @@ FE nhận JSON: columns[], header_actions[], row_actions[], bulk_actions[], bulk
   "data": {
     "model": "post",
     "columns": [
-      { "key": "id", "title": "ID", "type": "id", "sortable": true, "searchable": false,
+      { "key": "id", "title": "ID", "type": "id", "sortable": true, "searchable": true,
+        "search_operator": "=",
         "visible": true, "width": 70, "align": "center", "priority": 0 },
       { "key": "name", "title": "Tên", "type": "text", "sortable": true, "searchable": true,
+        "search_operator": "like",
         "visible": true, "width": null, "align": "left", "priority": 2 },
       { "key": "status", "title": "Trạng thái", "type": "status", "sortable": true,
+        "searchable": true, "search_operator": "=",
         "visible": true, "width": 120, "align": "center", "priority": 5,
-        "options": { "published": "Đã xuất bản", "draft": "Bản nháp" } }
+        "options": { "published": "Đã xuất bản", "draft": "Bản nháp" } },
+      { "key": "is_featured", "title": "Nổi bật", "type": "boolean", "sortable": true,
+        "searchable": true, "search_operator": "=",
+        "visible": true, "width": 100, "align": "center", "priority": 6 },
+      { "key": "created_at", "title": "Ngày tạo", "type": "date", "sortable": true,
+        "searchable": false,
+        "visible": true, "width": 160, "align": "center", "priority": 99 }
     ],
     "header_actions": [
       { "name": "create", "label": "Tạo mới", "icon": "ti-plus", "color": "primary",
@@ -162,18 +173,62 @@ Response:
 | `'is_featured'` bool cast | `ColumnDefinition::boolean()`          | type: `boolean`, width: 100, priority: 6               |
 | `usesTimestamps()`        | `ColumnDefinition::date('created_at')` | type: `date`, width: 160, emptyState, priority: 99     |
 
+> **Note:** `searchable` và `search_operator` **không phụ thuộc** vào auto-detection rules ở trên. Chúng được resolve tự động từ Repository `$fieldSearchable` (Step 4 trong pipeline). Nếu config có `repository` key → field nào nằm trong `$fieldSearchable` sẽ có `searchable: true` + `search_operator`.
+
+### Search Operators
+
+Danh sách tất cả operators hỗ trợ bởi l5-repository `RequestCriteria`:
+
+| Operator  | SQL equivalent              | Mô tả                                  | FE nên render              |
+| --------- | --------------------------- | --------------------------------------- | -------------------------- |
+| `=`       | `WHERE f = v`               | So sánh chính xác                       | Dropdown (nếu có `options`) / Text input |
+| `like`    | `WHERE f LIKE %v%`          | Tìm kiếm gần đúng (tự thêm `%`)        | Text input (free-text)     |
+| `ilike`   | `WHERE f ILIKE %v%`         | Like không phân biệt hoa thường (PgSQL) | Text input                 |
+| `in`      | `WHERE f IN (v1, v2, ...)`  | Nhiều giá trị, phân cách bằng `,`       | Multi-select               |
+| `between` | `WHERE f BETWEEN v1 AND v2` | Khoảng, 2 giá trị phân cách bằng `,`   | Range picker               |
+| `>`       | `WHERE f > v`               | Lớn hơn                                | Number input + label       |
+| `<`       | `WHERE f < v`               | Nhỏ hơn                                | Number input + label       |
+| `>=`      | `WHERE f >= v`              | Lớn hơn hoặc bằng                      | Number input + label       |
+| `<=`      | `WHERE f <= v`              | Nhỏ hơn hoặc bằng                      | Number input + label       |
+| `<>`      | `WHERE f <> v`              | Khác                                    | Text input + label         |
+
+**FE search request format** (sử dụng `RequestCriteria` của l5-repository):
+
+```
+# Search chung tất cả searchable fields
+GET /v1/blog/posts?search=hello
+
+# Search theo field cụ thể
+GET /v1/blog/posts?search=name:hello;status:published
+
+# Kết hợp AND (mặc định OR)
+GET /v1/blog/posts?search=name:hello;status:published&searchJoin=and
+
+# Override operator từ client
+GET /v1/blog/posts?search=hello&searchFields=name:like;status:=
+
+# Search IN (nhiều giá trị)
+GET /v1/blog/posts?search=status:published,draft&searchFields=status:in
+
+# Search BETWEEN (khoảng)
+GET /v1/blog/posts?search=created_at:2024-01-01,2024-12-31&searchFields=created_at:between
+```
+
+> **Lưu ý:** Operators `>`, `<`, `>=`, `<=`, `<>` cần được thêm vào `config/repository.php` → `acceptedConditions` nếu muốn client override qua `searchFields` param. Khi define trong `$fieldSearchable` thì server-side default luôn hoạt động.
+
 ### Display Properties (FE metadata)
 
-| Property     | Method                       | JSON Output                       | FE Renders         |
-| ------------ | ---------------------------- | --------------------------------- | ------------------ |
-| `copyable`   | `->copyable()`               | `"copyable": true`                | Copy button        |
-| `maskable`   | `->maskable('*', 4)`         | `"mask": {"char":"*","length":4}` | `****1234`         |
-| `emptyState` | `->emptyState('—')`          | `"empty_state": "—"`              | "—" when null      |
-| `linkable`   | `->linkable('/edit/{id}')`   | `"link": {"url_pattern":"..."}`   | Clickable link     |
-| `dateFormat` | `->dateFormat('DD/MM/YYYY')` | `"date_format": "DD/MM/YYYY"`     | Formatted date     |
-| `limit`      | `->limit(50)`                | `"limit": 50`                     | Truncated text     |
-| `icon`       | `->icon('ti-star')`          | `"icon": {"name":"ti-star"}`      | Icon prefix/suffix |
-| `color`      | `->color('danger')`          | `"color": "danger"`               | Colored text       |
+| Property          | Method                       | JSON Output                              | FE Renders         |
+| ----------------- | ---------------------------- | ---------------------------------------- | ------------------ |
+| `copyable`        | `->copyable()`               | `"copyable": true`                       | Copy button        |
+| `maskable`        | `->maskable('*', 4)`         | `"mask": {"char":"*","length":4}`        | `****1234`         |
+| `emptyState`      | `->emptyState('—')`          | `"empty_state": "—"`                     | "—" when null      |
+| `linkable`        | `->linkable('/edit/{id}')`   | `"link": {"url_pattern":"..."}`          | Clickable link     |
+| `dateFormat`      | `->dateFormat('DD/MM/YYYY')` | `"date_format": "DD/MM/YYYY"`            | Formatted date     |
+| `limit`           | `->limit(50)`                | `"limit": 50`                            | Truncated text     |
+| `icon`            | `->icon('ti-star')`          | `"icon": {"name":"ti-star"}`             | Icon prefix/suffix |
+| `color`           | `->color('danger')`          | `"color": "danger"`                      | Colored text       |
+| `searchOperator`  | `->searchOperator('like')`   | `"search_operator": "like"`              | Search UI type     |
 
 **Bulk changes** auto-detect:
 
@@ -233,6 +288,7 @@ return [
     'models' => [
         'post' => [
             'model' => Post::class,
+            'repository' => PostRepository::class,  // ← enables search_operator sync
             'permission_prefix' => 'posts',
             'default_sort' => ['key' => 'created_at', 'direction' => 'desc'],
             'columns' => [
@@ -243,6 +299,7 @@ return [
 
         'category' => [
             'model' => Category::class,
+            'repository' => CategoryRepository::class,
             'permission_prefix' => 'categories',
         ],
 
@@ -327,6 +384,7 @@ class Product extends Model
 
 ## Change Log
 
+- `2026-03-23`: Search operator sync — auto-enrich `searchable` + `search_operator` từ Repository `$fieldSearchable`
 - `2026-03-06`: Initial implementation — Botble CMS table module migration (API-first)
 - `2026-03-06`: Added full BulkChange types (Text, Select, Email, Phone, Number, Date, CreatedAt)
 - `2026-03-06`: Refactor: config `models` key nesting, `SelectBulkChange` inheritance, `TableServiceProvider` singleton, documented partial failure design

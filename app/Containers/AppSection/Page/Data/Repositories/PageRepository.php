@@ -19,6 +19,7 @@ final class PageRepository extends ParentRepository
         'status' => '=',
         'user_id' => '=',
         'template' => '=',
+        'created_at' => 'between',
     ];
 
     public function model(): string

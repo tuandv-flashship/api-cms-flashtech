@@ -16,6 +16,7 @@ final class ColumnDefinition
     private string $type = 'text';
     private bool $sortable = true;
     private bool $searchable = false;
+    private ?string $searchOperator = null;
     private bool $visible = true;
     private ?int $width = null;
     private string $align = 'left';
@@ -168,6 +169,13 @@ final class ColumnDefinition
         return $this;
     }
 
+    public function searchOperator(string $operator): self
+    {
+        $this->searchOperator = $operator;
+
+        return $this;
+    }
+
     public function visible(bool $value = true): self
     {
         $this->visible = $value;
@@ -305,6 +313,10 @@ final class ColumnDefinition
             'align' => $this->align,
             'priority' => $this->priority,
         ];
+
+        if ($this->searchable && $this->searchOperator !== null) {
+            $data['search_operator'] = $this->searchOperator;
+        }
 
         // Conditional fields — only sent when set (keeps response slim)
         if ($this->options !== null) {

@@ -19,6 +19,7 @@ final class CategoryRepository extends ParentRepository
         'parent_id' => '=',
         'is_featured' => '=',
         'is_default' => '=',
+        'created_at' => 'between',
     ];
 
     public function model(): string

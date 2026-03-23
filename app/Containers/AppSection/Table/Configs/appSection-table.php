@@ -1,8 +1,12 @@
 <?php
 
+use App\Containers\AppSection\Blog\Data\Repositories\CategoryRepository;
+use App\Containers\AppSection\Blog\Data\Repositories\PostRepository;
+use App\Containers\AppSection\Blog\Data\Repositories\TagRepository;
 use App\Containers\AppSection\Blog\Models\Category;
 use App\Containers\AppSection\Blog\Models\Post;
 use App\Containers\AppSection\Blog\Models\Tag;
+use App\Containers\AppSection\Page\Data\Repositories\PageRepository;
 use App\Containers\AppSection\Page\Models\Page;
 use App\Containers\AppSection\Table\Abstracts\ColumnDefinition;
 
@@ -19,6 +23,9 @@ return [
     | Everything else is auto-detected from model casts/fillable.
     | See HasTableConfig trait for model-level overrides.
     |
+    | 'repository': Optional. Link to Repository class — enables auto-sync of
+    | $fieldSearchable into column metadata (searchable + search_operator).
+    |
     */
 
     'max_bulk_items' => 100,
@@ -26,6 +33,7 @@ return [
     'models' => [
         'post' => [
             'model' => Post::class,
+            'repository' => PostRepository::class,
             'permission_prefix' => 'posts',
             'api_prefix' => '/v1/blog/posts',     // API route for type=action
             'fe_prefix' => '/blog/posts',           // FE route for type=link
@@ -38,6 +46,7 @@ return [
 
         'category' => [
             'model' => Category::class,
+            'repository' => CategoryRepository::class,
             'permission_prefix' => 'categories',
             'api_prefix' => '/v1/blog/categories',
             'fe_prefix' => '/blog/categories',
@@ -45,6 +54,7 @@ return [
 
         'tag' => [
             'model' => Tag::class,
+            'repository' => TagRepository::class,
             'permission_prefix' => 'tags',
             'api_prefix' => '/v1/blog/tags',
             'fe_prefix' => '/blog/tags',
@@ -52,9 +62,11 @@ return [
 
         'page' => [
             'model' => Page::class,
+            'repository' => PageRepository::class,
             'permission_prefix' => 'pages',
             'api_prefix' => '/v1/pages',
             'fe_prefix' => '/pages',
         ],
     ],
 ];
+
