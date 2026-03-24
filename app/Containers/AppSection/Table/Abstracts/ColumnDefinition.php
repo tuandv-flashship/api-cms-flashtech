@@ -204,6 +204,21 @@ final class ColumnDefinition
         return $this;
     }
 
+    /** Auto-fill options from a PHP backed Enum with optional label() support. */
+    public function enum(string $enumClass): self
+    {
+        if (enum_exists($enumClass) && method_exists($enumClass, 'options')) {
+            $this->options = $enumClass::options();
+        } elseif (enum_exists($enumClass)) {
+            $this->options = array_combine(
+                array_column($enumClass::cases(), 'value'),
+                array_column($enumClass::cases(), 'value'),
+            );
+        }
+
+        return $this;
+    }
+
     public function priority(int $priority): self
     {
         $this->priority = $priority;
@@ -320,7 +335,11 @@ final class ColumnDefinition
 
         // Conditional fields — only sent when set (keeps response slim)
         if ($this->options !== null) {
-            $data['options'] = (object) array_map(fn ($v) => trans($v), $this->options);
+            // Translate values only if they look like translation keys (contain '::')
+            $data['options'] = (object) array_map(
+                fn ($v) => is_string($v) && str_contains($v, '::') ? trans($v) : $v,
+                $this->options,
+            );
         }
 
         if ($this->copyable) {

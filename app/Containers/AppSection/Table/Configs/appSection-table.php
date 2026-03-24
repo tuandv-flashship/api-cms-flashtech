@@ -1,72 +1,23 @@
 <?php
 
-use App\Containers\AppSection\Blog\Data\Repositories\CategoryRepository;
-use App\Containers\AppSection\Blog\Data\Repositories\PostRepository;
-use App\Containers\AppSection\Blog\Data\Repositories\TagRepository;
-use App\Containers\AppSection\Blog\Models\Category;
-use App\Containers\AppSection\Blog\Models\Post;
-use App\Containers\AppSection\Blog\Models\Tag;
-use App\Containers\AppSection\Page\Data\Repositories\PageRepository;
-use App\Containers\AppSection\Page\Models\Page;
-use App\Containers\AppSection\Table\Abstracts\ColumnDefinition;
-
 return [
     /*
     |--------------------------------------------------------------------------
-    | Table Module Configuration
+    | Table Module — Global Configuration
     |--------------------------------------------------------------------------
     |
-    | 'max_bulk_items': Max IDs per bulk request (prevents abuse/timeouts).
+    | Global settings for the table-meta and form-meta APIs.
+    | Per-model config is defined in each container's own `table-models.php`.
     |
-    | 'models': Registry of table-enabled models. Each key is used in API
-    | requests (e.g. ?model=post). Minimum: 'model' + 'permission_prefix'.
-    | Everything else is auto-detected from model casts/fillable.
-    | See HasTableConfig trait for model-level overrides.
-    |
-    | 'repository': Optional. Link to Repository class — enables auto-sync of
-    | $fieldSearchable into column metadata (searchable + search_operator).
+    | Convention:
+    |   Container/Configs/table-models.php → auto-discovered, merged here.
     |
     */
 
+    'cache_ttl'      => env('TABLE_META_CACHE_TTL', 3600), // seconds, 0 = no cache
     'max_bulk_items' => 100,
 
-    'models' => [
-        'post' => [
-            'model' => Post::class,
-            'repository' => PostRepository::class,
-            'permission_prefix' => 'posts',
-            'api_prefix' => '/v1/blog/posts',     // API route for type=action
-            'fe_prefix' => '/blog/posts',           // FE route for type=link
-            'default_sort' => ['key' => 'created_at', 'direction' => 'desc'],
-            'columns' => [
-                ColumnDefinition::number('views', 'table::columns.views')
-                    ->visible(false)->width(80)->align('right'),
-            ],
-        ],
-
-        'category' => [
-            'model' => Category::class,
-            'repository' => CategoryRepository::class,
-            'permission_prefix' => 'categories',
-            'api_prefix' => '/v1/blog/categories',
-            'fe_prefix' => '/blog/categories',
-        ],
-
-        'tag' => [
-            'model' => Tag::class,
-            'repository' => TagRepository::class,
-            'permission_prefix' => 'tags',
-            'api_prefix' => '/v1/blog/tags',
-            'fe_prefix' => '/blog/tags',
-        ],
-
-        'page' => [
-            'model' => Page::class,
-            'repository' => PageRepository::class,
-            'permission_prefix' => 'pages',
-            'api_prefix' => '/v1/pages',
-            'fe_prefix' => '/pages',
-        ],
-    ],
+    // Models are auto-discovered from container configs (table-models.php).
+    // No need to register models here.
+    'models' => [],
 ];
-

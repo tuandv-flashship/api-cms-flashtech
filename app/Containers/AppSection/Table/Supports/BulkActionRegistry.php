@@ -123,22 +123,43 @@ final class BulkActionRegistry
 
     // ─── Config Helpers ────────────────────────────────────────────
 
-    /** Get all model configs under 'models' key. */
+    /** Cached merged models from all container configs. */
+    private ?array $mergedModels = null;
+
+    /**
+     * Get all model configs by auto-discovering from container `table-models` configs.
+     *
+     * Convention: any config file named `table-models` is merged.
+     * Also merges legacy `appSection-table.models` for backward compatibility.
+     */
     private function getModelsConfig(): array
     {
-        return config(self::CONFIG_PREFIX . '.models', []);
+        if ($this->mergedModels !== null) {
+            return $this->mergedModels;
+        }
+
+        $models = config(self::CONFIG_PREFIX . '.models', []);
+
+        // Auto-discover: scan all loaded config keys for `table-models`
+        foreach (config()->all() as $key => $value) {
+            if (str_ends_with($key, 'table-models') && is_array($value)) {
+                $models = array_merge($models, $value);
+            }
+        }
+
+        return $this->mergedModels = $models;
     }
 
     /** Get full config for a specific model key. */
     private function getModelFullConfig(string $modelKey): array
     {
-        return config(self::CONFIG_PREFIX . ".models.{$modelKey}", []);
+        return $this->getModelsConfig()[$modelKey] ?? [];
     }
 
     /** Get a specific config value for a model. */
     private function modelConfig(string $modelKey, string $key, mixed $default = null): mixed
     {
-        return config(self::CONFIG_PREFIX . ".models.{$modelKey}.{$key}", $default);
+        return $this->getModelsConfig()[$modelKey][$key] ?? $default;
     }
 
     /** Get a global (non-model) config value. */
@@ -158,6 +179,12 @@ final class BulkActionRegistry
             return [];
         }
 
+        // Permission check (null/empty = bypass)
+        $permission = $config['permission'] ?? null;
+        if ($permission && ! $user->can($permission)) {
+            abort(403, 'Unauthorized');
+        }
+
         $prefix = $config['permission_prefix'] ?? $modelKey;
         $apiPrefix = $config['api_prefix'] ?? "/v1/{$prefix}";
         $fePrefix = $config['fe_prefix'] ?? "/{$prefix}";
@@ -171,6 +198,7 @@ final class BulkActionRegistry
             'bulk_changes' => $this->resolveBulkChangesForFe($model, $config, $prefix, $user, $modelKey),
             'default_sort' => $config['default_sort'] ?? ['key' => 'created_at', 'direction' => 'desc'],
             'max_bulk_items' => $this->globalConfig('max_bulk_items', 100),
+            'pagination' => $config['pagination'] ?? ['default_limit' => 15, 'limits' => [15, 30, 50, 100]],
         ];
     }
 

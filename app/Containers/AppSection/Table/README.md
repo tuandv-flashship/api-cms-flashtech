@@ -4,21 +4,28 @@
 
 ## Scope
 
-Hệ thống **table metadata + bulk operations** tập trung, migrate từ Botble CMS `platform/core/table`. Phục vụ API-first cho phía FE data table.
+Hệ thống **table metadata + form metadata + bulk operations** tập trung, migrate từ Botble CMS `platform/core/table`. Phục vụ API-first cho phía FE data table + dynamic form rendering.
 
 ### Core Features
 
 - **Dynamic Column Definitions**: FE nhận cấu trúc cột từ API — type, sortable, searchable, visible, width, align
+- **Dynamic Form Metadata**: FE nhận cấu trúc form từ API — field types, validation rules, groups, options
 - **Permission-Gated Actions**: header actions (Create), row actions (Edit/Delete), bulk actions, bulk changes — chỉ trả những gì user có quyền
 - **Convention Over Configuration**: Auto-detect columns/actions/bulk changes từ model casts/fillable + permission prefix
+- **Distributed Config**: Mỗi container tự quản lý model config riêng (Porto SAP principle)
 - **Per-User Column Visibility**: Mỗi user lưu preference ẩn/hiện cột riêng
 - **Bulk Actions**: Xoá hàng loạt với per-record model events + audit logging
 - **Bulk Changes**: Thay đổi field hàng loạt (status, name, is_featured, etc.)
 - **Partial Failure Handling**: Response chi tiết `{ success, failed, errors[] }`
+- **Validation Rule Parsing**: Auto-detect validation rules từ Laravel Request classes → react-hook-form format
+- **Translation Forms**: Support `translate` action cho multilingual content
+- **Enum Integration**: Auto-populate options từ PHP Backed Enums (label + value)
 - **i18n**: Tất cả text qua `trans()` keys + `X-Locale` header
-- **Caching**: Table metadata cached per `user:model:locale`
+- **Caching**: Table metadata cached per `user:model:locale`, form metadata per `model:action`
 
 ## Architecture
+
+### Table Meta Flow
 
 ```
 FE mounts data table
@@ -26,20 +33,38 @@ FE mounts data table
 GET /v1/table-meta?model=post  +  X-Locale: vi
     ↓
 BulkActionRegistry
-    → 1. Auto-detect columns từ Model::getCasts() / getFillable()
-    → 2. Merge config columns (additive)
-    → 3. Merge model trait columns (highest priority)
-    → 4. Enrich searchable + search_operator từ Repository $fieldSearchable
-    → 5. Auto-generate CRUD actions từ permission_prefix
-    → 6. Filter ALL by user permissions ($user->can())
-    → 7. Merge user column visibility prefs (settings table)
-    → 8. Translate ALL labels via trans()
-    → 9. Cache result
+    → 1. Auto-discover model config from container table-models.php
+    → 2. Permission check (model-level)
+    → 3. Auto-detect columns từ Model::getCasts() / getFillable()
+    → 4. Merge config columns (additive)
+    → 5. Merge model trait columns (highest priority)
+    → 6. Enrich searchable + search_operator từ Repository $fieldSearchable
+    → 7. Auto-generate CRUD actions từ permission_prefix
+    → 8. Filter ALL by user permissions ($user->can())
+    → 9. Merge user column visibility prefs (settings table)
+    → 10. Translate ALL labels via trans()
+    → 11. Cache result
     ↓
-FE nhận JSON: columns[], header_actions[], row_actions[], bulk_actions[], bulk_changes[]
-    → Render table, render action buttons, render bulk dropdown
-    → Dynamic search UI dựa trên search_operator
-    → Zero permission logic phía client
+FE nhận JSON: columns[], header_actions[], row_actions[], bulk_actions[], bulk_changes[], pagination
+```
+
+### Form Meta Flow
+
+```
+FE opens create/edit/translate form
+    ↓
+GET /v1/form-meta?model=post&action=create
+    ↓
+GetFormMetaAction
+    → 1. Resolve model config (auto-discover from table-models.php)
+    → 2. Permission check (form-level)
+    → 3. Instantiate Request class, parse rules() + messages()
+    → 4. ValidationRuleParser: Laravel rules → FormFieldDefinition[]
+    → 5. Merge config overrides (groups, order, colSpan, type override)
+    → 6. Serialize all fields with validation → JSON
+    → 7. Cache result
+    ↓
+FE nhận JSON: groups[], fields[] (with validation), submit{method, url}
 ```
 
 ### Override Hierarchy (most specific wins)
@@ -56,6 +81,7 @@ FE nhận JSON: columns[], header_actions[], row_actions[], bulk_actions[], bulk
 | ------ | ------------------------------ | -------------------------------------------------- |
 | `GET`  | `/v1/table-meta?model=post`    | Full table metadata cho 1 model                    |
 | `GET`  | `/v1/table-meta`               | Danh sách tất cả model keys đã đăng ký             |
+| `GET`  | `/v1/form-meta?model=post&action=create` | Form metadata cho 1 model + action      |
 | `POST` | `/v1/bulk-actions`             | Dispatch bulk action (delete, etc.)                |
 | `POST` | `/v1/bulk-changes`             | Dispatch bulk field update (status, name, etc.)    |
 | `PUT`  | `/v1/table-columns-visibility` | Lưu column visibility + order preferences per user |
@@ -76,42 +102,79 @@ FE nhận JSON: columns[], header_actions[], row_actions[], bulk_actions[], bulk
       { "key": "status", "title": "Trạng thái", "type": "status", "sortable": true,
         "searchable": true, "search_operator": "=",
         "visible": true, "width": 120, "align": "center", "priority": 5,
-        "options": { "published": "Đã xuất bản", "draft": "Bản nháp" } },
-      { "key": "is_featured", "title": "Nổi bật", "type": "boolean", "sortable": true,
-        "searchable": true, "search_operator": "=",
-        "visible": true, "width": 100, "align": "center", "priority": 6 },
-      { "key": "created_at", "title": "Ngày tạo", "type": "date", "sortable": true,
-        "searchable": false,
-        "visible": true, "width": 160, "align": "center", "priority": 99 }
+        "options": { "published": "Đã xuất bản", "draft": "Nháp", "pending": "Chờ duyệt" } }
     ],
-    "header_actions": [
-      { "name": "create", "label": "Tạo mới", "icon": "ti-plus", "color": "primary",
-        "type": "link", "url_pattern": "/blog/posts/create",
-        "permission": "posts.create", ... }
-    ],
-    "row_actions": [
-      { "name": "edit", "label": "Sửa", "type": "link",
-        "url_pattern": "/blog/posts/{id}/edit",
-        "permission": "posts.edit", ..., "confirmation": null },
-      { "name": "delete", "label": "Xoá", "type": "action",
-        "method": "DELETE", "url_pattern": "/v1/blog/posts/{id}",
-        "permission": "posts.destroy", ...,
-        "confirmation": { "title": "Xác nhận xoá", ... } }
-    ],
-    "bulk_actions": [
-      { "action": "delete", "label": "Xoá đã chọn", "icon": "ti-trash", "color": "danger",
-        "permission": "posts.destroy",
-        "confirmation": { "title": "Xác nhận xoá hàng loạt", ... } }
-    ],
-    "bulk_changes": [
-      { "key": "status", "title": "Trạng thái", "type": "select",
-        "choices": { "published": "Đã xuất bản", "draft": "Bản nháp" },
-        "permission": "posts.edit" },
-      { "key": "name", "title": "Tên", "type": "text", "placeholder": "Nhập tên...",
-        "permission": "posts.edit" }
-    ],
+    "header_actions": [ "..." ],
+    "row_actions": [ "..." ],
+    "bulk_actions": [ "..." ],
+    "bulk_changes": [ "..." ],
     "default_sort": { "key": "created_at", "direction": "desc" },
-    "max_bulk_items": 100
+    "max_bulk_items": 100,
+    "pagination": { "default_limit": 15, "limits": [15, 30, 50, 100] }
+  }
+}
+```
+
+### Response `GET /v1/form-meta?model=post&action=create`
+
+```json
+{
+  "data": {
+    "model": "post",
+    "action": "create",
+    "groups": [
+      { "key": "basic", "label": "Thông tin cơ bản", "order": 0 },
+      { "key": "content", "label": "Nội dung", "order": 1 },
+      { "key": "settings", "label": "Cài đặt", "order": 2 },
+      { "key": "media", "label": "Hình ảnh", "order": 3 }
+    ],
+    "fields": [
+      {
+        "key": "name", "label": "Tên", "type": "text",
+        "group": "basic", "order": 0, "col_span": 1,
+        "validation": {
+          "required": "Name là bắt buộc",
+          "maxLength": { "value": 255, "message": "Tối đa 255 ký tự" }
+        }
+      },
+      {
+        "key": "status", "label": "Trạng thái", "type": "select",
+        "group": "settings", "order": 0, "col_span": 1,
+        "options": { "published": "Đã xuất bản", "draft": "Nháp", "pending": "Chờ duyệt" }
+      },
+      {
+        "key": "is_featured", "label": "Nổi bật", "type": "boolean",
+        "group": "settings", "order": 1, "col_span": 1
+      },
+      {
+        "key": "seo_meta", "label": "Seo Meta", "type": "json",
+        "order": 7, "col_span": 1
+      }
+    ],
+    "submit": { "method": "POST", "url": "/v1/blog/posts" }
+  }
+}
+```
+
+### Response `GET /v1/form-meta?model=post&action=translate`
+
+```json
+{
+  "data": {
+    "model": "post",
+    "action": "translate",
+    "groups": [
+      { "key": "translation", "label": "Thông tin cơ bản", "order": 0 }
+    ],
+    "fields": [
+      { "key": "lang_code", "type": "hidden", "group": "translation", "order": 0,
+        "validation": { "required": "Lang Code là bắt buộc" } },
+      { "key": "name", "type": "text", "group": "translation", "order": 1 },
+      { "key": "description", "type": "textarea", "group": "translation", "order": 2, "col_span": 2 },
+      { "key": "content", "type": "textarea", "group": "translation", "order": 3, "col_span": 2 },
+      { "key": "slug", "type": "text", "group": "translation", "order": 4 }
+    ],
+    "submit": { "method": "PUT", "url": "/v1/blog/posts/{id}/translations" }
   }
 }
 ```
@@ -158,233 +221,172 @@ Response:
 }
 ```
 
-## Auto-Detection Rules
+## Config — Distributed Pattern
 
-### Columns
+> **Convention**: Mỗi container tạo `Configs/table-models.php` → auto-discovered bởi Table container.
 
-| Model Property            | Factory Method                         | Column Config                                          |
-| ------------------------- | -------------------------------------- | ------------------------------------------------------ |
-| Primary key               | `ColumnDefinition::id()`               | type: `id`, width: 70, center, priority: 0             |
-| `'image'` in fillable     | `ColumnDefinition::image()`            | type: `image`, width: 70, center, priority: 1          |
-| `'name'` in fillable      | `ColumnDefinition::name()`             | type: `text`, searchable, emptyState, priority: 2      |
-| `'email'` in fillable     | `ColumnDefinition::email()`            | type: `email`, searchable, `mailto:` link, priority: 3 |
-| `'phone'` in fillable     | `ColumnDefinition::phone()`            | type: `phone`, searchable, `tel:` link, priority: 4    |
-| `'status'` Enum cast      | `ColumnDefinition::status($enum)`      | type: `status`, options from enum, priority: 5         |
-| `'is_featured'` bool cast | `ColumnDefinition::boolean()`          | type: `boolean`, width: 100, priority: 6               |
-| `usesTimestamps()`        | `ColumnDefinition::date('created_at')` | type: `date`, width: 160, emptyState, priority: 99     |
-
-> **Note:** `searchable` và `search_operator` **không phụ thuộc** vào auto-detection rules ở trên. Chúng được resolve tự động từ Repository `$fieldSearchable` (Step 4 trong pipeline). Nếu config có `repository` key → field nào nằm trong `$fieldSearchable` sẽ có `searchable: true` + `search_operator`.
-
-### Search Operators
-
-Danh sách tất cả operators hỗ trợ bởi l5-repository `RequestCriteria`:
-
-| Operator  | SQL equivalent              | Mô tả                                  | FE nên render              |
-| --------- | --------------------------- | --------------------------------------- | -------------------------- |
-| `=`       | `WHERE f = v`               | So sánh chính xác                       | Dropdown (nếu có `options`) / Text input |
-| `like`    | `WHERE f LIKE %v%`          | Tìm kiếm gần đúng (tự thêm `%`)        | Text input (free-text)     |
-| `ilike`   | `WHERE f ILIKE %v%`         | Like không phân biệt hoa thường (PgSQL) | Text input                 |
-| `in`      | `WHERE f IN (v1, v2, ...)`  | Nhiều giá trị, phân cách bằng `,`       | Multi-select               |
-| `between` | `WHERE f BETWEEN v1 AND v2` | Khoảng, 2 giá trị phân cách bằng `,`   | Range picker               |
-| `>`       | `WHERE f > v`               | Lớn hơn                                | Number input + label       |
-| `<`       | `WHERE f < v`               | Nhỏ hơn                                | Number input + label       |
-| `>=`      | `WHERE f >= v`              | Lớn hơn hoặc bằng                      | Number input + label       |
-| `<=`      | `WHERE f <= v`              | Nhỏ hơn hoặc bằng                      | Number input + label       |
-| `<>`      | `WHERE f <> v`              | Khác                                    | Text input + label         |
-
-**FE search request format** (sử dụng `RequestCriteria` của l5-repository):
-
-```
-# Search chung tất cả searchable fields
-GET /v1/blog/posts?search=hello
-
-# Search theo field cụ thể
-GET /v1/blog/posts?search=name:hello;status:published
-
-# Kết hợp AND (mặc định OR)
-GET /v1/blog/posts?search=name:hello;status:published&searchJoin=and
-
-# Override operator từ client
-GET /v1/blog/posts?search=hello&searchFields=name:like;status:=
-
-# Search IN (nhiều giá trị)
-GET /v1/blog/posts?search=status:published,draft&searchFields=status:in
-
-# Search BETWEEN (khoảng)
-GET /v1/blog/posts?search=created_at:2024-01-01,2024-12-31&searchFields=created_at:between
-```
-
-> **Lưu ý:** Operators `>`, `<`, `>=`, `<=`, `<>` cần được thêm vào `config/repository.php` → `acceptedConditions` nếu muốn client override qua `searchFields` param. Khi define trong `$fieldSearchable` thì server-side default luôn hoạt động.
-
-### Display Properties (FE metadata)
-
-| Property          | Method                       | JSON Output                              | FE Renders         |
-| ----------------- | ---------------------------- | ---------------------------------------- | ------------------ |
-| `copyable`        | `->copyable()`               | `"copyable": true`                       | Copy button        |
-| `maskable`        | `->maskable('*', 4)`         | `"mask": {"char":"*","length":4}`        | `****1234`         |
-| `emptyState`      | `->emptyState('—')`          | `"empty_state": "—"`                     | "—" when null      |
-| `linkable`        | `->linkable('/edit/{id}')`   | `"link": {"url_pattern":"..."}`          | Clickable link     |
-| `dateFormat`      | `->dateFormat('DD/MM/YYYY')` | `"date_format": "DD/MM/YYYY"`            | Formatted date     |
-| `limit`           | `->limit(50)`                | `"limit": 50`                            | Truncated text     |
-| `icon`            | `->icon('ti-star')`          | `"icon": {"name":"ti-star"}`             | Icon prefix/suffix |
-| `color`           | `->color('danger')`          | `"color": "danger"`                      | Colored text       |
-| `searchOperator`  | `->searchOperator('like')`   | `"search_operator": "like"`              | Search UI type     |
-
-**Bulk changes** auto-detect:
-
-| Model Property            | BulkChange Class       | Input Type   | Validation                  |
-| ------------------------- | ---------------------- | ------------ | --------------------------- |
-| `'status'` Enum cast      | `StatusBulkChange`     | `select`     | `in:enum_values`            |
-| `'name'` in fillable      | `NameBulkChange`       | `text`       | `required\|string\|max:250` |
-| `'email'` in fillable     | `EmailBulkChange`      | `text`       | `required\|email\|max:120`  |
-| `'phone'` in fillable     | `PhoneBulkChange`      | `text`       | Phone regex                 |
-| `'is_featured'` bool cast | `IsFeaturedBulkChange` | `select`     | `in:0,1`                    |
-| `usesTimestamps()`        | `CreatedAtBulkChange`  | `datePicker` | `required\|date`            |
-
-**Base classes** (for custom bulk changes):
-
-| Base Class         | FE Type                    | Use For                             |
-| ------------------ | -------------------------- | ----------------------------------- |
-| `TextBulkChange`   | `text`                     | Any text input                      |
-| `SelectBulkChange` | `select` / `select-search` | Dropdown, supports callback choices |
-| `NumberBulkChange` | `number`                   | Integer input                       |
-| `DateBulkChange`   | `date`                     | Date input                          |
-
-**Actions** auto-generate từ `permission_prefix`: create header action + edit/delete row actions + delete bulk action.
-
-## Key Classes
-
-| Class                              | Purpose                                                                                                                |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `Abstracts/ColumnDefinition`       | Fluent builder cho column metadata (factory methods: `id()`, `image()`, `status()`, `date()`, `boolean()`, `number()`) |
-| `Abstracts/ActionDefinition`       | Fluent builder cho action metadata (factory methods: `link()`, `action()`) + confirmation modal                        |
-| `Abstracts/BulkActionAbstract`     | Base cho bulk actions, dispatch pattern + lifecycle hooks                                                              |
-| `Abstracts/BulkChangeAbstract`     | Base cho bulk field changes, validation rules, metadata                                                                |
-| `Supports/BulkActionRegistry`      | Core engine: auto-detect, permission filter, cache, resolve                                                            |
-| `Traits/HasTableConfig`            | Optional model trait để override auto-detected config                                                                  |
-| `BulkActions/DeleteBulkAction`     | Xoá per-record (model events + audit log)                                                                              |
-| `BulkChanges/TextBulkChange`       | Base: text input (`max:255`)                                                                                           |
-| `BulkChanges/SelectBulkChange`     | Base: dropdown (static/callback choices, searchable)                                                                   |
-| `BulkChanges/NumberBulkChange`     | Number input (`integer`, `min:0`)                                                                                      |
-| `BulkChanges/DateBulkChange`       | Date input                                                                                                             |
-| `BulkChanges/StatusBulkChange`     | Update status (auto-populate từ enum)                                                                                  |
-| `BulkChanges/NameBulkChange`       | Update name (extends Text)                                                                                             |
-| `BulkChanges/EmailBulkChange`      | Update email (extends Text, email validation)                                                                          |
-| `BulkChanges/PhoneBulkChange`      | Update phone (extends Text, phone regex)                                                                               |
-| `BulkChanges/IsFeaturedBulkChange` | Toggle featured (Yes/No select)                                                                                        |
-| `BulkChanges/CreatedAtBulkChange`  | Update created_at (datePicker type)                                                                                    |
-| `Providers/TableServiceProvider`   | Singleton binding cho `BulkActionRegistry` + register `table` translation namespace                                    |
-| `Events/BulkActionCompleted`       | Event fired sau bulk action                                                                                            |
-| `Events/BulkChangeCompleted`       | Event fired sau bulk change                                                                                            |
-
-## Config
-
-`Configs/appSection-table.php` — registry cho tất cả models:
+### Global Config: `Table/Configs/appSection-table.php`
 
 ```php
 return [
+    'cache_ttl'      => env('TABLE_META_CACHE_TTL', 3600),
     'max_bulk_items' => 100,
+    'models'         => [],  // auto-discovered from container configs
+];
+```
 
-    'models' => [
-        'post' => [
-            'model' => Post::class,
-            'repository' => PostRepository::class,  // ← enables search_operator sync
-            'permission_prefix' => 'posts',
-            'default_sort' => ['key' => 'created_at', 'direction' => 'desc'],
-            'columns' => [
-                ColumnDefinition::number('views', 'table::columns.views')
-                    ->visible(false)->width(80)->align('right'),
+### Container Config Example: `Blog/Configs/table-models.php`
+
+```php
+return [
+    'post' => [
+        'model'             => Post::class,
+        'repository'        => PostRepository::class,
+        'permission_prefix' => 'posts',
+        'permission'        => 'posts.index',
+        'api_prefix'        => '/v1/blog/posts',
+        'fe_prefix'         => '/blog/posts',
+        'default_sort'      => ['key' => 'created_at', 'direction' => 'desc'],
+        'pagination'        => ['default_limit' => 15, 'limits' => [15, 30, 50, 100]],
+
+        'columns' => [
+            ColumnDefinition::make('status', 'table::columns.status')
+                ->searchable()->enum(ContentStatus::class)->width(100),
+        ],
+
+        'forms' => [
+            'create' => [
+                'request'    => CreatePostRequest::class,
+                'permission' => 'posts.create',
+                'submit'     => ['method' => 'POST', 'url' => '/v1/blog/posts'],
+                'groups'     => [/* ... */],
+                'overrides'  => [/* FormFieldDefinition::text('name')->group('basic')... */],
+            ],
+            'update' => [
+                'request'    => UpdatePostRequest::class,
+                'permission' => 'posts.edit',
+                'submit'     => ['method' => 'PATCH', 'url' => '/v1/blog/posts/{id}'],
+            ],
+            'translate' => [
+                'request'    => UpdatePostTranslationRequest::class,
+                'permission' => 'posts.edit',
+                'submit'     => ['method' => 'PUT', 'url' => '/v1/blog/posts/{id}/translations'],
             ],
         ],
-
-        'category' => [
-            'model' => Category::class,
-            'repository' => CategoryRepository::class,
-            'permission_prefix' => 'categories',
-        ],
-
-        // tag, page — same minimal pattern
     ],
 ];
 ```
 
-**~5 dòng/model** nhờ convention-over-configuration.
+### Registered Models
+
+| Key | Model | Container | Permission | Actions |
+|---|---|---|---|---|
+| `post` | Post | Blog | `posts.*` | create, update, translate |
+| `category` | Category | Blog | `categories.*` | create, update, translate |
+| `tag` | Tag | Blog | `tags.*` | create, update, translate |
+| `page` | Page | Page | `pages.*` | create, update, translate |
+
+## Key Classes
+
+| Class | Purpose |
+| --- | --- |
+| `Abstracts/ColumnDefinition` | Fluent builder cho column metadata + `enum()` support |
+| `Abstracts/ActionDefinition` | Fluent builder cho action metadata + confirmation modal |
+| `Abstracts/FormFieldDefinition` | Fluent builder cho form field metadata (11+ types) |
+| `Supports/BulkActionRegistry` | Core engine: auto-discover + permission filter + cache |
+| `Supports/ValidationRuleParser` | Laravel Request rules() → react-hook-form validation |
+| `Actions/GetFormMetaAction` | Form metadata resolver: auto-detect + merge + cache |
+| `Actions/GetTableMetaAction` | Table metadata resolver |
+| `Traits/HasTableConfig` | Optional model trait to override auto-detection |
+
+### FormFieldDefinition Types
+
+| Type | Factory Method | FE Renders |
+|---|---|---|
+| `text` | `::text()` | Text input |
+| `textarea` | `::textarea()` | Textarea |
+| `number` | `::number()` | Number input |
+| `select` | `::select()` | Select dropdown |
+| `boolean` | `::boolean()` | Toggle/Checkbox |
+| `relation` | `::relation()` | Async select (API endpoint) |
+| `color` | `::color()` | Color picker |
+| `icon` | `::icon()` | Icon picker |
+| `date` | `::date()` | Date picker |
+| `datetime` | `::datetime()` | DateTime picker |
+| `hidden` | `::hidden()` | Hidden input |
+| `json` | auto-detected | JSON editor |
+
+### ValidationRuleParser Mapping
+
+| Laravel Rule | react-hook-form Rule | Notes |
+|---|---|---|
+| `required` | `required: "message"` | Custom messages from `Request::messages()` |
+| `max:N` (string) | `maxLength: {value, message}` | |
+| `max:N` (number) | `max: {value, message}` | |
+| `min:N` (string) | `minLength: {value, message}` | |
+| `min:N` (number) | `min: {value, message}` | |
+| `regex:/pattern/` | `pattern: {value, message}` | |
+| `email` | `pattern: {email regex}` | |
+| `Rule::enum(Cls)` | type → `select`, options auto | Reflection-based |
+| `Rule::in(a,b)` | type → `select`, options auto | |
+| `array` | type → `json` | Nested rules skipped |
+| `boolean` | type → `boolean` | |
+| `exists:table,col` | type → `relation` | |
 
 ## i18n
 
 Lang files tại `Resources/lang/{en,vi}/`:
 
-| File               | Nội dung                                         |
-| ------------------ | ------------------------------------------------ |
-| `actions.php`      | Action labels, confirmation messages             |
-| `columns.php`      | Column titles                                    |
-| `bulk_changes.php` | Bulk change placeholders (select, enter name...) |
-| `statuses.php`     | Status enum labels                               |
-
-FE gửi `X-Locale: vi` → nhận text đã dịch. Namespace: `table::` (registered trong `TableServiceProvider`).
-
-```bash
-php artisan translations:import --locale=en --locale=vi
-```
+| File | Nội dung |
+| --- | --- |
+| `actions.php` | Action labels, confirmation messages |
+| `columns.php` | Column titles |
+| `fields.php` | Form field labels |
+| `groups.php` | Form group labels |
+| `bulk_changes.php` | Bulk change placeholders |
+| `statuses.php` | Status enum labels |
 
 ## Cache Strategy
 
-| Cache Key                               | TTL    | Invalidation                              |
-| --------------------------------------- | ------ | ----------------------------------------- |
-| `table_meta:{user_id}:{model}:{locale}` | 1 hour | Column visibility save, permission change |
-
-## Events
-
-| Event                 | Fired When               | Properties                                                              |
-| --------------------- | ------------------------ | ----------------------------------------------------------------------- |
-| `BulkActionCompleted` | Sau bulk action hoàn tất | `action`, `modelKey`, `successIds`, `successCount`, `failedCount`       |
-| `BulkChangeCompleted` | Sau bulk change hoàn tất | `modelKey`, `key`, `value`, `successIds`, `successCount`, `failedCount` |
+| Cache Key | TTL | Invalidation |
+| --- | --- | --- |
+| `table_meta:{user_id}:{model}:{locale}` | `TABLE_META_CACHE_TTL` | Column visibility save, permission change |
+| `form_meta:{model}:{action}` | `TABLE_META_CACHE_TTL` | Config change, `cache:clear` |
 
 ## Extending
 
-### Thêm model mới
+### Thêm model mới (Porto SAP way)
 
 ```php
-// Configs/appSection-table.php
-'product' => [
-    'model' => Product::class,
-    'permission_prefix' => 'products',
-],
+// NewContainer/Configs/table-models.php
+return [
+    'new_model' => [
+        'model'             => NewModel::class,
+        'repository'        => NewModelRepository::class,
+        'permission_prefix' => 'new-models',
+        'permission'        => 'new-models.index',
+        'api_prefix'        => '/v1/new-models',
+        'fe_prefix'         => '/new-models',
+        'forms' => [
+            'create' => [
+                'request'    => CreateNewModelRequest::class,
+                'permission' => 'new-models.create',
+            ],
+        ],
+    ],
+];
 ```
 
-### Thêm custom BulkChange
-
-```php
-final class DescriptionBulkChange extends BulkChangeAbstract
-{
-    protected string $name = 'description';
-    protected string $title = 'table::columns.description';
-    protected string $type = 'textarea';
-    protected array|string|null $validate = 'required|string|max:1000';
-}
-```
-
-### Override config từ Model
-
-```php
-class Product extends Model
-{
-    use HasTableConfig;
-
-    public function getTableRowActions(): array
-    {
-        return [
-            ActionDefinition::link('edit', 'table::actions.edit')
-                ->icon('ti-edit')->permission('products.edit'),
-            // No delete action for products
-        ];
-    }
-}
-```
+→ Auto-discovered. Available at `/v1/table-meta?model=new_model` + `/v1/form-meta?model=new_model&action=create`.
 
 ## Change Log
 
-- `2026-03-23`: Search operator sync — auto-enrich `searchable` + `search_operator` từ Repository `$fieldSearchable`
+- `2026-03-24`: **Distributed config** — model configs moved to container `table-models.php`
+- `2026-03-24`: **Form-meta API** — `GET /v1/form-meta` with validation rules, groups, field types
+- `2026-03-24`: **Translation forms** — `translate` action for post/category/tag/page
+- `2026-03-24`: **ValidationRuleParser** — skip nested rules, array→json type, safe try-catch
+- `2026-03-24`: **ColumnDefinition** — `enum()` method, options serialization fix
+- `2026-03-24`: **BulkActionRegistry** — permission check, pagination, auto-discover
+- `2026-03-24`: **ContentStatus enum** — added `label()` + `options()` methods
+- `2026-03-23`: Search operator sync — auto-enrich `searchable` + `search_operator` từ Repository
 - `2026-03-06`: Initial implementation — Botble CMS table module migration (API-first)
-- `2026-03-06`: Added full BulkChange types (Text, Select, Email, Phone, Number, Date, CreatedAt)
-- `2026-03-06`: Refactor: config `models` key nesting, `SelectBulkChange` inheritance, `TableServiceProvider` singleton, documented partial failure design
