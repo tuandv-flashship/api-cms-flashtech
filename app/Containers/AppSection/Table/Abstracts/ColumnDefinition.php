@@ -315,6 +315,23 @@ final class ColumnDefinition
 
     // ─── Serialize ─────────────────────────────────────────────────
 
+    /**
+     * Required by var_export() / config:cache.
+     * Reconstructs the object from the exported array of properties.
+     */
+    public static function __set_state(array $state): self
+    {
+        $instance = new self($state['key'], $state['title']);
+
+        foreach ($state as $prop => $value) {
+            if (property_exists($instance, $prop)) {
+                $instance->{$prop} = $value;
+            }
+        }
+
+        return $instance;
+    }
+
     public function toArray(): array
     {
         $data = [
